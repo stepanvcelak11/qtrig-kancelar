@@ -5,6 +5,14 @@ import { fmt, $ } from './ui.js';
 
 let cv, ctx, info, pohled = { y0: 0, x0: 0, k: 1 }, zvyr = null, vrstvy = [], hover = null, dpr = 1;
 let onKlik = null;
+// podklad z WMS ČÚZK přímo v S-JTSK (EPSG:5514 = záporné souřadnice) — bez přepočtu
+const PODKLADY = {
+    zadny: { nazev: 'Bez podkladu' },
+    katastr: { nazev: 'Katastr (ČÚZK)', url: (bb, w, h) => `https://services.cuzk.cz/wms/wms.asp?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=KN&STYLES=&SRS=EPSG:5514&BBOX=${bb}&WIDTH=${w}&HEIGHT=${h}&FORMAT=image/png&TRANSPARENT=true`, minK: 0.04 },
+    ortofoto: { nazev: 'Ortofoto (ČÚZK)', url: (bb, w, h) => `https://ags.cuzk.gov.cz/arcgis1/services/ORTOFOTO/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=0&STYLES=&SRS=EPSG:5514&BBOX=${bb}&WIDTH=${w}&HEIGHT=${h}&FORMAT=image/jpeg`, minK: 0.005 },
+    zm: { nazev: 'Základní mapa (ČÚZK)', url: (bb, w, h) => `https://ags.cuzk.gov.cz/arcgis1/services/ZTM/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=0&STYLES=&SRS=EPSG:5514&BBOX=${bb}&WIDTH=${w}&HEIGHT=${h}&FORMAT=image/png`, minK: 0.001 },
+};
+let podklad = 'zadny', wms = { img: null, bbox: null, stav: '' }, wmsTimer = null;
 
 export const Mapa = {
     init() {
@@ -13,6 +21,11 @@ export const Mapa = {
         velikost();
         Projekt.poslouchej((co) => { if (co === 'projekt') { ukazVse(); } else kresli(); });
         $('#mapa-vse').onclick = ukazVse;
+        const sel = document.createElement('select'); sel.id = 'mapa-podklad'; sel.className = 'btn maly'; sel.title = 'Podklad';
+        for (const [k, v] of Object.entries(PODKLADY)) { const o = document.createElement('option'); o.value = k; o.textContent = v.nazev; sel.append(o); }
+        try { podklad = localStorage.getItem('qk-podklad') || 'zadny'; } catch { } sel.value = podklad;
+        sel.onchange = () => { podklad = sel.value; try { localStorage.setItem('qk-podklad', podklad); } catch { } wms = { img: null, bbox: null, stav: '' }; nactiWms(); kresli(); };
+        $('.mapa-tl').prepend(sel);
         new MutationObserver(kresli).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
         ovladani();
         ukazVse();
@@ -52,12 +65,19 @@ function kresli() {
     const css = getComputedStyle(document.documentElement);
     const c = (n) => css.getPropertyValue(n).trim();
     ctx.fillStyle = c('--paper2'); ctx.fillRect(0, 0, W, H);
+    // WMS podklad: poslední stažený obrázek překreslený do aktuálního pohledu
+    if (wms.img && wms.bbox) {
+        const a = naObr(wms.bbox.maxY, wms.bbox.minX), b = naObr(wms.bbox.minY, wms.bbox.maxX);
+        ctx.globalAlpha = podklad === 'katastr' ? 0.85 : 1; ctx.drawImage(wms.img, a.sx, a.sy, b.sx - a.sx, b.sy - a.sy); ctx.globalAlpha = 1;
+    }
+    if (podklad !== 'zadny') { clearTimeout(wmsTimer); wmsTimer = setTimeout(nactiWms, 350); }
     // mřížka
     const krok = krokMrizky(pohled.k);
-    ctx.strokeStyle = c('--line2'); ctx.lineWidth = 1; ctx.font = '10px ' + c('--mono'); ctx.fillStyle = c('--ink3');
+    ctx.strokeStyle = c('--line2'); ctx.lineWidth = 1; ctx.font = '10px ' + c('--mono'); ctx.fillStyle = c('--ink3'); ctx.globalAlpha = wms.img ? 0.45 : 1;
     const lt = naSvet(0, 0), rb = naSvet(W, H);
     for (let y = Math.floor(rb.y / krok) * krok; y <= lt.y; y += krok) { const { sx } = naObr(y, 0); ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke(); ctx.fillText(fmt(y, 0), sx + 3, 11); }
     for (let x = Math.floor(lt.x / krok) * krok; x <= rb.x; x += krok) { const { sy } = naObr(0, x); ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke(); ctx.fillText(fmt(x, 0), 3, sy - 3); }
+    ctx.globalAlpha = 1;
     // vrstvy (čáry výpočtů)
     for (const v of vrstvy) {
         if (v.typ === 'cara' && v.body.length > 1) {
@@ -83,7 +103,21 @@ function kresli() {
     // měřítko
     const m = krok * pohled.k; ctx.strokeStyle = c('--ink2'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W - 14 - m, H - 12); ctx.lineTo(W - 14, H - 12); ctx.stroke();
     ctx.fillStyle = c('--ink2'); ctx.textAlign = 'right'; ctx.fillText(krok >= 1000 ? (krok / 1000) + ' km' : krok + ' m', W - 14, H - 16); ctx.textAlign = 'left';
-    if (info) info.textContent = hover ? `${hover.cislo}  Y ${fmt(hover.y)}  X ${fmt(hover.x)}` : (p ? `${p.body.length} bodů · 1 : ${Math.round(3780 / pohled.k / 10) * 10 || 1}` : '');
+    if (info) info.textContent = hover ? `${hover.cislo}  Y ${fmt(hover.y)}  X ${fmt(hover.x)}` : (p ? `${p.body.length} bodů · 1 : ${Math.round(3780 / pohled.k / 10) * 10 || 1}${wms.stav ? ' · ' + wms.stav : ''}` : '');
+}
+function nactiWms() {
+    const P = PODKLADY[podklad]; if (!P || !P.url || !cv) return;
+    const W = Math.round(cv.width / dpr), H = Math.round(cv.height / dpr); if (W < 10 || H < 10) return;
+    if (pohled.k < P.minK) { const st = 'přibliž pro ' + P.nazev; if (wms.stav !== st) { wms = { img: null, bbox: null, stav: st }; kresli(); } return; }
+    const lt = naSvet(0, 0), rb = naSvet(W, H);
+    const bbox = { minY: rb.y, maxY: lt.y, minX: lt.x, maxX: rb.x };
+    if (wms.bbox && Math.abs(wms.bbox.minY - bbox.minY) < 1e-6 && Math.abs(wms.bbox.minX - bbox.minX) < 1e-6 && Math.abs(wms.bbox.maxY - bbox.maxY) < 1e-6) return;
+    // EPSG:5514: x = −Y, y = −X  →  BBOX = minx,miny,maxx,maxy
+    const bb = [-bbox.maxY, -bbox.maxX, -bbox.minY, -bbox.minX].map((v) => v.toFixed(2)).join(',');
+    const img = new Image(); wms.stav = 'načítám ' + P.nazev + '…'; const pk = podklad;
+    img.onload = () => { if (pk !== podklad) return; wms = { img, bbox, stav: '' }; kresli(); };
+    img.onerror = () => { wms.stav = P.nazev + ' nejde načíst (signál?)'; kresli(); };
+    img.src = P.url(bb, Math.min(W, 2048), Math.min(H, 2048));
 }
 function krokMrizky(k) { const cil = 90 / k; const p = Math.pow(10, Math.floor(Math.log10(cil))); const m = cil / p; return (m < 2 ? 1 : m < 5 ? 2 : 5) * p; }
 

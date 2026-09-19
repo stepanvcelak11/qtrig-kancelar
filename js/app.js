@@ -11,7 +11,7 @@ import { Stred, mobilPrepni, prepniZalozku } from './stred.js';
 import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 
-export const VERZE = '0.3';
+export const VERZE = '0.4';
 
 async function start() {
     await startProjekt();

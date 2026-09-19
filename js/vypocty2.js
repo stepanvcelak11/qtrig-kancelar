@@ -6,6 +6,7 @@ import { polygonovyPorad } from '../geo/polygon.js';
 import { kriteria, posud, posudPorad, PORADY } from '../geo/presnost.js';
 import { transformace, trigVyska, nivelace } from '../geo/ostatni.js';
 import { delka, smernik } from '../geo/zaklad.js';
+import { sestavOsu, bodNaOse, stanicenBodu, vykresliOsu } from '../geo/osa.js';
 
 const P = (v, d = 3) => fmt(v, d).padStart(12);
 const G = (v) => fmtG(v, 4).padStart(9);
@@ -121,6 +122,62 @@ export function registruj(FORMY, pom) {
                 const body = jm.map((c, i) => ({ c, H: r.vysky[i + 1] })).filter((x) => x.c && Projekt.bod(x.c)).map((x) => { const b = Projekt.bod(x.c); return { cislo: x.c, y: b.y, x: b.x, z: x.H, kod: b.kod }; });
                 vysledek(sek, { nazev: 'Nivelační pořad', stav: r.posouzeni ? r.posouzeni.stav : 'neposouzeno', kv, body, prot });
             } }, 'Spočítat nivelaci')));
+        }
+    };
+
+    FORMY.osa = (sek, ctx, u) => {
+        const p = Projekt.get(); if (!p.osy) p.osy = [];
+        const nazev = textPole('Název osy', 'os-nazev', p.osy[0]?.nazev || 'Osa 1'), st0 = cisloPole('Staničení začátku', 'os-st0', p.osy[0] ? fmt(p.osy[0].st0, 3) : '0', 'm');
+        const ulozene = el('select', { id: 'os-ulozene' }, el('option', { value: '' }, '— nová osa —'), p.osy.map((o, i) => el('option', { value: i }, `${o.nazev} (${o.vrcholy.length} vrcholů)`)));
+        const radky = el('tbody');
+        const tab = el('table', { class: 'tab bez-nastroju' }, el('thead', {}, el('tr', {}, el('th', {}, 'Vrchol (bod ze seznamu)'), el('th', { class: 'num' }, 'R [m]'), el('th', { class: 'num' }, 'Přechodnice L [m]'), el('th', {}, ''))), radky);
+        const pridej = (c = '', R = '', L = '') => { const tr = el('tr'); tr.append(tdInp('c', { value: c, list: 'dl-body' }), tdInp('r', { value: R, class: 'num', inputmode: 'decimal' }), tdInp('l', { value: L, class: 'num', inputmode: 'decimal' }), el('td', { class: 'akce' }, el('button', { class: 'ikona', onclick: () => tr.remove() }, '✕'))); radky.append(tr); };
+        const nactiOsu = (o) => { radky.innerHTML = ''; if (!o) { for (let i = 0; i < 3; i++) pridej(); return; } nazev.inp.value = o.nazev; st0.inp.value = fmt(o.st0, 3); o.vrcholy.forEach((v) => pridej(v.cislo, v.R ? fmt(v.R, 2) : '', v.L ? fmt(v.L, 2) : '')); };
+        ulozene.onchange = () => nactiOsu(ulozene.value === '' ? null : p.osy[+ulozene.value]);
+        if (p.osy.length) { ulozene.value = '0'; nactiOsu(p.osy[0]); } else nactiOsu(null);
+        const bodyKSt = el('textarea', { id: 'os-body', rows: 2, placeholder: 'čísla bodů (mezerou) → staničení a kolmá vzdálenost' });
+        const stRadky = el('tbody'); const stTab = el('table', { class: 'tab bez-nastroju' }, el('thead', {}, el('tr', {}, el('th', { class: 'num' }, 'Staničení [m]'), el('th', { class: 'num' }, 'Kolmice (vpravo +) [m]'), el('th', {}, 'Číslo bodu'), el('th', {}, 'Kód'))), stRadky);
+        const pridejSt = () => { const tr = el('tr'); tr.append(tdInp('st', { class: 'num', inputmode: 'decimal' }), tdInp('k', { class: 'num', inputmode: 'decimal', value: '0' }), tdInp('c', {}), tdInp('kod', {})); stRadky.append(tr); };
+        for (let i = 0; i < 3; i++) pridejSt();
+        const krokPole = cisloPole('Body po ose každých', 'os-krok', '', 'm');
+        hlavaFormu(sek, u, el('div', { class: 'radek' }, el('label', { class: 'pole' }, el('span', {}, 'Uložené osy'), ulozene), nazev, st0),
+            el('h3', {}, 'Tečnový polygon'), el('p', { class: 'tlum', style: 'margin:0;font-size:12.5px' }, 'Vrcholy v pořadí staničení. R = poloměr kružnicového oblouku ve vrcholu (prázdné = lom), L = délka symetrických přechodnic (klotoid). První a poslední vrchol bez R.'),
+            el('div', { class: 'tw' }, tab), el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, el('button', { class: 'btn maly', onclick: () => pridej() }, '+ Vrchol'), el('button', { class: 'btn hlavni', onclick: () => spocitej('hlavni') }, 'Sestavit osu a hlavní body')),
+            el('h3', {}, 'Staničení bodů'), el('label', { class: 'pole' }, el('span', {}, 'Body ze seznamu'), bodyKSt), el('div', {}, el('button', { class: 'btn', onclick: () => spocitej('stanicen') }, 'Staničení a kolmice')),
+            el('h3', {}, 'Body ze staničení'), el('div', { class: 'tw' }, stTab), el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:end' }, el('button', { class: 'btn maly', onclick: pridejSt }, '+ Řádek'), krokPole, el('button', { class: 'btn', onclick: () => spocitej('body') }, 'Spočítat body')));
+        function sestav() {
+            const V = []; for (const tr of radky.rows) { const c = hodn(tr, 'c'); if (!c) continue; const b = Projekt.bod(c); if (!b) { chyba(sek, `Vrchol ${c} není v seznamu.`); return null; } V.push({ cislo: c, y: b.y, x: b.x, R: cislo(hodn(tr, 'r')) || 0, L: cislo(hodn(tr, 'l')) || 0 }); }
+            if (V.length < 2) { chyba(sek, 'Osa potřebuje aspoň 2 vrcholy.'); return null; }
+            let o; try { o = sestavOsu(V, st0.hodnota() || 0); } catch (e) { chyba(sek, e.message); return null; }
+            const def = { nazev: nazev.inp.value.trim() || 'Osa', st0: st0.hodnota() || 0, vrcholy: V.map((v) => ({ cislo: v.cislo, R: v.R, L: v.L })) };
+            const i = p.osy.findIndex((x) => x.nazev === def.nazev); if (i >= 0) p.osy[i] = def; else p.osy.push(def); Projekt.zmena('osy');
+            return o;
+        }
+        const km = (st) => `${Math.floor(st / 1000)},${(st % 1000).toFixed(3).padStart(7, '0').replace('.', ',')}`;
+        function spocitej(co) {
+            const o = sestav(); if (!o) return;
+            const vr = [{ typ: 'cara', body: vykresliOsu(o, 2), sirka: 2 }, { typ: 'body', body: o.hlavni.map((h) => ({ y: h.y, x: h.x, cislo: h.nazev })), r: 3 }];
+            const stav = o.chyby.length ? 'prekroceno' : 'neposouzeno';
+            const kvHl = [['Délka osy', fmt(o.delka, 3) + ' m'], ['Prvky', o.prvky.map((x) => ({ primka: 'přímka', oblouk: 'oblouk', prechodnice: 'přechodnice' }[x.typ])).join(' → ')], ...o.chyby.map((c) => ['⚠', c])];
+            if (co === 'hlavni') {
+                let prot = `osa ${nazev.inp.value}: začátek st ${fmt(o.st0, 3)} m, délka ${fmt(o.delka, 3)} m\n` + o.prvky.map((x) => `  ${x.typ.padEnd(12)} st ${P(x.st)}  délka ${P(x.delka)}${x.R ? `  R ${fmt(x.R, 2)}${x.smer > 0 ? ' vpravo' : ' vlevo'}` : ''}`).join('\n') + '\n' + o.hlavni.map((h) => `${h.nazev.padEnd(6)} st ${P(h.st)}  Y ${P(h.y)} X ${P(h.x)}`).join('\n') + (o.chyby.length ? '\nCHYBY: ' + o.chyby.join('; ') : '');
+                vysledek(sek, { nazev: 'Osa ' + nazev.inp.value + ' — hlavní body', stav, kv: kvHl, body: o.hlavni.map((h) => ({ cislo: h.nazev, y: h.y, x: h.x, kod: 'OSA' })), prot, vrstvy: vr, extra: el('div', { class: 'tw' }, el('table', { class: 'tab bez-nastroju' }, el('thead', {}, el('tr', {}, el('th', {}, 'Bod'), el('th', { class: 'num' }, 'Staničení km'), el('th', { class: 'num' }, 'Y'), el('th', { class: 'num' }, 'X'))), el('tbody', {}, o.hlavni.map((h) => el('tr', {}, el('td', { class: 'cislo' }, h.nazev), el('td', { class: 'num' }, km(h.st)), el('td', { class: 'num' }, fmt(h.y)), el('td', { class: 'num' }, fmt(h.x))))))) });
+            }
+            if (co === 'stanicen') {
+                const cis = bodyKSt.value.split(/[\s,;]+/).filter(Boolean); const body = cis.map((c) => Projekt.bod(c)).filter(Boolean);
+                if (!body.length) return chyba(sek, 'Zadej čísla bodů ze seznamu.');
+                const r = body.map((b) => ({ b, s: stanicenBodu(o, b) }));
+                const prot = `osa ${nazev.inp.value}: staničení bodů\n` + r.map((x) => `${x.b.cislo.padEnd(10)} st ${P(x.s.st)}  kolmice ${P(x.s.k)}  (${x.s.prvek})  pata Y ${P(x.s.pata.y)} X ${P(x.s.pata.x)}`).join('\n');
+                vysledek(sek, { nazev: 'Staničení bodů na ose ' + nazev.inp.value, stav, kv: kvHl, prot, vrstvy: [...vr, ...r.map((x) => ({ typ: 'cara', body: [x.s.pata, x.b], carkovane: true }))], extra: el('div', { class: 'tw' }, el('table', { class: 'tab bez-nastroju' }, el('thead', {}, el('tr', {}, el('th', {}, 'Bod'), el('th', { class: 'num' }, 'Staničení km'), el('th', { class: 'num' }, 'Kolmice'), el('th', {}, 'Strana'))), el('tbody', {}, r.map((x) => el('tr', {}, el('td', { class: 'cislo' }, x.b.cislo), el('td', { class: 'num' }, km(x.s.st)), el('td', { class: 'num' }, fmt(Math.abs(x.s.k))), el('td', {}, x.s.k >= 0 ? 'vpravo' : 'vlevo')))))) });
+            }
+            if (co === 'body') {
+                const body = [], prot = [];
+                for (const tr of stRadky.rows) { const st = cislo(hodn(tr, 'st')), k = cislo(hodn(tr, 'k')) || 0; if (st == null) continue; const b = bodNaOse(o, st, k); if (!b) { prot.push(`st ${fmt(st)} je mimo osu`); continue; } const c = hodn(tr, 'c') || `${Math.round(st)}${k ? (k > 0 ? 'P' : 'L') + Math.abs(k) : ''}`; body.push({ cislo: c, y: b.y, x: b.x, kod: hodn(tr, 'kod') }); prot.push(`${c.padEnd(12)} st ${P(st)}  k ${P(k)}  →  Y ${P(b.y)} X ${P(b.x)}  σ ${G(b.sigma)}`); }
+                const krok = krokPole.hodnota();
+                if (krok > 0) { const zac = Math.ceil(o.st0 / krok) * krok; for (let st = zac; st <= o.st0 + o.delka + 1e-9; st += krok) { const b = bodNaOse(o, st); if (!b) continue; const c = 'ST' + Math.round(st); body.push({ cislo: c, y: b.y, x: b.x, kod: 'OSA' }); prot.push(`${c.padEnd(12)} st ${P(st)}  →  Y ${P(b.y)} X ${P(b.x)}`); } }
+                if (!body.length) return chyba(sek, 'Zadej staničení nebo krok.');
+                vysledek(sek, { nazev: 'Body ze staničení — ' + nazev.inp.value, stav, kv: kvHl, body, prot: `osa ${nazev.inp.value}\n` + prot.join('\n'), vrstvy: [...vr, { typ: 'body', body, r: 4 }] });
+            }
         }
     };
 }

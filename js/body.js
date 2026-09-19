@@ -142,7 +142,12 @@ async function exportovat() {
 async function dalsi() {
     const p = Projekt.get();
     const r = await dialog({ titulek: 'Seznam souřadnic', obsah: el('div', { class: 'tlum' }, `${p.body.length} bodů`), tlacitka: [
-        { text: 'Najít duplicity (stejná poloha)', hodnota: 'dup' }, { text: 'Přečíslovat…', hodnota: 'precislovat' }, { text: 'Smazat vše', hodnota: 'vse', class: 'nebezpecny' }, { text: 'Zavřít', hodnota: null }] });
+        { text: 'Najít duplicity (stejná poloha)', hodnota: 'dup' }, { text: 'Přečíslovat…', hodnota: 'precislovat' }, { text: 'Poslat do AR Geodetu (vytyčení)', hodnota: 'ar' }, { text: 'Smazat vše', hodnota: 'vse', class: 'nebezpecny' }, { text: 'Zavřít', hodnota: null }] });
+    if (r === 'ar') {
+        const body = hledat ? serazene() : p.body;
+        await ulozSoubor((p.nazev || 'body').replace(/[^\w\-]+/g, '_') + '-vytyceni.dxf', dxf(body), 'application/dxf');
+        await dialog({ titulek: 'Poslat do AR Geodetu', obsah: el('div', { style: 'display:grid;gap:8px;font-size:13.5px' }, el('p', { style: 'margin:0' }, `Uložen DXF s ${body.length} body v S-JTSK. V AR Geodetu (QTRIG) na telefonu: Nástroje → Import projektu → vyber tento DXF. Body se ukážou na mapě a v AR, každý jde vytyčit šipkou.`), el('p', { class: 'tlum', style: 'margin:0' }, 'Zpět do kanceláře: v AR Geodetu Seznam souřadnic pro kancelář → uložit CSV → tady Body → Import.')) });
+    }
     if (r === 'vse') { if (await potvrd(`Smazat všech ${p.body.length} bodů?`)) { p.body.length = 0; Projekt.zmena('body'); } }
     if (r === 'dup') {
         const dup = []; const b = p.body;

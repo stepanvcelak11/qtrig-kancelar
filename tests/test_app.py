@@ -87,6 +87,15 @@ with socketserver.TCPServer(('127.0.0.1', 0), H) as srv:
             tr = s.locator('tbody tr').nth(i); tr.locator('[aria-label=c]').fill(c); tr.locator('[aria-label=y]').fill(m3(pts[c][0] - 10)); tr.locator('[aria-label=x]').fill(m3(pts[c][1] - 20)); tr.locator('[aria-label=cil]').fill(c)
         pg.fill('#tr-dalsi', '901 744990.000 1044980.000'); s.locator('text=Spočítat transformaci').click(); pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek'); t = s.locator('.karta-vysledek').inner_text()
         ok('901' in t and '745000,000' in t and '1045000,000' in t, 'transformace: 901 → 745000/1045000: ' + t[t.find('901'):t.find('901') + 50].replace(chr(10), ' '))
+        # osa: 5001 -> 5002 (R 50) -> 5003, stanicen bodu 101, bod ze stanicen
+        pg.click('.dlazdice >> text=Osa, staničení'); s = pg.locator('#stred-obsah section.aktivni')
+        for i, (c, R) in enumerate([('5001', ''), ('5002', '50'), ('5003', '')]):
+            tr = s.locator('tbody').first.locator('tr').nth(i); tr.locator('[aria-label=c]').fill(c)
+            if R: tr.locator('[aria-label=r]').fill(R)
+        s.locator('text=Sestavit osu a hlavní body').click(); pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek'); t = s.locator('.karta-vysledek').inner_text()
+        ok('TK1' in t and 'KT1' in t and 'KÚ' in t and 'PŘEKROČENO' not in t, 'osa: hlavní body ZÚ/TK/KT/KÚ: ' + ('ok' if 'TK1' in t else t[:150].replace(chr(10), ' ')))
+        pg.fill('#os-body', '101'); s.locator('button:has-text("Staničení a kolmice")').click(); pg.wait_for_timeout(300); t = s.locator('.karta-vysledek').inner_text()
+        ok('Staničení bodů' in t and ('vpravo' in t or 'vlevo' in t), 'osa: staničení bodu 101')
         # export TXT dialog otevřít a zavřít
         pg.click('[data-tab=body]'); pg.click('text=Export'); ok(pg.locator('#exp-format').is_visible(), 'export dialog'); pg.keyboard.press('Escape')
         # reload → data zůstala

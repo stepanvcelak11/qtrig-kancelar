@@ -27,6 +27,7 @@ export const ULOHY = [
     { id: 'transformace', skupina: 'Další', nazev: 'Transformace', popis: 'Shodnostní, Helmert, afinní; místní → S-JTSK' },
     { id: 'vysky', skupina: 'Další', nazev: 'Výšky', popis: 'Trigonometricky, nivelační pořad' },
     { id: 'redukce', skupina: 'Další', nazev: 'Redukce délek', popis: 'Z výšky a Křovákovo zkreslení' },
+    { id: 'osa', skupina: 'Silničář', nazev: 'Osa, staničení, oblouky', popis: 'Tečnový polygon s oblouky a přechodnicemi; staničení a kolmice bodů, body ze staničení' },
 ];
 
 let kore;
