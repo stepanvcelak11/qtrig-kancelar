@@ -12,7 +12,7 @@ import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 import { Ucet } from './ucet.js';
 
-export const VERZE = '0.5';
+export const VERZE = '0.6';
 
 async function start() {
     await startProjekt();

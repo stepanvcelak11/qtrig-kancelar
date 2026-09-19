@@ -1,5 +1,5 @@
-// MAPA2 (.zap) — vzorový soubor z příručky GROMA 11 (kap. 11) + varianta zápisníku totálky.
-import { rozpoznejFormat, ctiZapisnik } from '../js/import-totalka.js';
+// MAPA2 (.zap) — vzorový soubor z příručky GROMA + skutečný zápisník Topcon (Husovice, 19. 9. 2026, výřez).
+import { rozpoznejFormat, ctiZapisnik, prumerujPolohy, plneCislo } from '../js/import-totalka.js';
 
 export const testy = [];
 const t = (nazev, fn) => testy.push({ nazev, fn });
@@ -20,11 +20,28 @@ t('MAPA2 dávka z příručky Groma: 2 stanoviska, orientace, body, excentricita
     rovno(z[1].kod.startsWith('excentr 0. -0.15'), true, z[1].kod);
     rovno(r.stanoviska[1].radky.length, 2); blizko(r.stanoviska[1].radky[1].hz, 215.35, 1e-9);
 });
-t('MAPA2 zápisník totálky (Hz, zenit, šikmá, vc, kód)', () => {
-    const z = ['512', 'zak', 'ku', '1', '3', '0', '0', '1 5001 1.550', '5002 123.4567 100.0000 200.250 1.300 OR', '-1', '101 50.0000 99.5000 50.000 1.300 PLOT', '102 60.0000 100.2000 40.000 1.300', '/', '-2'].join('\n');
-    const r = ctiZapisnik(z, 'mapa2'); const s = r.stanoviska[0]; rovno(s.stanovisko, '5001'); blizko(s.vp, 1.55, 1e-9); rovno(s.delky, 'sikme');
-    rovno(s.radky[0].typ, 'o'); blizko(s.radky[0].hz, 123.4567, 1e-9); blizko(s.radky[0].z, 100, 1e-9); blizko(s.radky[0].ds, 200.25, 1e-9); blizko(s.radky[0].vc, 1.3, 1e-9); rovno(s.radky[0].kod, 'OR');
-    rovno(s.radky[1].typ, 'z'); rovno(s.radky[1].kod, 'PLOT'); blizko(s.radky[2].z, 100.2, 1e-9);
+const TOPCON = [';Zakazka:HUSOVICE', '9999', '999999999', '610844000XX', '1', '3', '0', '2', '1 4001        1.57 *',
+    '944212300   63.623   1.250   0.0000   99.9420', '944212300   63.632   1.250 200.0035  300.0515',
+    '4002        21.476   1.250 128.6430  109.0400', '4002        21.475   1.250 328.6498  290.9658', '-1',
+    'JM-071-519   117.739  1.250  171.8531  101.4702', '1           27.112  1.250  159.1520  101.5320', '16          14.595  2.000  138.0070  100.1690', '/', '-2'].join('\n');
+t('Topcon MAPA2 (skutečný .zap): hlavička, stanovisko s výškou, sloupce d·vc·Hz·Z, obě polohy průměrované', () => {
+    rovno(rozpoznejFormat(TOPCON, 'zap_husovice.zap'), 'mapa2');
+    const r = ctiZapisnik(TOPCON, 'mapa2');
+    rovno(r.hlavicka.zakazka, 'HUSOVICE'); rovno(r.hlavicka.predcisli, '610844000XX');
+    const s = r.stanoviska[0]; rovno(s.stanovisko, '4001'); blizko(s.vp, 1.57, 1e-9); rovno(s.delky, 'sikme');
+    const o = s.radky.filter((x) => x.typ === 'o'); rovno(o.length, 2, 'dvě orientace po zprůměrování poloh');
+    blizko(o[0].hz, 0.00175, 1e-6, 'Hz průměr I+II'); blizko(o[0].z, (99.9420 + 400 - 300.0515) / 2, 1e-9, 'Z průměr'); blizko(o[0].ds, 63.6275, 1e-9); blizko(o[0].vc, 1.25, 1e-9);
+    blizko(o[1].hz, (128.6430 + 128.6498) / 2, 1e-9); rovno(o[0].pozn, 'I+II'); blizko(o[0].dvePolohy.dHz, 0.0035, 1e-9);
+    const z = s.radky.filter((x) => x.typ === 'z'); rovno(z.length, 3); rovno(z[0].cislo, 'JM-071-519'); blizko(z[0].ds, 117.739, 1e-9); blizko(z[0].hz, 171.8531, 1e-9); blizko(z[0].z, 101.4702, 1e-9); blizko(z[2].vc, 2.0, 1e-9);
+    const r2 = ctiZapisnik(TOPCON, 'mapa2', { dvePolohy: false }); rovno(r2.stanoviska[0].radky.filter((x) => x.typ === 'o').length, 4);
+});
+t('plné číslo bodu z předčíslí (k. ú. 6 + ZPMZ 5 + bod 4)', () => {
+    rovno(plneCislo('4001', '61084400014'), '610844000144001'); rovno(plneCislo('1', '61084400014'), '610844000140001');
+    rovno(plneCislo('944212300', '61084400014'), '000000944212300'); rovno(plneCislo('JM-071-519', '61084400014'), 'JM-071-519'); rovno(plneCislo('4001', ''), '4001');
+});
+t('průměrování poloh přes 0/400 g', () => {
+    const r = prumerujPolohy([{ cislo: 'a', hz: 399.9990, z: 100.001, ds: 10 }, { cislo: 'a', hz: 200.0010, z: 299.997, ds: 10.002 }]);
+    rovno(r.length, 1); blizko(r[0].hz, 0, 1e-9); blizko(r[0].z, 100.002, 1e-9); blizko(r[0].ds, 10.001, 1e-9);
 });
 t('MAPA2 ortogonální úloha (typ 0) se načte s varováním', () => {
     const z = ['512', 'z', 'k', '1', '3', '0', '0', '0 4300000517 0. 0.', '4300005001 63.72 0.', '-1', '1 0.52 3.10', '2 10.73 2.03', '/', '-2'].join('\n');
