@@ -9,6 +9,7 @@ import { smernik, delka, rajon, ortogonalni, protinaniSmerniky, protinaniUhly, p
 import { orientaceStanoviska, polarniBody, volneStanoviskoHelmert, vyrovnaniStanoviska, protinaniZpet } from '../geo/stanovisko.js';
 import { kriteria, posud, posudOmernou, ORIENTACE_MEZ } from '../geo/presnost.js';
 import { kontrolniOmerne, vymeraZeSouradnic, trigVyska, redukceDelky } from '../geo/ostatni.js';
+import { registruj } from './vypocty2.js';
 
 export const ULOHY = [
     { id: 'polarni', skupina: 'Zápisník', nazev: 'Polární metoda', popis: 'Celé stanovisko: orientace, podrobné body, výšky' },
@@ -22,9 +23,9 @@ export const ULOHY = [
     { id: 'smer', skupina: 'Souřadnicové', nazev: 'Směrník a délka', popis: 'Mezi dvěma body ze seznamu' },
     { id: 'omerne', skupina: 'Kontroly', nazev: 'Kontrolní oměrné', popis: 'Měřené × vypočtené, mezní u_d' },
     { id: 'vymera', skupina: 'Kontroly', nazev: 'Výměra', popis: 'Plocha a obvod ze souřadnic' },
-    { id: 'polygon', skupina: 'Další', nazev: 'Polygonový pořad', popis: 'Všechny typy, uzávěry proti mezním', brzy: true },
-    { id: 'transformace', skupina: 'Další', nazev: 'Transformace', popis: 'Shodnostní, Helmert, afinní', brzy: true },
-    { id: 'vysky', skupina: 'Další', nazev: 'Výšky', popis: 'Trigonometricky, nivelační zápisník', brzy: true },
+    { id: 'polygon', skupina: 'Další', nazev: 'Polygonový pořad', popis: 'Všechny typy, uzávěry proti mezním' },
+    { id: 'transformace', skupina: 'Další', nazev: 'Transformace', popis: 'Shodnostní, Helmert, afinní; místní → S-JTSK' },
+    { id: 'vysky', skupina: 'Další', nazev: 'Výšky', popis: 'Trigonometricky, nivelační pořad' },
     { id: 'redukce', skupina: 'Další', nazev: 'Redukce délek', popis: 'Z výšky a Křovákovo zkreslení' },
 ];
 
@@ -311,3 +312,5 @@ function polarniForm(sek, ctx, u, jenVolne) {
         vysledek(sek, { nazev: (jenVolne ? 'Volné stanovisko ' : 'Polární metoda ') + s.stanovisko, stav, kv, body, prot, vrstvy: vr, extra });
     }
 }
+
+registruj(FORMY, { hlavaFormu, bodPole, cisloPole, textPole, vyberPole, vysledek, chyba, sem });

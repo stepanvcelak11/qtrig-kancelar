@@ -68,6 +68,25 @@ with socketserver.TCPServer(('127.0.0.1', 0), H) as srv:
         pg.click('.dlazdice >> text=Kontrolní oměrné'); s = pg.locator('#stred-obsah section.aktivni'); s.locator('input[aria-label=a]').first.fill('5001'); s.locator('input[aria-label=b]').first.fill('5002'); s.locator('input[aria-label=d]').first.fill('200,70'); s.locator('text=Posoudit').click()
         pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek'); t = s.locator('.karta-vysledek').inner_text()
         ok('PŘEKROČENO' in t, 'oměrná 200,70 vs 200,25: Δ 0,45 → ' + ('překročeno' if 'PŘEKROČENO' in t else 'v mezích?') + f' (u_d pro 200 m = {2*0.198*212/220:.3f})')
+        # polygon: 5001 -> 102 -> 5003, orientace 5002 a 101 (uhly z pravych souradnic)
+        pts = {'5001': (745000.0, 1045000.0), '5002': (745200.0, 1045010.0), '5003': (745080.0, 1045250.0), '101': (745050.0, 1045040.0), '102': (744960.0, 1045090.0)}
+        def sm(a, b): return (math.atan2(pts[b][0] - pts[a][0], pts[b][1] - pts[a][1]) / math.pi * 200) % 400
+        def dl(a, b): return math.hypot(pts[b][0] - pts[a][0], pts[b][1] - pts[a][1])
+        g = lambda v: f'{v % 400:.4f}'.replace('.', ','); m3 = lambda v: f'{v:.3f}'.replace('.', ',')
+        pg.click('[data-tab=vypocty]'); pg.click('.dlazdice >> text=Polygonový pořad'); s = pg.locator('#stred-obsah section.aktivni')
+        pg.fill('#pg-pa', '5002'); pg.fill('#pg-pb', '101')
+        rows = [('5001', sm('5001', '102') - sm('5001', '5002'), dl('5001', '102')), ('102', sm('102', '5003') - sm('102', '5001'), dl('102', '5003')), ('5003', sm('5003', '101') - sm('5003', '102'), None)]
+        for i, (c, o, d) in enumerate(rows):
+            tr = s.locator('tbody tr').nth(i); tr.locator('[aria-label=c]').fill(c); tr.locator('[aria-label=o]').fill(g(o))
+            if d is not None: tr.locator('[aria-label=d]').fill(m3(d))
+        s.locator('text=Spočítat pořad').click(); pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek'); t = s.locator('.karta-vysledek').inner_text()
+        ok('Polygonový pořad 5001' in t and 'v mezích' in t and '744960,000' in t, 'polygon: uzávěry nulové, bod 102 sedí: ' + t[:120].replace(chr(10), ' '))
+        # transformace: posun o +10/+20 a rotace 0
+        pg.click('.dlazdice >> text=Transformace'); s = pg.locator('#stred-obsah section.aktivni')
+        for i, c in enumerate(['5001', '5002', '5003']):
+            tr = s.locator('tbody tr').nth(i); tr.locator('[aria-label=c]').fill(c); tr.locator('[aria-label=y]').fill(m3(pts[c][0] - 10)); tr.locator('[aria-label=x]').fill(m3(pts[c][1] - 20)); tr.locator('[aria-label=cil]').fill(c)
+        pg.fill('#tr-dalsi', '901 744990.000 1044980.000'); s.locator('text=Spočítat transformaci').click(); pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek'); t = s.locator('.karta-vysledek').inner_text()
+        ok('901' in t and '745000,000' in t and '1045000,000' in t, 'transformace: 901 → 745000/1045000: ' + t[t.find('901'):t.find('901') + 50].replace(chr(10), ' '))
         # export TXT dialog otevřít a zavřít
         pg.click('[data-tab=body]'); pg.click('text=Export'); ok(pg.locator('#exp-format').is_visible(), 'export dialog'); pg.keyboard.press('Escape')
         # reload → data zůstala
