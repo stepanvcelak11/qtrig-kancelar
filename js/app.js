@@ -9,8 +9,9 @@ import { Mapa } from './mapa.js';
 import { Protokol } from './protokol.js';
 import { Stred, mobilPrepni, prepniZalozku } from './stred.js';
 import { KODY_KVALITY } from '../geo/presnost.js';
+import { importZapisniku } from './import-ui.js';
 
-export const VERZE = '0.2';
+export const VERZE = '0.3';
 
 async function start() {
     await startProjekt();
@@ -29,7 +30,7 @@ async function start() {
     Projekt.poslouchej(stavListy); stavListy('projekt');
     // klik na bod v mapě → vybrat v seznamu
     document.addEventListener('mapa-bod', (e) => Body.vyber(e.detail.cislo));
-    document.addEventListener('import-zapisnik', () => toast('Import z totální stanice přijde v další dávce (GSI, SDR33, GTS-7, Nikon, Trimble)'));
+    document.addEventListener('import-zapisnik', () => importZapisniku());
     window.addEventListener('beforeunload', () => Projekt.ulozHned());
     document.addEventListener('visibilitychange', () => { if (document.hidden) Projekt.ulozHned(); });
     if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => { });

@@ -190,10 +190,11 @@ t('redukce délek: měřítko Křováka 0,9999…1,0001, výška', () => {
 
 export async function spust(log = console.log) {
     let ok = 0, chyb = 0; const chyby = [];
-    for (const tt of testy) {
+    const { testy: dalsi } = await import('./testy-import.js');
+    for (const tt of [...testy, ...dalsi]) {
         try { await tt.fn(); ok++; log('✓ ' + tt.nazev); }
         catch (e) { chyb++; chyby.push({ nazev: tt.nazev, chyba: e.message }); log('✕ ' + tt.nazev + ' — ' + e.message); }
     }
-    log(`--- ${ok} OK, ${chyb} chyb, ${testy.length} celkem`);
-    return { ok, chyb, chyby, celkem: testy.length };
+    log(`--- ${ok} OK, ${chyb} chyb, ${ok + chyb} celkem`);
+    return { ok, chyb, chyby, celkem: ok + chyb };
 }

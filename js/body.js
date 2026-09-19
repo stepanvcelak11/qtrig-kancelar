@@ -3,6 +3,7 @@ import { Projekt } from './projekt.js';
 import { el, $, fmt, cislo, toast, dialog, potvrd, ulozSoubor, otevriSoubor, ctiText, pamet } from './ui.js';
 import { ctiSeznam, zapisSeznam, odhadniPoradi, PORADI } from './soubory.js';
 import { Mapa } from './mapa.js';
+import { dxf, kml, geojson } from './export.js';
 
 let kore, hledat = '', vybrany = null, razeni = pamet.get('body-razeni', 'cislo');
 
@@ -124,13 +125,18 @@ async function importovat() {
 
 async function exportovat() {
     const p = Projekt.get(); if (!p.body.length) { toast('Není co exportovat'); return; }
-    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'));
+    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'), el('option', { value: 'dxf' }, 'DXF — body, čísla a kódy po hladinách (CAD)'), el('option', { value: 'kml' }, 'KML — Google Earth / Mapy (WGS84)'), el('option', { value: 'geojson' }, 'GeoJSON — GIS (WGS84)'));
     const sel = el('select', { id: 'exp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v)));
     const jen = el('input', { type: 'checkbox', id: 'exp-jen' });
     const ok = await dialog({ titulek: 'Export seznamu souřadnic', obsah: el('div', { style: 'display:grid;gap:10px' }, el('label', { class: 'pole' }, el('span', {}, 'Formát'), fmtSel), el('label', { class: 'pole' }, el('span', {}, 'Pořadí sloupců'), sel), hledat ? el('label', {}, jen, ' jen vyfiltrované (' + serazene().length + ')') : null), tlacitka: [{ text: 'Zrušit', hodnota: null }, { text: 'Uložit', hodnota: true, class: 'hlavni' }] });
     if (!ok) return;
     const body = jen.checked ? serazene() : p.body;
-    await ulozSoubor((p.nazev || 'body').replace(/[^\w\-]+/g, '_') + '.' + fmtSel.value, zapisSeznam(body, fmtSel.value, sel.value), fmtSel.value === 'csv' ? 'text/csv' : 'text/plain');
+    const nazev = (p.nazev || 'body').replace(/[^\w\-]+/g, '_');
+    const F = fmtSel.value;
+    if (F === 'dxf') return ulozSoubor(nazev + '.dxf', dxf(body), 'application/dxf');
+    if (F === 'kml') return ulozSoubor(nazev + '.kml', kml(body, p.nazev), 'application/vnd.google-earth.kml+xml');
+    if (F === 'geojson') return ulozSoubor(nazev + '.geojson', geojson(body), 'application/geo+json');
+    await ulozSoubor(nazev + '.' + F, zapisSeznam(body, F, sel.value), F === 'csv' ? 'text/csv' : 'text/plain');
 }
 
 async function dalsi() {
