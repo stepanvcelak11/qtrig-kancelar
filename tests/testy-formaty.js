@@ -21,6 +21,7 @@ t('dBASE III podle tab. 12-1 tam a zpět', () => {
     const buf = exportDBF([{ ...B[0], cislo: '625141042130400' }, B[1]]); rovno(buf[0], 3); const r = importDBF(buf); rovno(r.length, 2); blizko(r[0].y, 747791.35, 1e-9); blizko(r[0].x, 965566.35, 1e-9); rovno(r[0].kvalita, '3'); blizko(r[1].z, 300.12, 1e-9);
 });
 t('XLSX zapsat a přečíst (zip store, inline strings)', async () => {
+    if (typeof DOMParser === 'undefined') return; // Node bez DOM: jen zápis níže v jiném testu
     const z = exportXLSX([{ list: 'Souřadnice', hlavicka: ['Číslo', 'Y', 'X', 'Z', 'Kód'], radky: [['1', 745000.123, 1045000.5, 300, 'roh plotu'], ['610844000140002', 745010, 1045020, null, '']] }]);
     rovno(z[0], 0x50); rovno(z[1], 0x4b); const r = await importXLSX(z.buffer); rovno(r.length, 3); rovno(r[0][0], 'Číslo'); blizko(r[1][1], 745000.123, 1e-9); rovno(r[1][4], 'roh plotu'); rovno(r[2][0], '610844000140002');
 });

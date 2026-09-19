@@ -39,7 +39,12 @@ export function exportXML(body, nazev = '') {
     return `<?xml version="1.0" encoding="UTF-8"?>\n<seznam nazev="${e(nazev)}" system="S-JTSK" vyska="Bpv">\n` + body.map((b) => `  <bod cislo="${e(b.cislo)}" y="${f(b.y)}" x="${f(b.x)}"${b.z != null ? ` z="${f(b.z)}"` : ''}${b.kvalita ? ` kvalita="${e(b.kvalita)}"` : ''}${b.kod ? ` kod="${e(b.kod)}"` : ''}${b.typ ? ` typ="${e(b.typ)}"` : ''}/>`).join('\n') + '\n</seznam>\n';
 }
 export function importXML(text) {
-    const out = []; const doc = new DOMParser().parseFromString(text, 'application/xml');
+    const out = [];
+    if (typeof DOMParser === 'undefined') { // Node / testy: atributy regexem
+        for (const m of text.matchAll(/<(?:bod|point)([^>]*)\/?>/gi)) { const a = {}; for (const q of m[1].matchAll(/([\w-]+)="([^"]*)"/g)) a[q[1].toLowerCase()] = q[2].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"'); const y = cislo(a.y), x = cislo(a.x); if (y == null || x == null) continue; out.push({ cislo: a.cislo || a.num || a.number || '', y, x, z: cislo(a.z), kod: a.kod || a.code || '', kvalita: a.kvalita || a.prec || null }); }
+        return out;
+    }
+    const doc = new DOMParser().parseFromString(text, 'application/xml');
     doc.querySelectorAll('bod, point, Bod, Point').forEach((n) => { const g = (a) => n.getAttribute(a) ?? n.getAttribute(a.toUpperCase()) ?? (n.querySelector(a) && n.querySelector(a).textContent); const y = cislo(g('y')), x = cislo(g('x')); if (y == null || x == null) return; out.push({ cislo: g('cislo') || g('num') || g('number') || '', y, x, z: cislo(g('z')), kod: g('kod') || g('code') || '', kvalita: g('kvalita') || g('prec') || null }); });
     return out;
 }

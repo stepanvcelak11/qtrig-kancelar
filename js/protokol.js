@@ -58,7 +58,7 @@ function tisk() {
     w.document.write(`<!doctype html><meta charset="utf-8"><title>Protokol</title><style>body{font:11.5px/1.45 "IBM Plex Mono",Consolas,monospace;margin:18mm;white-space:pre-wrap}h1{font:600 16px sans-serif}@page{margin:12mm}</style><h1>Výpočetní protokol</h1>${cely().replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}`);
     w.document.close(); setTimeout(() => w.print(), 300);
 }
-document.addEventListener('protokol-parametry', () => dalsi(true));
+if (typeof document !== 'undefined') document.addEventListener('protokol-parametry', () => dalsi(true));
 async function dalsi(jenParametry = false) {
     const p = Projekt.get(); const n = nastaveniProtokolu();
     if (jenParametry) return parametry();

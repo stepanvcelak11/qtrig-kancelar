@@ -3,7 +3,7 @@ import { Projekt } from './projekt.js';
 import { el, dialog, ulozSoubor, toast } from './ui.js';
 import { Ucet } from './ucet.js';
 
-document.addEventListener('microstation', () => dialogMicroStation());
+if (typeof document !== 'undefined') document.addEventListener('microstation', () => dialogMicroStation());
 export async function dialogMicroStation() {
     const p = Projekt.get();
     await dialog({ titulek: 'MicroStation — živý most', sirka: 720, obsah: el('div', { style: 'display:grid;gap:10px;font-size:13.5px' },
