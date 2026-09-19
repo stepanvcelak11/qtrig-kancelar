@@ -88,3 +88,7 @@ export function posudPorad(vysledek, druh = 'pomocny') {
  * kód 3: u_P = 2·(0,14·√P + 0,05)? — VZOREC NEOVĚŘEN, do ověření se vrací null.
  */
 export function mezniVymera(/* P, kod */) { return null; }
+
+/** Mezní odchylka jednotlivé orientace od středního orientačního posunu [gon].
+ *  Pracovní hodnota 0,0200 g (2 cgon) — vyhláška ji přímo nestanoví; slouží jako varování. */
+export const ORIENTACE_MEZ = 0.02;
