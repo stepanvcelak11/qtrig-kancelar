@@ -194,7 +194,8 @@ export async function spust(log = console.log) {
     const { testy: osa } = await import('./testy-osa.js');
     const { testy: mapa2 } = await import('./testy-mapa2.js');
     const { testy: seznam } = await import('./testy-seznam.js');
-    for (const tt of [...testy, ...dalsi, ...osa, ...mapa2, ...seznam]) {
+    const { testy: format } = await import('./testy-format.js');
+    for (const tt of [...testy, ...dalsi, ...osa, ...mapa2, ...seznam, ...format]) {
         try { await tt.fn(); ok++; log('✓ ' + tt.nazev); }
         catch (e) { chyb++; chyby.push({ nazev: tt.nazev, chyba: e.message }); log('✕ ' + tt.nazev + ' — ' + e.message); }
     }

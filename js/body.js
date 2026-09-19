@@ -5,6 +5,7 @@ import { ctiSeznam, zapisSeznam, odhadniPoradi, PORADI } from './soubory.js';
 import { Mapa } from './mapa.js';
 import { dxf, kml, geojson } from './export.js';
 import * as SN from './seznam-nastroje.js';
+import { importPodleFormatu, exportPodleFormatu, polozkyBodu, PREDPISY_SOURADNICE } from './format-uziv.js';
 
 let kore, hledat = '', vybrany = null, razeni = pamet.get('body-razeni', 'cislo');
 const oznacene = new Set(); // označené body (Groma: operace jen na označených, jinak na všech)
@@ -105,16 +106,18 @@ async function importovat() {
     const file = await otevriSoubor(''); if (!file) return; // bez filtru přípon (.crd, .txt, .xyz, .dat, cokoli)
     const text = await ctiText(file);
     const radky = text.split(/\r?\n/).filter((r) => r.trim());
-    const sel = el('select', { id: 'imp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v)));
+    const sel = el('select', { id: 'imp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v))); sel.append(el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)'));
     sel.value = odhadniPoradi(radky);
+    const predpis = el('input', { type: 'text', id: 'imp-predpis', value: PREDPISY_SOURADNICE[0][0], list: 'dl-predpisy-s' }); const dlp = el('datalist', { id: 'dl-predpisy-s' }, PREDPISY_SOURADNICE.map(([v, t]) => el('option', { value: v }, t))); const pevny = el('input', { type: 'checkbox', id: 'imp-pevny' });
+    const ctiVse = () => sel.value === 'uziv' ? { body: importPodleFormatu(predpis.value, text, pevny.checked).map((v) => ({ cislo: String(v.NUM ?? v.N), y: v.Y, x: v.X, z: v.Z ?? null, kod: v.CODE || '', kvalita: v.PREC || null })).filter((b) => b.y != null && b.x != null), chyby: [] } : ctiSeznam(text, sel.value);
     const prep = el('select', { id: 'imp-prepsat' }, el('option', { value: 'preskocit' }, 'existující body přeskočit'), el('option', { value: 'prepsat' }, 'existující body přepsat'));
     const nahled = el('pre', { class: 'protokol', style: 'max-height:160px;overflow:auto;background:var(--paper2);border-radius:6px' }, radky.slice(0, 8).join('\n'));
     const info = el('div', { class: 'tlum' });
-    const aktualizuj = () => { const r = ctiSeznam(text, sel.value); info.textContent = `${r.body.length} bodů, ${r.chyby.length} řádků nejde přečíst`; };
-    sel.onchange = aktualizuj; aktualizuj();
-    const ok = await dialog({ titulek: 'Import seznamu souřadnic — ' + file.name, obsah: el('div', { style: 'display:grid;gap:10px' }, el('label', { class: 'pole' }, el('span', {}, 'Pořadí sloupců'), sel), el('label', { class: 'pole' }, el('span', {}, 'Když bod už existuje'), prep), nahled, info), tlacitka: [{ text: 'Zrušit', hodnota: null }, { text: 'Importovat', hodnota: true, class: 'hlavni' }] });
+    const aktualizuj = () => { const r = ctiVse(); info.textContent = `${r.body.length} bodů, ${r.chyby.length} řádků nejde přečíst`; };
+    sel.onchange = aktualizuj; predpis.onchange = aktualizuj; pevny.onchange = aktualizuj; aktualizuj();
+    const ok = await dialog({ titulek: 'Import seznamu souřadnic — ' + file.name, obsah: el('div', { style: 'display:grid;gap:10px' }, el('label', { class: 'pole' }, el('span', {}, 'Pořadí sloupců'), sel), el('div', { class: 'radek', style: 'margin:0;align-items:end' }, el('label', { class: 'pole' }, el('span', {}, 'Předpis řádku (uživatelský formát)'), predpis), el('label', { style: 'font-size:13px;padding-bottom:8px' }, pevny, ' pevný formát')), dlp, el('label', { class: 'pole' }, el('span', {}, 'Když bod už existuje'), prep), nahled, info), tlacitka: [{ text: 'Zrušit', hodnota: null }, { text: 'Importovat', hodnota: true, class: 'hlavni' }] });
     if (!ok) return;
-    const r = ctiSeznam(text, sel.value);
+    const r = ctiVse();
     let pridano = 0, prepsano = 0, preskoceno = 0;
     r.body.forEach((b) => { const v = Projekt.ulozBod({ ...b, zdroj: 'import' }, prep.value === 'prepsat'); if (v.pridano) pridano++; else if (v.prepsano) prepsano++; else preskoceno++; });
     Projekt.zmena('body');
@@ -123,10 +126,11 @@ async function importovat() {
 
 async function exportovat() {
     const p = Projekt.get(); if (!p.body.length) { toast('Není co exportovat'); return; }
-    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'), el('option', { value: 'dxf' }, 'DXF — body, čísla a kódy po hladinách (CAD)'), el('option', { value: 'kml' }, 'KML — Google Earth / Mapy (WGS84)'), el('option', { value: 'geojson' }, 'GeoJSON — GIS (WGS84)'));
+    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'), el('option', { value: 'dxf' }, 'DXF — body, čísla a kódy po hladinách (CAD)'), el('option', { value: 'kml' }, 'KML — Google Earth / Mapy (WGS84)'), el('option', { value: 'geojson' }, 'GeoJSON — GIS (WGS84)'), el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)'));
+    const predpisE = el('input', { type: 'text', id: 'exp-predpis', value: PREDPISY_SOURADNICE[1][0], list: 'dl-predpisy-e' }); const dle = el('datalist', { id: 'dl-predpisy-e' }, PREDPISY_SOURADNICE.map(([v, t]) => el('option', { value: v }, t)));
     const sel = el('select', { id: 'exp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v)));
     const jen = el('input', { type: 'checkbox', id: 'exp-jen' });
-    const ok = await dialog({ titulek: 'Export seznamu souřadnic', obsah: el('div', { style: 'display:grid;gap:10px' }, el('label', { class: 'pole' }, el('span', {}, 'Formát'), fmtSel), el('label', { class: 'pole' }, el('span', {}, 'Pořadí sloupců'), sel), hledat ? el('label', {}, jen, ' jen vyfiltrované (' + serazene().length + ')') : null), tlacitka: [{ text: 'Zrušit', hodnota: null }, { text: 'Uložit', hodnota: true, class: 'hlavni' }] });
+    const ok = await dialog({ titulek: 'Export seznamu souřadnic', obsah: el('div', { style: 'display:grid;gap:10px' }, el('label', { class: 'pole' }, el('span', {}, 'Formát'), fmtSel), el('label', { class: 'pole' }, el('span', {}, 'Pořadí sloupců'), sel), el('label', { class: 'pole' }, el('span', {}, 'Předpis řádku (uživatelský formát)'), predpisE), dle, hledat ? el('label', {}, jen, ' jen vyfiltrované (' + serazene().length + ')') : null), tlacitka: [{ text: 'Zrušit', hodnota: null }, { text: 'Uložit', hodnota: true, class: 'hlavni' }] });
     if (!ok) return;
     const body = jen.checked ? serazene() : p.body;
     const nazev = (p.nazev || 'body').replace(/[^\w\-]+/g, '_');
@@ -134,6 +138,7 @@ async function exportovat() {
     if (F === 'dxf') return ulozSoubor(nazev + '.dxf', dxf(body), 'application/dxf');
     if (F === 'kml') return ulozSoubor(nazev + '.kml', kml(body, p.nazev), 'application/vnd.google-earth.kml+xml');
     if (F === 'geojson') return ulozSoubor(nazev + '.geojson', geojson(body), 'application/geo+json');
+    if (F === 'uziv') return ulozSoubor(nazev + '.txt', exportPodleFormatu(predpisE.value, body.map((b, i) => polozkyBodu(b, i))));
     await ulozSoubor(nazev + '.' + F, zapisSeznam(body, F, sel.value), F === 'csv' ? 'text/csv' : 'text/plain');
 }
 

@@ -3,11 +3,23 @@ import { Projekt } from './projekt.js';
 import { el, toast, dialog, otevriSoubor, ctiText, fmt } from './ui.js';
 import { rozpoznejFormat, ctiZapisnik, FORMATY, plneCislo } from './import-totalka.js';
 import { Zapisnik } from './zapisnik.js';
+import { importPodleFormatu, PREDPISY_MERENI } from './format-uziv.js';
 
 export async function importZapisniku() {
     const file = await otevriSoubor(''); if (!file) return; // bez filtru přípon (.zap, .asc, .gsi, .sdr, .raw, .m5, …)
     const text = await ctiText(file);
-    const sel = el('select', { id: 'iz-format' }, Object.entries(FORMATY).map(([k, v]) => el('option', { value: k }, v)));
+    const sel = el('select', { id: 'iz-format' }, [...Object.entries(FORMATY), ['uziv', 'Uživatelský formát (předpis řádku)']].map(([k, v]) => el('option', { value: k }, v)));
+    const predpis = el('input', { type: 'text', id: 'iz-predpis', value: PREDPISY_MERENI[0][0], list: 'dl-predpisy-m2' }); const dlp = el('datalist', { id: 'dl-predpisy-m2' }, PREDPISY_MERENI.map(([v, t]) => el('option', { value: v }, t)));
+    const pevny = el('input', { type: 'checkbox', id: 'iz-pevny' });
+    const ctiUziv = () => {
+        const radky = importPodleFormatu(predpis.value, text.split(/\r?\n/).filter((l) => !/^\s*1\s+\S+/.test(l) || /<STN>/i.test(predpis.value)).join('\n'), pevny.checked);
+        const r = { stanoviska: [], body: [], varovani: [], format: 'uziv' }; let akt = null;
+        const stan = (c, vp) => { akt = { stanovisko: c, vp: vp || 0, radky: [], delky: 'sikme' }; r.stanoviska.push(akt); return akt; };
+        if (/<STN>/i.test(predpis.value)) { radky.forEach((v) => { if (!akt || akt.stanovisko !== String(v.STN)) stan(String(v.STN), v.IH); akt.radky.push({ cislo: String(v.NUM ?? v.N), hz: v.HZ, z: v.V ?? null, ds: v.D ?? null, vc: v.SIG ?? 0, kod: v.CODE || '' }); }); }
+        else { let i = 0; for (const l of text.split(/\r?\n/)) { const m = l.match(/^\s*1\s+(\S+)(?:\s+(-?[\d.,]+))?/); if (m) { stan(m[1], parseFloat((m[2] || '0').replace(',', '.'))); continue; } if (!l.trim()) continue; const v = radky[i++]; if (!v) continue; if (!akt) stan('?'); akt.radky.push({ cislo: String(v.NUM ?? v.N), hz: v.HZ, z: v.V ?? null, ds: v.D ?? null, vc: v.SIG ?? 0, kod: v.CODE || '' }); } }
+        r.stanoviska.forEach((s) => { if (s.radky.every((x) => x.z == null)) s.delky = 'vodorovne'; });
+        return r;
+    };
     const odhad = rozpoznejFormat(text, file.name); if (odhad) sel.value = odhad;
     const uhly = el('select', { id: 'iz-uhly' }, el('option', { value: 'auto' }, 'poznat automaticky'), el('option', { value: 'gon' }, 'gony'), el('option', { value: 'deg' }, 'stupně desetinné'), el('option', { value: 'dms' }, 'ddd.mmss'));
     const pridatBody = el('input', { type: 'checkbox', id: 'iz-body', checked: true });
@@ -19,7 +31,7 @@ export async function importZapisniku() {
     let vysl = null;
     const aktualizuj = () => {
         try {
-            vysl = ctiZapisnik(text, sel.value, { uhly: uhly.value, dvePolohy: dvePolohy.checked });
+            vysl = sel.value === 'uziv' ? ctiUziv() : ctiZapisnik(text, sel.value, { uhly: uhly.value, dvePolohy: dvePolohy.checked });
             if (vysl.hlavicka && vysl.hlavicka.predcisli && !predcisli.value) { predcisli.value = vysl.hlavicka.predcisli; doplnit.checked = true; }
             const radku = vysl.stanoviska.reduce((a, s) => a + s.radky.length, 0);
             info.innerHTML = '';
@@ -29,9 +41,10 @@ export async function importZapisniku() {
             if (!radku) info.append(el('div', { style: 'color:var(--bad)' }, 'Nic nepřečteno — zkus jiný formát. Pošli soubor autorovi, formát doladíme.'));
         } catch (e) { vysl = null; info.textContent = 'Chyba: ' + e.message; }
     };
-    sel.onchange = aktualizuj; uhly.onchange = aktualizuj; dvePolohy.onchange = aktualizuj; aktualizuj();
+    sel.onchange = aktualizuj; uhly.onchange = aktualizuj; dvePolohy.onchange = aktualizuj; predpis.onchange = aktualizuj; pevny.onchange = aktualizuj; aktualizuj();
     const ok = await dialog({ titulek: 'Import zápisníku — ' + file.name, sirka: 640, obsah: el('div', { style: 'display:grid;gap:10px' },
         el('div', { class: 'radek' }, el('label', { class: 'pole' }, el('span', {}, 'Formát'), sel), el('label', { class: 'pole' }, el('span', {}, 'Úhly v souboru'), uhly)),
+        el('div', { class: 'radek', style: 'margin:0;align-items:end' }, el('label', { class: 'pole' }, el('span', {}, 'Předpis řádku (jen uživatelský formát)'), predpis), el('label', { style: 'font-size:13px;padding-bottom:8px' }, pevny, ' pevný formát (podle šířek)')), dlp,
         nahled, info,
         el('label', {}, pridatBody, ' body se souřadnicemi ze souboru přidat do seznamu (existující se nepřepisují)'),
         el('label', {}, dvePolohy, ' měření v obou polohách průměrovat (Hz ±200 g, zenit 400 − Z)'),
