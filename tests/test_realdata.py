@@ -48,6 +48,14 @@ with socketserver.TCPServer(('127.0.0.1', 0), H) as srv:
         ok('PŘEKROČENO' not in t, 'polární: nic nepřekročeno' if 'PŘEKROČENO' not in t else 'polární: PŘEKROČENO — ' + t[:400].replace('\n', ' | '))
         print(t[:900])
         pg.screenshot(path=os.path.join(ROOT, '_diag', 'real-polarni.png'))
+        # polární metoda dávkou přes celý zápisník
+        pg.click('[data-tab=vypocty]'); pg.click('.dlazdice >> text=Polární metoda dávkou'); pg.click('text=Výpočet celého zápisníku'); pg.wait_for_selector('#stred-obsah section.aktivni .karta-vysledek')
+        t2 = pg.locator('#stred-obsah section.aktivni .karta-vysledek').inner_text()
+        ok('Stanovisek vypočteno' in t2 and '2 z 2' in t2, 'dávka: 2 z 2 stanovisek (4001, 4002): ' + t2[:160].replace(chr(10), ' | '))
+        ok(pg.locator('#body-tab tbody tr').count() >= 80, f'dávka uložila body do seznamu ({pg.locator("#body-tab tbody tr").count()})')
+        # vytyčovací prvky ze 4001 na 4002 pro bod 610844000140001
+        pg.click('.dlazdice >> text=Vytyčovací prvky'); pg.fill('#vt-s', '610844000144001'); pg.fill('#vt-o', '610844000144002'); pg.fill('#vt-body', '610844000140001'); pg.locator('#stred-obsah section.aktivni >> text=Spočítat').click(); pg.wait_for_timeout(300)
+        ok('Vytyčovací prvky' in pg.locator('#stred-obsah section.aktivni .karta-vysledek').inner_text(), 'vytyčovací prvky spočítány')
         ok(not errs, 'bez chyb v konzoli' + ('' if not errs else ': ' + ' | '.join(errs)[:300]))
         b.close()
     srv.shutdown()

@@ -10,6 +10,7 @@ import { orientaceStanoviska, polarniBody, volneStanoviskoHelmert, vyrovnaniStan
 import { kriteria, posud, posudOmernou, ORIENTACE_MEZ } from '../geo/presnost.js';
 import { kontrolniOmerne, vymeraZeSouradnic, trigVyska, redukceDelky } from '../geo/ostatni.js';
 import { registruj } from './vypocty2.js';
+import { registruj3 } from './vypocty3.js';
 
 export const ULOHY = [
     { id: 'polarni', skupina: 'Zápisník', nazev: 'Polární metoda', popis: 'Celé stanovisko: orientace, podrobné body, výšky' },
@@ -315,3 +316,4 @@ function polarniForm(sek, ctx, u, jenVolne) {
 }
 
 registruj(FORMY, { hlavaFormu, bodPole, cisloPole, textPole, vyberPole, vysledek, chyba, sem });
+registruj3(FORMY, ULOHY, { hlavaFormu, bodPole, cisloPole, textPole, vyberPole, vysledek, chyba, sem });
