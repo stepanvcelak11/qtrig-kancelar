@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>Testy jádra</title>
+<pre id="out" style="font:13px/1.4 monospace;white-space:pre-wrap"></pre>
+<script type="module">
+import { spust } from './testy.js';
+const out = document.getElementById('out');
+const r = await spust((s) => { out.textContent += s + '\n'; });
+window.__vysledek = r;
+</script>
