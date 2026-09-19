@@ -2,6 +2,7 @@
 import { cislo } from './ui.js';
 
 export const PORADI = {
+    'groma-yx': 'Groma: číslo Y X [Z] [kód kvality] [kód]', 'groma-xy': 'Groma: číslo X Y [Z] [kód kvality] [kód]',
     'c y x z k': 'číslo Y X Z kód', 'c x y z k': 'číslo X Y Z kód', 'c y x k z': 'číslo Y X kód Z',
     'c y x k': 'číslo Y X kód', 'c y x': 'číslo Y X', 'y x c': 'Y X číslo', 'c z': 'číslo Z (jen výšky)',
 };
@@ -20,17 +21,18 @@ export function odhadniPoradi(radky) {
         const c = rozdelRadek(r); if (c.length < 3) continue;
         const v = c.map(cislo);
         const jeY = (n) => n != null && n > 400000 && n < 950000, jeX = (n) => n != null && n > 900000 && n < 1300000;
-        if (jeY(v[1]) && jeX(v[2])) return c.length >= 4 && v[3] != null ? 'c y x z k' : 'c y x k';
-        if (jeX(v[1]) && jeY(v[2])) return 'c x y z k';
+        if (jeY(v[1]) && jeX(v[2])) return 'groma-yx';
+        if (jeX(v[1]) && jeY(v[2])) return 'groma-xy';
         if (jeY(v[0]) && jeX(v[1])) return 'y x c';
     }
-    return 'c y x z k';
+    return 'groma-yx';
 }
 
 /**
  * Přečte seznam souřadnic. Vrací { body:[{cislo,y,x,z,kod}], chyby:[{radek,text}] }
  */
 export function ctiSeznam(text, poradi = 'c y x z k') {
+    if (poradi.startsWith('groma')) return ctiGroma(text, poradi === 'groma-xy');
     const sl = poradi.split(' ');
     const body = [], chyby = [];
     text.split(/\r?\n/).forEach((r, i) => {
@@ -63,4 +65,22 @@ export function zapisSeznam(body, format = 'txt', poradi = 'c y x z k', dec = 3)
         // txt: pevné šířky jako v Gromě
         return cells.map((v, i) => sl[i] === 'c' ? String(v).padEnd(12) : sl[i] === 'k' ? v : String(v).padStart(13)).join(' ').trimEnd();
     }).join('\n') + '\n';
+}
+
+/** Pravidla Groma (příručka kap. 12): číslo, dvě souřadnice, pak Z (číslo s desetinnou tečkou/čárkou),
+ *  jednoznakový údaj = kód kvality, cokoli dalšího = kód bodu (až do konce řádku, může mít mezery). */
+function ctiGroma(text, xy = false) {
+    const body = [], chyby = [];
+    text.split(/\r?\n/).forEach((r, i) => {
+        const t = r.trim(); if (!t || t.startsWith('#')) return;
+        const c = rozdelRadek(t); if (c.length < 3) { chyby.push({ radek: i + 1, text: t }); return; }
+        const a = cislo(c[1]), b = cislo(c[2]); if (a == null || b == null) { chyby.push({ radek: i + 1, text: t }); return; }
+        const bod = { cislo: c[0], y: xy ? b : a, x: xy ? a : b, z: null, kod: '', kvalita: null };
+        let j = 3;
+        if (c[j] != null && /^-?\d+[.,]\d+$/.test(c[j])) { bod.z = cislo(c[j]); j++; }
+        if (c[j] != null && c[j].length === 1) { bod.kvalita = c[j]; j++; }
+        if (c[j] != null) bod.kod = c.slice(j).join(' ');
+        body.push(bod);
+    });
+    return { body, chyby };
 }

@@ -1,5 +1,5 @@
 // Offline: shell appky do cache; síťově první, při výpadku z cache.
-const CACHE = 'qk-v0.4';
+const CACHE = 'qk-v0.5';
 const SOUBORY = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/ui.js', 'js/projekt.js', 'js/uloziste.js', 'js/body.js', 'js/zapisnik.js', 'js/vypocty.js', 'js/mapa.js', 'js/protokol.js', 'js/stred.js', 'js/soubory.js', 'js/import-totalka.js', 'js/import-ui.js', 'js/export.js', 'js/vypocty2.js', 'js/ucet.js', 'geo/krovak.js', 'geo/osa.js',
   'geo/uhly.js', 'geo/zaklad.js', 'geo/stanovisko.js', 'geo/polygon.js', 'geo/presnost.js', 'geo/ostatni.js', 'manifest.webmanifest', 'ikona.svg', 'ikona-192.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SOUBORY)).then(() => self.skipWaiting())); });

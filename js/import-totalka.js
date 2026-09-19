@@ -19,12 +19,13 @@ export function rozpoznejFormat(text, nazev = '') {
     if (/^GTS-7/m.test(t) || /^(STN|SS|BS|SD)\s/m.test(t)) return 'gts7';
     if (/^For M5\|/m.test(t) || n.endsWith('.m5') || n.endsWith('.dat') && /\|Hz\s/.test(t)) return 'm5';
     if (/^(ST|SS|MP|CO),/m.test(t) || n.endsWith('.raw')) return 'nikon';
+    if (n.endsWith('.zap') || /^\s*-2\s*$/m.test(t) && /^\s*\/\s*$/m.test(t) || /^\s*-1\s*$/m.test(t)) return 'mapa2';
     return null;
 }
-export const FORMATY = { gsi: 'Leica GSI8/GSI16', sdr33: 'Sokkia SDR33', gts7: 'Topcon GTS-7', nikon: 'Nikon RAW', m5: 'Trimble/Zeiss M5' };
+export const FORMATY = { mapa2: 'MAPA2 / Groma zápisník (.zap, .asc)', gsi: 'Leica GSI8/GSI16', sdr33: 'Sokkia SDR33', gts7: 'Topcon GTS-7', nikon: 'Nikon RAW', m5: 'Trimble/Zeiss M5' };
 
 export function ctiZapisnik(text, format, volby = {}) {
-    const f = { gsi: ctiGSI, sdr33: ctiSDR, gts7: ctiGTS7, nikon: ctiNikon, m5: ctiM5 }[format];
+    const f = { gsi: ctiGSI, sdr33: ctiSDR, gts7: ctiGTS7, nikon: ctiNikon, m5: ctiM5, mapa2: ctiMapa2 }[format];
     if (!f) throw new Error('Neznámý formát zápisníku');
     const r = f(text, volby); r.format = format;
     // typ řádku: orientace = cíl existuje v seznamu souřadnic (doplní UI), zde výchozí 'z'
@@ -154,5 +155,53 @@ function ctiM5(text) {
         if (d.Hz && (d.SD || d.HD)) { r.radek({ cislo, hz: gonNorm(uhel(d.Hz)), z: uhel(d.V1 || d.V2), ds: d.SD ? d.SD.v : d.HD.v, vc: th, kod }); if (!d.SD) r.akt().delky = 'vodorovne'; continue; }
         if (d.Y && d.X) r.bod({ cislo, y: absNeg(d.Y.v), x: absNeg(d.X.v), z: d.Z ? d.Z.v : null, kod });
     }
+    return r;
+}
+
+// ---------------- MAPA2 (Groma .zap / Topcon .asc) ----------------
+// Podle příručky GROMA 11 (kap. 11, Dávkový výpočet souboru MAPA2):
+//   hlavička (obvykle 7 řádků: 512, číslo zakázky, k. ú., …) — přeskočí se
+//   „1 <stanovisko> [výška stroje]“  = polární metoda: orientace „bod délka Hz“ (délka 0 = neměřena),
+//      „-1“ konec orientací, podrobné body „číslo délka Hz [zenit] [výška cíle] [: dS dK] [kód]“, „/“ konec
+//   „0 <bod A> 0. 0.“ = ortogonální metoda: koncové body přímky „bod staničení 0.“, „-1“, body „číslo staničení kolmice“, „/“
+//   „-2“ = konec souboru. Varianta zápisníku z totálky (Topcon MAPA2 „standard“) má na řádku
+//   číslo, Hz, zenit, šikmou délku, výšku cíle, kód — poznává se podle zenitu ~100 g ve 3. sloupci.
+function ctiMapa2(text) {
+    const r = sber(); let rezim = null, blok = 'orient', primka = null;
+    const radky = text.split(/\r?\n/).map((l) => l.replace(/\t/g, ' ').trim());
+    // odhad varianty: řádky se 4+ čísly, kde 3. sloupec je kolem 100/300 g → „standard“ (Hz, Z, SD)
+    let standard = 0, davka = 0;
+    radky.forEach((l) => { const c = l.split(/\s+/); if (c.length >= 3 && /^\d/.test(c[0]) && !c.includes(':')) { const z = parseFloat(c[2]); if (c.length >= 5 && (z > 60 && z < 140 || z > 260 && z < 340)) standard++; else davka++; } });
+    const jeStandard = standard > davka;
+    for (const l of radky) {
+        if (!l) continue;
+        if (l === '-2') break;
+        if (l === '/') { rezim = null; blok = 'orient'; continue; }
+        if (l === '-1') { blok = 'body'; continue; }
+        const c = l.split(/\s+/);
+        const m = l.match(/^([01])\s+(\S+)(?:\s+(-?[\d.,]+))?(?:\s+(-?[\d.,]+))?/);
+        // hlavička úlohy: „1 stanovisko [ih]“ nebo „0 bodA 0. 0.“ — jen když další sloupce nevypadají jako měření
+        if (m && rezim == null && c.length <= 4) {
+            rezim = m[1]; blok = 'orient';
+            if (rezim === '1') r.stan(m[2], parseFloat((m[3] || '0').replace(',', '.')) || 0);
+            else { primka = { A: m[2], konce: [] }; r.stan(m[2], 0); r.akt().ortogonalni = primka; r.varovani.push('Ortogonální úloha (typ 0) načtena jako stanovisko ' + m[2] + ' — staničení/kolmice jsou v délce/Hz; spočítej Ortogonální metodou.'); }
+            continue;
+        }
+        if (c.length < 3 || !/^[\w.-]+$/.test(c[0])) continue;
+        const num = (x) => { const v = parseFloat(String(x ?? '').replace(',', '.')); return isFinite(v) ? v : null; };
+        if (rezim === '0') { // ortogonální: bod staničení kolmice
+            r.radek({ cislo: c[0], hz: num(c[2]) ?? 0, z: null, ds: num(c[1]), vc: 0, kod: c.slice(3).join(' '), typ: blok === 'orient' ? 'o' : 'z', pozn: 'orto: s=' + c[1] + ' k=' + c[2] });
+            continue;
+        }
+        if (rezim == null && !r.akt()) continue; // hlavička souboru
+        let cislo = c[0], hz, z = null, ds, vc = 0, kod = '';
+        if (jeStandard) { hz = num(c[1]); z = num(c[2]); ds = num(c[3]); vc = num(c[4]) || 0; kod = c.slice(5).join(' '); }
+        else { ds = num(c[1]); hz = num(c[2]); const dvoj = c.indexOf(':'); if (c[3] != null && dvoj !== 3 && num(c[3]) != null && num(c[3]) > 60) z = num(c[3]); const zb = dvoj >= 0 ? c.slice(dvoj + 3) : c.slice(z != null ? 4 : 3); kod = zb.filter((x) => num(x) == null).join(' '); if (dvoj >= 0) kod = ('excentr ' + c[dvoj + 1] + ' ' + c[dvoj + 2] + ' ' + kod).trim(); }
+        if (hz == null) continue;
+        if (ds === 0) ds = null;
+        r.radek({ cislo, hz: gonNorm(hz), z, ds, vc, kod, typ: blok === 'orient' ? 'o' : 'z' });
+        if (z == null) r.akt().delky = 'vodorovne';
+    }
+    r.varovani.push(jeStandard ? 'Rozpoznán zápisník totálky MAPA2 (číslo, Hz, zenit, šikmá délka, výška cíle).' : 'Rozpoznán dávkový soubor MAPA2 (číslo, délka, Hz) — délky vodorovné.');
     return r;
 }

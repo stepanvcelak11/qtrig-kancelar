@@ -12,7 +12,7 @@ import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 import { Ucet } from './ucet.js';
 
-export const VERZE = '0.4';
+export const VERZE = '0.5';
 
 async function start() {
     await startProjekt();
@@ -64,7 +64,7 @@ async function nabidkaProjektu() {
         el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' },
             el('button', { class: 'btn', onclick: async () => { const n = await zeptej('Nový projekt', 'Projekt ' + new Date().toLocaleDateString('cs-CZ'), 'Název'); if (n) { zavri(); await zalozProjekt(n.trim() || 'Projekt'); toast('Založen ' + n); } } }, '+ Nový projekt'),
             el('button', { class: 'btn', onclick: async () => { await Projekt.ulozHned(); ulozSoubor((p.nazev || 'projekt').replace(/[^\w\-]+/g, '_') + '.qtrig.json', JSON.stringify(p, null, 1), 'application/json'); } }, 'Uložit do souboru'),
-            el('button', { class: 'btn', onclick: async () => { const f = await otevriSoubor('.json'); if (!f) return; try { const o = JSON.parse(await ctiText(f)); zavri(); await importProjekt(o); toast('Projekt otevřen ze souboru', 'ok'); } catch (e) { toast('Soubor nejde otevřít: ' + e.message, 'bad'); } } }, 'Otevřít ze souboru'),
+            el('button', { class: 'btn', onclick: async () => { const f = await otevriSoubor(''); if (!f) return; try { const o = JSON.parse(await ctiText(f)); zavri(); await importProjekt(o); toast('Projekt otevřen ze souboru', 'ok'); } catch (e) { toast('Soubor nejde otevřít: ' + e.message, 'bad'); } } }, 'Otevřít ze souboru'),
             el('button', { class: 'btn nebezpecny', onclick: async () => { if (seznam.length < 2) { toast('Poslední projekt nejde smazat'); return; } if (await potvrd(`Smazat projekt „${p.nazev}“ včetně bodů a zápisníku?`)) { zavri(); await Uloziste.smaz(p.id); const s = seznam.find((x) => x.id !== p.id); await otevriProjekt(s.id); toast('Projekt smazán'); } } }, 'Smazat projekt'),
         ),
         el('div', { class: 'skupina', style: 'padding-left:0' }, 'Projekty v tomto prohlížeči'), ul,

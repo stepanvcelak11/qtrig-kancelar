@@ -5,7 +5,7 @@ import { rozpoznejFormat, ctiZapisnik, FORMATY } from './import-totalka.js';
 import { Zapisnik } from './zapisnik.js';
 
 export async function importZapisniku() {
-    const file = await otevriSoubor('.gsi,.sdr,.raw,.txt,.dat,.m5,.gt7,.gts,.rw5,.csv'); if (!file) return;
+    const file = await otevriSoubor(''); if (!file) return; // bez filtru přípon (.zap, .asc, .gsi, .sdr, .raw, .m5, …)
     const text = await ctiText(file);
     const sel = el('select', { id: 'iz-format' }, Object.entries(FORMATY).map(([k, v]) => el('option', { value: k }, v)));
     const odhad = rozpoznejFormat(text, file.name); if (odhad) sel.value = odhad;

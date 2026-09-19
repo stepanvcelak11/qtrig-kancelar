@@ -104,7 +104,7 @@ async function menuBodu(bod) {
 }
 
 async function importovat() {
-    const file = await otevriSoubor('.txt,.csv,.xyz,.dat,.pts'); if (!file) return;
+    const file = await otevriSoubor(''); if (!file) return; // bez filtru přípon (.crd, .txt, .xyz, .dat, cokoli)
     const text = await ctiText(file);
     const radky = text.split(/\r?\n/).filter((r) => r.trim());
     const sel = el('select', { id: 'imp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v)));

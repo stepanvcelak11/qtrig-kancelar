@@ -90,7 +90,8 @@ t('Export DXF/KML/GeoJSON', () => {
 });
 t('Seznam souřadnic: odhad pořadí, čtení, zápis', () => {
     const txt = '5001  745000.000  1045000.000  300.00 PBPP\n5002 745200.000 1045010.000\n# komentar\nchyba';
-    rovno(odhadniPoradi(txt.split('\n')), 'c y x z k');
+    rovno(odhadniPoradi(txt.split('\n')), 'groma-yx');
+    const g = ctiSeznam('5001 745000.00 1045000.00 300.15 3 roh plotu\n5002 745200.00 1045010.00 PBPP', 'groma-yx'); rovno(g.body[0].kvalita, '3'); rovno(g.body[0].kod, 'roh plotu'); blizko(g.body[0].z, 300.15, 1e-9); rovno(g.body[1].z, null); rovno(g.body[1].kod, 'PBPP');
     const r = ctiSeznam(txt, 'c y x z k'); rovno(r.body.length, 2); rovno(r.chyby.length, 1); rovno(r.body[0].kod, 'PBPP'); blizko(r.body[1].y, 745200, 1e-9); rovno(r.body[1].z, null);
     const csv = 'Cislo;Y;X;Z\n1;745000,5;1045000,25;300,1'; const c = ctiSeznam(csv, 'c y x z'); rovno(c.body.length, 1); blizko(c.body[0].y, 745000.5, 1e-9);
     const out = zapisSeznam(r.body, 'txt'); if (!out.startsWith('5001') || !out.includes('745000.000')) throw new Error(out);

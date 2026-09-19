@@ -79,7 +79,7 @@ export async function ulozSoubor(nazev, obsah, typ = 'text/plain') {
 }
 export function otevriSoubor(accept = '', vice = false) {
     return new Promise((res) => {
-        const i = el('input', { type: 'file', accept, multiple: vice, style: 'display:none' });
+        const i = el('input', { type: 'file', accept: accept || undefined, multiple: vice, style: 'display:none' });
         i.onchange = () => res(vice ? Array.from(i.files) : i.files[0] || null); document.body.append(i); i.click(); setTimeout(() => i.remove(), 60000);
     });
 }
