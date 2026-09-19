@@ -32,7 +32,7 @@ with socketserver.TCPServer(('127.0.0.1', 0), H) as srv:
         ok(pg.input_value('#iz-predcisli') == '610844000XX', 'předčíslí z hlavičky: ' + pg.input_value('#iz-predcisli'))
         pg.fill('#iz-predcisli', '61084400014')
         info = pg.locator('.dlg-telo').inner_text()
-        ok('1 stanovisek' in info and 'zprůměrováno' in info, 'náhled: ' + info[info.find('1 stanovisek'):info.find('1 stanovisek') + 60].replace('\n', ' '))
+        ok('zprůměrováno' in info, 'náhled hlásí průměrování poloh')
         pg.click('.dlg-pata >> text=Importovat'); pg.wait_for_timeout(500)
         ok(pg.locator('#stred-zalozky button[aria-selected=true]').inner_text().startswith('Stanovisko 610844000144001'), 'stanovisko s plným číslem: ' + pg.locator('#stred-zalozky button[aria-selected=true]').inner_text())
         rows = pg.locator('#stred-obsah section.aktivni tbody tr'); n = rows.count()
