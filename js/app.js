@@ -10,6 +10,7 @@ import { Protokol } from './protokol.js';
 import { Stred, mobilPrepni, prepniZalozku } from './stred.js';
 import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
+import { Ucet } from './ucet.js';
 
 export const VERZE = '0.4';
 
@@ -26,6 +27,8 @@ async function start() {
     $('#btn-tema').onclick = () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; pamet.set('tema', t); Mapa.ukazVse(); };
     $('#btn-napoveda').onclick = napoveda;
     $('#btn-projekt').onclick = nabidkaProjektu;
+    $('#btn-ucet').onclick = () => Ucet.dialog();
+    const ucetLista = () => { $('#btn-ucet').textContent = Ucet.jePrihlasen() ? '● ' + Ucet.jmeno() : 'Účet'; }; ucetLista(); document.addEventListener('ucet-zmena', ucetLista);
     delice();
     Projekt.poslouchej(stavListy); stavListy('projekt');
     // klik na bod v mapě → vybrat v seznamu

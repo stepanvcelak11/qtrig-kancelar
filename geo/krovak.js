@@ -9,8 +9,9 @@ const ALFA = 1.000597498371542, K_U = 1.003419163966575, R = 6380703.6105, K0 = 
 const S0 = 78.5 * D2R, N_K = Math.sin(S0), RHO0 = K0 * R / Math.tan(S0);
 const UQ = (59 + 42 / 60 + 42.6969 / 3600) * D2R;
 const LAM0_F = (42 + 30 / 60) * D2R, FERRO = (17 + 40 / 60) * D2R; // λ0 od Ferra; Ferro = Greenwich − 17°40'
-// Helmert Bessel(S-JTSK) → WGS84: dx dy dz [m], rx ry rz ["], m [ppm]  (ČÚZK)
-const H = { dx: 570.8285, dy: 85.6769, dz: 462.8420, rx: 4.9984, ry: 1.5867, rz: 5.2611, m: 3.5623 };
+// Helmert Bessel(S-JTSK) → WGS84: dx dy dz [m], rx ry rz ["], m [ppm] — STEJNÉ hodnoty jako
+// proj4 +towgs84 v AR Geodetu (EPSG:5514), aby body poslané tam a zpět seděly na mm.
+const H = { dx: 570.8, dy: 85.7, dz: 462.8, rx: 4.998, ry: 1.587, rz: 5.261, m: 3.56 };
 
 /** φ, λ (stupně, Bessel) → { y, x } */
 export function besselToJtsk(latDeg, lngDeg) {
