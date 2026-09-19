@@ -130,6 +130,8 @@ input.num{text-align:right}
 .mapa-obal{position:absolute;inset:0}
 .mapa-info{position:absolute;left:8px;bottom:8px;font:11.5px var(--mono);color:var(--ink2);background:color-mix(in srgb,var(--paper) 85%,transparent);padding:3px 7px;border-radius:4px;pointer-events:none}
 .mapa-tl{position:absolute;right:8px;top:8px;display:grid;gap:4px}
+.kresba-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:color-mix(in srgb,var(--paper) 88%,transparent);padding:4px;border-radius:6px}
+.kresba-panel .btn{padding:3px 0;min-width:30px;justify-content:center;font-size:14px}
 .protokol{font:12.5px/1.5 var(--mono);white-space:pre-wrap;padding:12px 14px;margin:0}
 .protokol .blok{border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:8px}
 

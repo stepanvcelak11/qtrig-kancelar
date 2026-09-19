@@ -31,7 +31,7 @@ jobs:
       - name: Připravit web
         run: |
           mkdir -p _site
-          cp -r index.html css js geo manifest.webmanifest sw.js ikona.svg ikona-192.png ikona-512.png _site/
+          cp -r index.html css js geo most manifest.webmanifest sw.js ikona.svg ikona-192.png ikona-512.png _site/
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -12,8 +12,9 @@ import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 import { Ucet } from './ucet.js';
 import { dialogNastaveni } from './nastaveni.js';
+import './microstation.js';
 
-export const VERZE = '0.10';
+export const VERZE = '1.0';
 
 async function start() {
     await startProjekt();

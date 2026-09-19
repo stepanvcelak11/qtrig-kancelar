@@ -6,8 +6,8 @@ const posluchaci = new Set();
 let _p = null, _ulozTimer = null;
 // krok zpět / vpřed: snímky stavu (body, zápisník, osy, kódy) PŘED každou změnou
 const HIST_MAX = 40; let _hist = [], _redo = [], _posledni = null;
-const snimek = () => JSON.stringify({ body: _p.body, zapisnik: _p.zapisnik, osy: _p.osy || [], kody: _p.kody || [], kos: _p.kos || [] });
-function obnovSnimek(s) { const o = JSON.parse(s); _p.body = o.body; _p.zapisnik = o.zapisnik; _p.osy = o.osy; _p.kody = o.kody; _p.kos = o.kos; }
+const snimek = () => JSON.stringify({ body: _p.body, zapisnik: _p.zapisnik, osy: _p.osy || [], kody: _p.kody || [], kos: _p.kos || [], kresba: _p.kresba || null });
+function obnovSnimek(s) { const o = JSON.parse(s); _p.body = o.body; _p.zapisnik = o.zapisnik; _p.osy = o.osy; _p.kody = o.kody; _p.kos = o.kos; if (o.kresba) _p.kresba = o.kresba; }
 
 export function novyProjekt(nazev = 'Nový projekt') {
     const ted = new Date().toISOString();

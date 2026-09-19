@@ -2,6 +2,7 @@
 // a ortofota přijde v další dávce; tohle je rychlý náhled, který funguje offline.
 import { Projekt } from './projekt.js';
 import { fmt, $ } from './ui.js';
+import { Kresba } from './kresba.js';
 
 let cv, ctx, info, pohled = { y0: 0, x0: 0, k: 1 }, zvyr = null, vrstvy = [], hover = null, dpr = 1;
 let onKlik = null;
@@ -26,6 +27,8 @@ export const Mapa = {
         try { podklad = localStorage.getItem('qk-podklad') || 'zadny'; } catch { } sel.value = podklad;
         sel.onchange = () => { podklad = sel.value; try { localStorage.setItem('qk-podklad', podklad); } catch { } wms = { img: null, bbox: null, stav: '' }; nactiWms(); kresli(); };
         $('.mapa-tl').prepend(sel);
+        $('.mapa-tl').append(Kresba.panel());
+        document.addEventListener('keydown', (e) => { if (e.target.matches('input,textarea,select') || !$('#sekce-mapa').classList.contains('aktivni')) return; if (e.key === 'Delete') { Kresba.smazVybrany(); kresli(); } if (e.key === 'Escape') Kresba.ukonci({ prekresli: kresli }); });
         new MutationObserver(kresli).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
         ovladani();
         ukazVse();
@@ -78,6 +81,7 @@ function kresli() {
     for (let y = Math.floor(rb.y / krok) * krok; y <= lt.y; y += krok) { const { sx } = naObr(y, 0); ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke(); ctx.fillText(fmt(y, 0), sx + 3, 11); }
     for (let x = Math.floor(lt.x / krok) * krok; x <= rb.x; x += krok) { const { sy } = naObr(0, x); ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke(); ctx.fillText(fmt(x, 0), 3, sy - 3); }
     ctx.globalAlpha = 1;
+    Kresba.kresli(ctx, naObr, pohled.k, c);
     // vrstvy (čáry výpočtů)
     for (const v of vrstvy) {
         if (v.typ === 'cara' && v.body.length > 1) {
@@ -131,10 +135,17 @@ function ovladani() {
             else if (ptrs.size === 1 && last) { const dx = e.clientX - last.x, dy = e.clientY - last.y; if (Math.abs(dx) + Math.abs(dy) > 2) tahl = true; pohled.y0 += dx / pohled.k; pohled.x0 -= dy / pohled.k; last = { x: e.clientX, y: e.clientY }; kresli(); }
         } else { const r = cv.getBoundingClientRect(); hover = najdi(e.clientX - r.left, e.clientY - r.top); cv.style.cursor = hover ? 'pointer' : 'grab'; kresli(); }
     });
-    const up = (e) => { if (ptrs.size === 1 && !tahl) { const r = cv.getBoundingClientRect(); const b = najdi(e.clientX - r.left, e.clientY - r.top); if (b) { zvyr = b.cislo; kresli(); if (onKlik) onKlik(b); else document.dispatchEvent(new CustomEvent('mapa-bod', { detail: b })); } } ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) last = null; };
+    const up = (e) => {
+        if (ptrs.size === 1 && !tahl) {
+            const r = cv.getBoundingClientRect(); const sx = e.clientX - r.left, sy = e.clientY - r.top; const b = najdi(sx, sy);
+            if (Kresba.nastroj() !== 'vyber' || (!b && !onKlik)) { Kresba.klik(naSvet(sx, sy), b, { prekresli: kresli, k: pohled.k }); }
+            else if (b) { zvyr = b.cislo; kresli(); if (onKlik) onKlik(b); else document.dispatchEvent(new CustomEvent('mapa-bod', { detail: b })); }
+        }
+        ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) last = null;
+    };
     cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
     cv.addEventListener('wheel', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomNa(e.clientX - r.left, e.clientY - r.top, pohled.k * (e.deltaY < 0 ? 1.2 : 1 / 1.2)); }, { passive: false });
-    cv.addEventListener('dblclick', (e) => { const r = cv.getBoundingClientRect(); zoomNa(e.clientX - r.left, e.clientY - r.top, pohled.k * 2); });
+    cv.addEventListener('dblclick', (e) => { if (Kresba.nastroj() === 'linie') { Kresba.ukonci({ prekresli: kresli }); return; } const r = cv.getBoundingClientRect(); zoomNa(e.clientX - r.left, e.clientY - r.top, pohled.k * 2); });
 }
 function zoomNa(sx, sy, k) { const w = naSvet(sx, sy); pohled.k = Math.max(1e-4, Math.min(k, 100)); pohled.y0 = w.y + sx / pohled.k; pohled.x0 = w.x - sy / pohled.k; kresli(); }
 function najdi(sx, sy) {
