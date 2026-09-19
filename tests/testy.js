@@ -193,7 +193,8 @@ export async function spust(log = console.log) {
     const { testy: dalsi } = await import('./testy-import.js');
     const { testy: osa } = await import('./testy-osa.js');
     const { testy: mapa2 } = await import('./testy-mapa2.js');
-    for (const tt of [...testy, ...dalsi, ...osa, ...mapa2]) {
+    const { testy: seznam } = await import('./testy-seznam.js');
+    for (const tt of [...testy, ...dalsi, ...osa, ...mapa2, ...seznam]) {
         try { await tt.fn(); ok++; log('✓ ' + tt.nazev); }
         catch (e) { chyb++; chyby.push({ nazev: tt.nazev, chyba: e.message }); log('✕ ' + tt.nazev + ' — ' + e.message); }
     }

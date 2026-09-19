@@ -12,7 +12,7 @@ import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 import { Ucet } from './ucet.js';
 
-export const VERZE = '0.6';
+export const VERZE = '0.7';
 
 async function start() {
     await startProjekt();
@@ -28,6 +28,9 @@ async function start() {
     $('#btn-napoveda').onclick = napoveda;
     $('#btn-projekt').onclick = nabidkaProjektu;
     $('#btn-ucet').onclick = () => Ucet.dialog();
+    $('#btn-zpet').onclick = () => { if (!Projekt.zpet()) toast('Není co vrátit'); };
+    $('#btn-vpred').onclick = () => { if (!Projekt.vpred()) toast('Není co opakovat'); };
+    document.addEventListener('keydown', (e) => { if (!(e.ctrlKey || e.metaKey) || e.target.matches('input,textarea')) return; if (e.key === 'z') { e.preventDefault(); Projekt.zpet(); } if (e.key === 'y') { e.preventDefault(); Projekt.vpred(); } });
     const ucetLista = () => { $('#btn-ucet').textContent = Ucet.jePrihlasen() ? '● ' + Ucet.jmeno() : 'Účet'; }; ucetLista(); document.addEventListener('ucet-zmena', ucetLista);
     delice();
     Projekt.poslouchej(stavListy); stavListy('projekt');
