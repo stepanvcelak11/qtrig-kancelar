@@ -11,8 +11,9 @@ import { Stred, mobilPrepni, prepniZalozku } from './stred.js';
 import { KODY_KVALITY } from '../geo/presnost.js';
 import { importZapisniku } from './import-ui.js';
 import { Ucet } from './ucet.js';
+import { dialogNastaveni } from './nastaveni.js';
 
-export const VERZE = '0.9';
+export const VERZE = '0.10';
 
 async function start() {
     await startProjekt();
@@ -65,6 +66,7 @@ async function nabidkaProjektu() {
             el('label', { class: 'pole' }, el('span', {}, 'Polygonové pořady posuzovat jako'), el('select', { id: 'pr-porad', onchange: (e) => { p.druhPoradu = e.target.value; Projekt.zmena('projekt'); } }, el('option', { value: 'pomocny', selected: p.druhPoradu === 'pomocny' }, 'pomocný pořad (100·√(n+3) mgon)'), el('option', { value: 'ppbp', selected: p.druhPoradu === 'ppbp' }, 'PPBP (25·√(n+2) mgon)'))),
         ),
         el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' },
+            el('button', { class: 'btn', onclick: () => { zavri(); dialogNastaveni(); } }, 'Nastavení…'),
             el('button', { class: 'btn', onclick: async () => { const n = await zeptej('Nový projekt', 'Projekt ' + new Date().toLocaleDateString('cs-CZ'), 'Název'); if (n) { zavri(); await zalozProjekt(n.trim() || 'Projekt'); toast('Založen ' + n); } } }, '+ Nový projekt'),
             el('button', { class: 'btn', onclick: async () => { await Projekt.ulozHned(); ulozSoubor((p.nazev || 'projekt').replace(/[^\w\-]+/g, '_') + '.qtrig.json', JSON.stringify(p, null, 1), 'application/json'); } }, 'Uložit do souboru'),
             el('button', { class: 'btn', onclick: async () => { const f = await otevriSoubor(''); if (!f) return; try { const o = JSON.parse(await ctiText(f)); zavri(); await importProjekt(o); toast('Projekt otevřen ze souboru', 'ok'); } catch (e) { toast('Soubor nejde otevřít: ' + e.message, 'bad'); } } }, 'Otevřít ze souboru'),

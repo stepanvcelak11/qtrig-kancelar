@@ -5,6 +5,8 @@
 // vodorovná délka, ukládá se do ds a stanovisko má delky = 'vodorovne'.
 // Formáty jsou napsané podle dokumentace výrobců; ověřit na skutečných souborech!
 import { deg2gon, gonNorm, gonDiff } from '../geo/uhly.js';
+import { importGeodimeter } from './formaty.js';
+function ctiGeodimeter(text) { return importGeodimeter(text); }
 
 const dmsToGon = (v) => { // ddd.mmss (Topcon) nebo dddmmss.s → gon
     const d = Math.trunc(v), m = Math.trunc((v - d) * 100 + 1e-9), s = ((v - d) * 100 - m) * 100;
@@ -19,13 +21,14 @@ export function rozpoznejFormat(text, nazev = '') {
     if (/^GTS-7/m.test(t) || /^(STN|SS|BS|SD)\s/m.test(t)) return 'gts7';
     if (/^For M5\|/m.test(t) || n.endsWith('.m5') || n.endsWith('.dat') && /\|Hz\s/.test(t)) return 'm5';
     if (/^(ST|SS|MP|CO),/m.test(t) || n.endsWith('.raw')) return 'nikon';
+    if (/^\d+=/m.test(t) && /^(5|2|7)=/m.test(t)) return 'geodimeter';
     if (n.endsWith('.zap') || /^\s*-2\s*$/m.test(t) && /^\s*\/\s*$/m.test(t) || /^\s*-1\s*$/m.test(t)) return 'mapa2';
     return null;
 }
-export const FORMATY = { mapa2: 'MAPA2 / Groma zápisník (.zap, .asc)', gsi: 'Leica GSI8/GSI16', sdr33: 'Sokkia SDR33', gts7: 'Topcon GTS-7', nikon: 'Nikon RAW', m5: 'Trimble/Zeiss M5' };
+export const FORMATY = { geodimeter: 'Geodimeter (label=hodnota)', mapa2: 'MAPA2 / Groma zápisník (.zap, .asc)', gsi: 'Leica GSI8/GSI16', sdr33: 'Sokkia SDR33', gts7: 'Topcon GTS-7', nikon: 'Nikon RAW', m5: 'Trimble/Zeiss M5' };
 
 export function ctiZapisnik(text, format, volby = {}) {
-    const f = { gsi: ctiGSI, sdr33: ctiSDR, gts7: ctiGTS7, nikon: ctiNikon, m5: ctiM5, mapa2: ctiMapa2 }[format];
+    const f = { gsi: ctiGSI, sdr33: ctiSDR, gts7: ctiGTS7, nikon: ctiNikon, m5: ctiM5, mapa2: ctiMapa2, geodimeter: ctiGeodimeter }[format];
     if (!f) throw new Error('Neznámý formát zápisníku');
     const r = f(text, volby); r.format = format;
     // typ řádku: orientace = cíl existuje v seznamu souřadnic (doplní UI), zde výchozí 'z'

@@ -119,7 +119,7 @@ with socketserver.TCPServer(('127.0.0.1', 0), H) as srv:
         # export TXT dialog otevřít a zavřít
         pg.click('[data-tab=body]'); pg.click('text=Export'); ok(pg.locator('#exp-format').is_visible(), 'export dialog'); pg.keyboard.press('Escape')
         # reload → data zůstala
-        pg.reload(); pg.wait_for_selector('#body-tab tbody tr'); ok(pg.locator('#body-tab tbody tr').count() == 6, 'po reloadu 6 bodů (IndexedDB)')
+        pg.wait_for_timeout(800); pg.reload(); pg.wait_for_selector('#body-tab tbody tr'); ok(pg.locator('#body-tab tbody tr').count() == 6, f'po reloadu 6 bodů (IndexedDB), je {pg.locator("#body-tab tbody tr").count()}')
         pg.screenshot(path=os.path.join(OUT, 'pc-svetly.png'))
         pg.evaluate("document.documentElement.dataset.theme='dark'"); pg.click('[data-tab=vypocty]'); pg.screenshot(path=os.path.join(OUT, 'pc-tmavy.png'))
         # mobil

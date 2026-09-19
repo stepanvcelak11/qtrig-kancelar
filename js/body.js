@@ -6,6 +6,8 @@ import { Mapa } from './mapa.js';
 import { dxf, kml, geojson } from './export.js';
 import * as SN from './seznam-nastroje.js';
 import { importPodleFormatu, exportPodleFormatu, polozkyBodu, PREDPISY_SOURADNICE } from './format-uziv.js';
+import * as F_ from './formaty.js';
+import { tiskSeznamu } from './tisk.js';
 
 let kore, hledat = '', vybrany = null, razeni = pamet.get('body-razeni', 'cislo');
 const oznacene = new Set(); // označené body (Groma: operace jen na označených, jinak na všech)
@@ -104,12 +106,19 @@ async function pridatBod() {
 
 async function importovat() {
     const file = await otevriSoubor(''); if (!file) return; // bez filtru přípon (.crd, .txt, .xyz, .dat, cokoli)
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'dbf' || ext === 'xlsx' || ext === 'xml') { // binární a strukturované formáty
+        let body = [];
+        try { if (ext === 'dbf') body = F_.importDBF(await file.arrayBuffer()); else if (ext === 'xml') body = F_.importXML(await ctiText(file)); else { const radky = await F_.importXLSX(await file.arrayBuffer()); const hl = radky[0] || []; const idx = (n) => hl.findIndex((h) => String(h).toLowerCase().replace(/[^a-z]/g, '') === n); let iC = idx('cislo'), iY = idx('y'), iX = idx('x'), iZ = idx('z'), iK = idx('kod'); const start = iC >= 0 ? 1 : 0; if (iC < 0) { iC = 0; iY = 1; iX = 2; iZ = 3; iK = 5; } radky.slice(start).forEach((r) => { const y = cislo(r[iY]), x = cislo(r[iX]); if (y != null && x != null && r[iC] != null && r[iC] !== '') body.push({ cislo: String(r[iC]), y, x, z: iZ >= 0 ? cislo(r[iZ]) : null, kod: iK >= 0 ? String(r[iK] ?? '') : '' }); }); } }
+        catch (e) { toast('Soubor nejde přečíst: ' + e.message, 'bad'); return; }
+        let n = 0; body.forEach((b) => { if (Projekt.ulozBod({ ...b, zdroj: 'import' }, false).pridano) n++; }); Projekt.zmena('body'); toast(`Import ${file.name}: ${n} nových bodů`, 'ok'); return;
+    }
     const text = await ctiText(file);
     const radky = text.split(/\r?\n/).filter((r) => r.trim());
-    const sel = el('select', { id: 'imp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v))); sel.append(el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)'));
+    const sel = el('select', { id: 'imp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v))); sel.append(el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)')); sel.append(el('option', { value: 'bezcisel' }, 'Bez čísel bodů: −Y −X Z (očíslovat od 1)')); sel.append(el('option', { value: 'dvoji' }, 'Dvojí souřadnice: číslo Y X Z Y2 X2 Z2 [kvalita] [kód]'));
     sel.value = odhadniPoradi(radky);
     const predpis = el('input', { type: 'text', id: 'imp-predpis', value: PREDPISY_SOURADNICE[0][0], list: 'dl-predpisy-s' }); const dlp = el('datalist', { id: 'dl-predpisy-s' }, PREDPISY_SOURADNICE.map(([v, t]) => el('option', { value: v }, t))); const pevny = el('input', { type: 'checkbox', id: 'imp-pevny' });
-    const ctiVse = () => sel.value === 'uziv' ? { body: importPodleFormatu(predpis.value, text, pevny.checked).map((v) => ({ cislo: String(v.NUM ?? v.N), y: v.Y, x: v.X, z: v.Z ?? null, kod: v.CODE || '', kvalita: v.PREC || null })).filter((b) => b.y != null && b.x != null), chyby: [] } : ctiSeznam(text, sel.value);
+    const ctiVse = () => sel.value === 'bezcisel' ? { body: F_.importBezCisel(text, +Projekt.volneCislo(1)), chyby: [] } : sel.value === 'dvoji' ? { body: F_.importDvoji(text), chyby: [] } : sel.value === 'uziv' ? { body: importPodleFormatu(predpis.value, text, pevny.checked).map((v) => ({ cislo: String(v.NUM ?? v.N), y: v.Y, x: v.X, z: v.Z ?? null, kod: v.CODE || '', kvalita: v.PREC || null })).filter((b) => b.y != null && b.x != null), chyby: [] } : ctiSeznam(text, sel.value);
     const prep = el('select', { id: 'imp-prepsat' }, el('option', { value: 'preskocit' }, 'existující body přeskočit'), el('option', { value: 'prepsat' }, 'existující body přepsat'));
     const nahled = el('pre', { class: 'protokol', style: 'max-height:160px;overflow:auto;background:var(--paper2);border-radius:6px' }, radky.slice(0, 8).join('\n'));
     const info = el('div', { class: 'tlum' });
@@ -126,7 +135,10 @@ async function importovat() {
 
 async function exportovat() {
     const p = Projekt.get(); if (!p.body.length) { toast('Není co exportovat'); return; }
-    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'), el('option', { value: 'dxf' }, 'DXF — body, čísla a kódy po hladinách (CAD)'), el('option', { value: 'kml' }, 'KML — Google Earth / Mapy (WGS84)'), el('option', { value: 'geojson' }, 'GeoJSON — GIS (WGS84)'), el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)'));
+    const fmtSel = el('select', { id: 'exp-format' }, el('option', { value: 'txt' }, 'TXT — mezery, desetinná tečka (Groma, totálky)'), el('option', { value: 'csv' }, 'CSV — středník, desetinná čárka (Excel)'), el('option', { value: 'dxf' }, 'DXF — body, čísla a kódy po hladinách (CAD)'), el('option', { value: 'kml' }, 'KML — Google Earth / Mapy (WGS84)'), el('option', { value: 'geojson' }, 'GeoJSON — GIS (WGS84)'), el('option', { value: 'uziv' }, 'Uživatelský formát (předpis řádku)'),
+        el('option', { value: 'katastr' }, 'Souřadnice pro katastr (úplné číslo, Y X Z na cm, kód kvality)'), el('option', { value: 'yxz' }, 'Souřadnice YXZ (text)'), el('option', { value: 'xyz' }, 'Souřadnice XYZ (text)'), el('option', { value: 'csv-yxz' }, 'CSV YXZ (čárka)'),
+        el('option', { value: 'xlsx' }, 'Excel .xlsx'), el('option', { value: 'xml' }, 'XML'), el('option', { value: 'kokes' }, 'KOKEŠ .stx'), el('option', { value: 'dbf' }, 'dBASE III .dbf (struktura Groma)'),
+        el('option', { value: 'gsi16' }, 'Leica GSI16 (do přístroje)'), el('option', { value: 'gsi8' }, 'Leica GSI8'), el('option', { value: 'sdr' }, 'Sokkia SDR33'), el('option', { value: 'topcon' }, 'Topcon (číslo,N,E,Z,kód)'), el('option', { value: 'geodimeter' }, 'Geodimeter Area'));
     const predpisE = el('input', { type: 'text', id: 'exp-predpis', value: PREDPISY_SOURADNICE[1][0], list: 'dl-predpisy-e' }); const dle = el('datalist', { id: 'dl-predpisy-e' }, PREDPISY_SOURADNICE.map(([v, t]) => el('option', { value: v }, t)));
     const sel = el('select', { id: 'exp-poradi' }); Object.entries(PORADI).forEach(([k, v]) => sel.append(el('option', { value: k }, v)));
     const jen = el('input', { type: 'checkbox', id: 'exp-jen' });
@@ -139,6 +151,10 @@ async function exportovat() {
     if (F === 'kml') return ulozSoubor(nazev + '.kml', kml(body, p.nazev), 'application/vnd.google-earth.kml+xml');
     if (F === 'geojson') return ulozSoubor(nazev + '.geojson', geojson(body), 'application/geo+json');
     if (F === 'uziv') return ulozSoubor(nazev + '.txt', exportPodleFormatu(predpisE.value, body.map((b, i) => polozkyBodu(b, i))));
+    const M = { katastr: () => [nazev + '-katastr.txt', F_.exportKatastr(body)], yxz: () => [nazev + '-yxz.txt', F_.exportXYZ(body, 'yxz')], xyz: () => [nazev + '-xyz.txt', F_.exportXYZ(body, 'xyz')], 'csv-yxz': () => [nazev + '.csv', F_.exportXYZ(body, 'yxz', true), 'text/csv'],
+        xml: () => [nazev + '.xml', F_.exportXML(body, p.nazev), 'application/xml'], kokes: () => [nazev + '.stx', F_.exportKokes(body)], gsi16: () => [nazev + '.gsi', F_.exportGSI(body, true)], gsi8: () => [nazev + '-8.gsi', F_.exportGSI(body, false)], sdr: () => [nazev + '.sdr', F_.exportSDR(body)], topcon: () => [nazev + '-topcon.txt', F_.exportTopcon(body)], geodimeter: () => [nazev + '.are', F_.exportGeodimeter(body)],
+        dbf: () => [nazev + '.dbf', new Blob([F_.exportDBF(body)], { type: 'application/octet-stream' })], xlsx: () => [nazev + '.xlsx', new Blob([F_.exportXLSX([{ list: 'Souřadnice', hlavicka: ['Číslo', 'Y', 'X', 'Z', 'Kód kvality', 'Kód', 'Typ', 'Poznámka'], radky: body.map((b) => [b.cislo, b.y, b.x, b.z, b.kvalita || '', b.kod || '', b.typ || '', b.pozn || '']) }])], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })] };
+    if (M[F]) { const [nm, obsah, typ] = M[F](); return ulozSoubor(nm, obsah, typ || 'text/plain'); }
     await ulozSoubor(nazev + '.' + F, zapisSeznam(body, F, sel.value), F === 'csv' ? 'text/csv' : 'text/plain');
 }
 
@@ -153,7 +169,7 @@ async function dalsi() {
         el('div', { class: 'skupina', style: 'padding:0' }, 'Kontroly'), el('div', { style: 'display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))' },
             B('Porovnání s jiným seznamem…', () => SN.porovnaniSeznamu()), B('Kontrola číslování', () => SN.kontrolaCislovani()), B('Duplicity polohy (do 5 cm)', () => duplicity()), B('Odstranění identických bodů…', () => SN.identickeBody()), B('Dávkové průměrování (_1, _2…)', () => SN.prumerovani()), B('Koš — obnova smazaných', () => SN.kos())),
         el('div', { class: 'skupina', style: 'padding:0' }, 'Souřadnice'), el('div', { style: 'display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))' },
-            B('Dvojí souřadnice…', () => SN.dvojiSouradnice()), B('Zeměpisné souřadnice (WGS84)', () => SN.zemepisne()), B('Mapové listy SM5', () => SN.mapoveListy()), B('Zaokrouhlit na mm / cm…', () => zaokrouhlit()), B('Poslat do AR Geodetu (DXF)', () => doAR()), B('Smazat vše', () => smazatVse(), 'nebezpecny')),
+            B('Dvojí souřadnice…', () => SN.dvojiSouradnice()), B('Zeměpisné souřadnice (WGS84)', () => SN.zemepisne()), B('Mapové listy SM5', () => SN.mapoveListy()), B('Zaokrouhlit na mm / cm…', () => zaokrouhlit()), B('Tisk sestavy…', () => tiskSeznamu('body', vyb)), B('Poslat do AR Geodetu (DXF)', () => doAR()), B('Smazat vše', () => smazatVse(), 'nebezpecny')),
     );
     await dialog({ titulek: 'Seznam souřadnic', obsah, sirka: 760 });
     async function duplicity() {

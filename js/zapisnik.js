@@ -3,6 +3,7 @@ import { Projekt } from './projekt.js';
 import { el, $, fmt, fmtG, cislo, toast, potvrd, zeptej, dialog } from './ui.js';
 import { Stred } from './stred.js';
 import * as ZN from './zapisnik-nastroje.js';
+import { tiskSeznamu } from './tisk.js';
 
 let kore;
 export const Zapisnik = {
@@ -32,7 +33,7 @@ function vykresli() {
 async function dalsi() {
     const B = (text, fn) => el('button', { class: 'btn', style: 'justify-content:flex-start', onclick: async () => { const ov = $('.dlg-overlay'); if (ov) ov.remove(); await fn(); } }, text);
     await dialog({ titulek: 'Zápisník (seznam měření)', sirka: 640, obsah: el('div', { style: 'display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))' },
-        B('Zpracování zápisníku…', () => ZN.zpracovaniZapisniku()), B('Označení orientací…', () => ZN.oznaceniOrientaci()), B('Spojení opakovaných stanovisek', () => ZN.spojeniStanovisek()), B('Definice teodolitu…', () => ZN.definiceTeodolitu()), B('Export zápisníku (MAPA2, uživatelský)…', () => ZN.exportMereni())) });
+        B('Zpracování zápisníku…', () => ZN.zpracovaniZapisniku()), B('Označení orientací…', () => ZN.oznaceniOrientaci()), B('Spojení opakovaných stanovisek', () => ZN.spojeniStanovisek()), B('Definice teodolitu…', () => ZN.definiceTeodolitu()), B('Export zápisníku (MAPA2, uživatelský)…', () => ZN.exportMereni()), B('Tisk sestavy…', () => tiskSeznamu('mereni'))) });
 }
 async function nove() {
     const cis = await zeptej('Nové stanovisko', Projekt.volneCislo(5001), 'Číslo bodu stanoviska'); if (cis == null) return;
