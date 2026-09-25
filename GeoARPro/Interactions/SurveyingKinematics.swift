@@ -163,8 +163,11 @@ struct InstrumentKinematicState: Sendable, Equatable {
     var verticalKnobTurns = 0.0
     var focusKnobTurns = 0.0
 
-    /// Height gradient of the tripod head (the "unlevelled setup").
+    /// Height gradient caused by the uneven ground under the tripod (the "unlevelled setup").
     var setupTilt: SIMD2<Double> = .zero
+    /// Extension of the three tripod legs relative to the set-up length (metres, + = longer leg).
+    var legExtensions: [Double] = [0, 0, 0]
+    var legDetentAccumulators: [Double] = [0, 0, 0]
     /// Current focus distance of the telescope (metres).
     var focusDistance = 20.0
 }
@@ -339,6 +342,45 @@ struct SurveyingKinematics: Sendable, Equatable {
         return feedback
     }
 
+    // MARK: Tripod legs
+
+    /// Horizontal positions of the tripod feet (clockwise from −Z) and their radius.
+    static let tripodLegAzimuths: [Double] = [0, Double.pi * 2 / 3, Double.pi * 4 / 3]
+    static let tripodFootRadius = 0.57
+    /// ± sliding travel of the telescopic leg sections used for coarse levelling.
+    static let legTravel = 0.15
+
+    /// Lengthens (+) or shortens (−) tripod leg `index`. Coarse levelling of the head:
+    /// the side of the longer leg rises, exactly like on a real tripod.
+    mutating func adjustLeg(_ index: Int, by delta: Double) -> KinematicsFeedback {
+        var feedback = KinematicsFeedback()
+        guard state.legExtensions.indices.contains(index) else { return feedback }
+        let before = levelState
+        let current = state.legExtensions[index]
+        let limited = min(max(current + delta, -Self.legTravel), Self.legTravel)
+        if limited != current + delta { feedback.hitTravelLimit = true }
+        state.legExtensions[index] = limited
+        // A soft click every 5 mm of leg travel.
+        feedback.detentTicks = Self.detentCrossings(&state.legDetentAccumulators[index], delta: limited - current, step: 0.005)
+        let after = levelState
+        if after != before { feedback.levelStateChanged = after }
+        return feedback
+    }
+
+    /// Gradient of the tripod head produced by the leg lengths: the feet stay on the
+    /// ground, so the head tilts like the plane through the (virtually) raised feet.
+    /// A leg is inclined ~22° from vertical, so only cos 22° of the extension is vertical.
+    var legGradient: SIMD2<Double> {
+        let p = (0..<3).map { i -> SIMD3<Double> in
+            let a = Self.tripodLegAzimuths[i], r = Self.tripodFootRadius
+            return SIMD3(r * sin(a), state.legExtensions[i] * 0.927, -r * cos(a))
+        }
+        return GeodeticMath.tiltGradient(fromPlaneThrough: p[0], p[1], p[2])
+    }
+
+    /// Tilt of the tripod head = uneven ground + leg lengths.
+    var headTilt: SIMD2<Double> { state.setupTilt + legGradient }
+
     // MARK: Focus
 
     /// Focus drive: logarithmic distance scale, like a real internal-focusing lens.
@@ -378,7 +420,7 @@ struct SurveyingKinematics: Sendable, Equatable {
     }
 
     /// Total gradient of the tribrach upper plate (tripod head + screws).
-    var totalTilt: SIMD2<Double> { state.setupTilt + footScrewGradient }
+    var totalTilt: SIMD2<Double> { headTilt + footScrewGradient }
 
     var tiltMagnitude: Double { GeodeticMath.tiltAngle(of: totalTilt) }
 
@@ -407,7 +449,7 @@ struct SurveyingKinematics: Sendable, Equatable {
     // MARK: - Rotations & line of sight
 
     var levelingRotation: simd_quatd { GeodeticMath.tiltRotation(forGradient: totalTilt) }
-    var setupRotation: simd_quatd { GeodeticMath.tiltRotation(forGradient: state.setupTilt) }
+    var setupRotation: simd_quatd { GeodeticMath.tiltRotation(forGradient: headTilt) }
     var alidadeRotation: simd_quatd { simd_quatd(angle: state.alidadeAngle, axis: SIMD3(0, 1, 0)) }
     var telescopeRotation: simd_quatd { simd_quatd(angle: state.telescopeElevation, axis: SIMD3(1, 0, 0)) }
 

@@ -136,6 +136,8 @@ final class TripodRig {
     let root = Entity()
     let head = Entity()
     var headHeight: Float
+    /// Lower telescopic sections of the three legs (slide along the leg's −Y).
+    var legSliders: [Entity] = []
 
     init(headHeight: Float) {
         self.headHeight = headHeight
@@ -147,6 +149,15 @@ final class TripodRig {
 
     func apply(setupTilt: SIMD2<Double>) {
         head.orientation = simd_quatf(GeodeticMath.tiltRotation(forGradient: setupTilt))
+    }
+
+    /// Mirrors head tilt and leg extensions from the kinematics.
+    func apply(_ k: SurveyingKinematics) {
+        head.orientation = simd_quatf(k.setupRotation)
+        for (i, slider) in legSliders.enumerated() where i < k.state.legExtensions.count {
+            // Longer leg = lower section pulled further out of the upper bars.
+            slider.position.y = -Float(k.state.legExtensions[i])
+        }
     }
 }
 

@@ -100,21 +100,21 @@ struct PermissionGateView: View {
                     .foregroundStyle(Color.surveyAccent)
                 Text("GeoAR Pro")
                     .font(.largeTitle.weight(.bold))
-                Text("Surveying Simulator")
+                Text("Simulátor geodetických přístrojů")
                     .font(.title3)
                     .foregroundStyle(.secondary)
-                Text("The camera is used to place virtual total stations, levels and GNSS rovers in your surroundings and to track your hand as you operate them.")
+                Text("Kamera slouží k postavení virtuálních přístrojů do vašeho okolí a ke sledování ruky při jejich ovládání.")
                     .multilineTextAlignment(.center)
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 32)
                 if model.cameraAuthorization == .denied {
-                    GlassActionButton(title: "Open Settings", systemImage: "gear", prominent: true) {
+                    GlassActionButton(title: "Otevřít Nastavení", systemImage: "gear", prominent: true) {
                         if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                     }
                     .padding(.horizontal, 48)
                 } else {
-                    GlassActionButton(title: "Enable Camera", systemImage: "camera.fill", prominent: true) {
+                    GlassActionButton(title: "Povolit kameru", systemImage: "camera.fill", prominent: true) {
                         Task { await model.requestCameraAccess() }
                     }
                     .padding(.horizontal, 48)

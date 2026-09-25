@@ -22,22 +22,28 @@ enum InstrumentPartKind: String, Sendable, CaseIterable {
     case footScrew1
     case footScrew2
     case tripod
+    case tripodLeg0
+    case tripodLeg1
+    case tripodLeg2
     case pole
     case levelingRod
 
     var displayName: String {
         switch self {
-        case .alidade: "Alidade"
-        case .telescope: "Telescope"
-        case .horizontalTangent: "Hz fine drive"
+        case .alidade: "Alhidáda"
+        case .telescope: "Dalekohled"
+        case .horizontalTangent: "Hz ustanovka"
         case .verticalTangent: "V fine drive"
-        case .focusKnob: "Focus"
-        case .footScrew0: "Foot screw A"
-        case .footScrew1: "Foot screw B"
-        case .footScrew2: "Foot screw C"
-        case .tripod: "Tripod"
-        case .pole: "Range pole"
-        case .levelingRod: "Levelling rod"
+        case .focusKnob: "Ostření"
+        case .footScrew0: "Stavěcí šroub A"
+        case .footScrew1: "Stavěcí šroub B"
+        case .footScrew2: "Stavěcí šroub C"
+        case .tripod: "Stativ"
+        case .tripodLeg0: "Noha stativu A"
+        case .tripodLeg1: "Noha stativu B"
+        case .tripodLeg2: "Noha stativu C"
+        case .pole: "Výtyčka"
+        case .levelingRod: "Nivelační lať"
         }
     }
 
@@ -50,6 +56,19 @@ enum InstrumentPartKind: String, Sendable, CaseIterable {
         }
     }
 
+    var tripodLegIndex: Int? {
+        switch self {
+        case .tripodLeg0: 0
+        case .tripodLeg1: 1
+        case .tripodLeg2: 2
+        default: nil
+        }
+    }
+
+    static func tripodLeg(_ index: Int) -> InstrumentPartKind {
+        [.tripodLeg0, .tripodLeg1, .tripodLeg2][index]
+    }
+
     static func footScrew(_ index: Int) -> InstrumentPartKind {
         [.footScrew0, .footScrew1, .footScrew2][index]
     }
@@ -57,7 +76,8 @@ enum InstrumentPartKind: String, Sendable, CaseIterable {
     /// Precision knobs are operated with a pinch; bodies with a direct touch.
     var requiresPinch: Bool {
         switch self {
-        case .horizontalTangent, .verticalTangent, .focusKnob, .footScrew0, .footScrew1, .footScrew2: true
+        case .horizontalTangent, .verticalTangent, .focusKnob, .footScrew0, .footScrew1, .footScrew2,
+             .tripodLeg0, .tripodLeg1, .tripodLeg2: true
         default: false
         }
     }
@@ -66,7 +86,7 @@ enum InstrumentPartKind: String, Sendable, CaseIterable {
     var pickPriority: Int {
         switch self {
         case .horizontalTangent, .verticalTangent, .focusKnob: 4
-        case .footScrew0, .footScrew1, .footScrew2: 3
+        case .footScrew0, .footScrew1, .footScrew2, .tripodLeg0, .tripodLeg1, .tripodLeg2: 3
         case .telescope: 2
         case .alidade, .pole: 1
         case .tripod, .levelingRod: 0

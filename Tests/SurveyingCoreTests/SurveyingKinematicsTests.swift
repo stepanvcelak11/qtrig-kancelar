@@ -140,3 +140,29 @@ final class SurveyingKinematicsTests: XCTestCase {
         XCTAssertLessThan(pole.bubbleOffset.x, 0, "Bubble moves away from the lean")
     }
 }
+
+final class TripodLegTests: XCTestCase {
+    func testLongerLegRaisesItsSide() {
+        var k = SurveyingKinematics(config: .make(for: EquipmentCatalog.model(id: "leica-ts16")!))
+        // Leg 0 points to −Z (azimuth 0): lengthening it tilts the head so −Z is high.
+        _ = k.adjustLeg(0, by: 0.02)
+        XCTAssertLessThan(k.headTilt.y, 0)
+        XCTAssertEqual(k.headTilt.x, 0, accuracy: 1e-9)
+    }
+
+    func testLegsCanCompensateGroundTilt() {
+        var k = SurveyingKinematics(config: .make(for: EquipmentCatalog.model(id: "leica-ts16")!))
+        k.state.setupTilt = SIMD2(0, 0.01)          // ground: +Z side high
+        XCTAssertEqual(k.levelState, .outOfRange)
+        // Raise leg 0 (at −Z) by the height difference across the foot triangle (1.5 R).
+        let dh = 0.01 * 1.5 * SurveyingKinematics.tripodFootRadius / 0.927
+        _ = k.adjustLeg(0, by: dh)
+        XCTAssertLessThan(GeodeticMath.toArcseconds(k.tiltMagnitude), 30)
+    }
+
+    func testLegTravelIsLimited() {
+        var k = SurveyingKinematics(config: .make(for: EquipmentCatalog.model(id: "leica-ts16")!))
+        XCTAssertTrue(k.adjustLeg(1, by: 1).hitTravelLimit)
+        XCTAssertEqual(k.state.legExtensions[1], SurveyingKinematics.legTravel)
+    }
+}

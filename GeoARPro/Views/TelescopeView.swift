@@ -51,9 +51,9 @@ struct TelescopeView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Telescope")
+                Text("Dalekohled")
                     .font(.headline)
-                Text("Pull the phone away to return to AR")
+                Text("Oddalte telefon pro návrat do AR")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -66,7 +66,7 @@ struct TelescopeView: View {
                     .padding(10)
                     .background(Circle().fill(.ultraThinMaterial))
             }
-            .accessibilityLabel("Leave telescope view")
+            .accessibilityLabel("Opustit dalekohled")
         }
         .padding(.top, 8)
     }
@@ -147,23 +147,23 @@ struct TelescopeMeasurementPanel: View {
             HStack {
                 ReadoutCell(label: "Hz", value: GeodeticMath.format(readout.angles?.hz, unit: unit))
                 if readout.isAutomaticLevel {
-                    ReadoutCell(label: "Rod", value: GeodeticMath.formatDistance(readout.rod?.reading), unit: "m")
+                    ReadoutCell(label: "Lať", value: GeodeticMath.formatDistance(readout.rod?.reading), unit: "m")
                 } else {
-                    ReadoutCell(label: "Zenith V", value: GeodeticMath.format(readout.angles?.v, unit: unit))
+                    ReadoutCell(label: "Zenitový úhel", value: GeodeticMath.format(readout.angles?.v, unit: unit))
                 }
-                ReadoutCell(label: "Az (grid)", value: GeodeticMath.format(readout.gridAzimuth, unit: unit, decimals: 2))
+                ReadoutCell(label: "Azimut (síť)", value: GeodeticMath.format(readout.gridAzimuth, unit: unit, decimals: 2))
             }
             HStack {
-                ReadoutCell(label: readout.isAutomaticLevel ? "Stadia D" : "SD", value: GeodeticMath.formatDistance(readout.distance?.slope), unit: "m")
+                ReadoutCell(label: readout.isAutomaticLevel ? "Dálka (rysky)" : "SD", value: GeodeticMath.formatDistance(readout.distance?.slope), unit: "m")
                 if let rod = readout.rod {
-                    ReadoutCell(label: "Upper / lower", value: String(format: "%.3f / %.3f", rod.upperStadia, rod.lowerStadia))
+                    ReadoutCell(label: "Horní / dolní", value: String(format: "%.3f / %.3f", rod.upperStadia, rod.lowerStadia))
                 } else {
                     ReadoutCell(label: "HD", value: GeodeticMath.formatDistance(readout.horizontalDistance), unit: "m")
                 }
-                ReadoutCell(label: "Focus", value: String(format: "%.1f", scene.focusDistance), unit: "m")
+                ReadoutCell(label: "Ostření", value: String(format: "%.1f", scene.focusDistance), unit: "m")
             }
             if let angles = readout.angles, angles.levelState == .outOfRange, angles.compensatorEnabled {
-                Label("Tilt out of compensator range — level the instrument", systemImage: "exclamationmark.triangle.fill")
+                Label("Sklon mimo rozsah kompenzátoru – zhorizontujte přístroj", systemImage: "exclamationmark.triangle.fill")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.surveyRed)
             }
@@ -182,11 +182,11 @@ struct TelescopeDriveControls: View {
         let scene = model.scene
         VStack(spacing: 10) {
             HStack(spacing: 10) {
-                JogWheel(title: "Hz drive", systemImage: "arrow.left.and.right") { scene.jog(.horizontalTangent, turns: $0) }
+                JogWheel(title: "Hz ustanovka", systemImage: "arrow.left.and.right") { scene.jog(.horizontalTangent, turns: $0) }
                 if !scene.isLevelInstrument {
                     JogWheel(title: "V drive", systemImage: "arrow.up.and.down") { scene.jog(.verticalTangent, turns: $0) }
                 }
-                JogWheel(title: "Focus", systemImage: "camera.metering.center.weighted") { scene.jog(.focusKnob, turns: $0) }
+                JogWheel(title: "Ostření", systemImage: "camera.metering.center.weighted") { scene.jog(.focusKnob, turns: $0) }
             }
             HStack {
                 Image(systemName: "plus.magnifyingglass")

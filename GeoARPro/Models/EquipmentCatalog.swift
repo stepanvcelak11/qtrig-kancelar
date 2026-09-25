@@ -22,10 +22,10 @@ enum EquipmentCategory: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .totalStation: "Total Stations"
-        case .opticalLevel: "Levels"
+        case .totalStation: "Totální stanice"
+        case .opticalLevel: "Nivelační přístroje"
         case .gnssRover: "GNSS RTK"
-        case .accessory: "Accessories"
+        case .accessory: "Příslušenství"
         }
     }
 
@@ -121,8 +121,8 @@ enum DriveType: String, Sendable, Hashable {
 
     var title: String {
         switch self {
-        case .clampAndTangent: "Clamp & tangent screw"
-        case .endlessFriction: "Endless drives"
+        case .clampAndTangent: "Svěrka a ustanovka"
+        case .endlessFriction: "Nekonečné pohony"
         }
     }
 }
@@ -260,45 +260,45 @@ struct EquipmentModel: Identifiable, Sendable, Hashable {
         switch kind {
         case .totalStation(let s):
             return [
-                SpecificationRow(label: "Angle accuracy", value: String(format: "%.0f\" (%.1f mgon)", s.angularAccuracyArcsec, s.angularAccuracyArcsec / 3.24)),
-                SpecificationRow(label: "Telescope", value: String(format: "%.0f× · FOV %.0f'", s.magnification, s.fieldOfViewArcmin)),
+                SpecificationRow(label: "Přesnost úhlů", value: String(format: "%.0f\" (%.1f mgon)", s.angularAccuracyArcsec, s.angularAccuracyArcsec / 3.24)),
+                SpecificationRow(label: "Dalekohled", value: String(format: "%.0f× · FOV %.0f'", s.magnification, s.fieldOfViewArcmin)),
                 SpecificationRow(label: "EDM prism", value: String(format: "%.0f m · %.0f mm + %.1f ppm", s.edmRangePrism, s.edmConstantMM, s.edmPPM)),
-                SpecificationRow(label: "Reflectorless", value: String(format: "%.0f m", s.edmRangeReflectorless)),
-                SpecificationRow(label: "Compensator", value: String(format: "dual-axis ±%.1f'", s.compensatorRangeArcmin)),
-                SpecificationRow(label: "Circular level", value: String(format: "%.0f'/2 mm", s.circularLevelArcminPer2mm)),
-                SpecificationRow(label: "Drives", value: s.driveType.title),
-                SpecificationRow(label: "Weight", value: String(format: "%.1f kg", s.weightKg)),
+                SpecificationRow(label: "Bez hranolu", value: String(format: "%.0f m", s.edmRangeReflectorless)),
+                SpecificationRow(label: "Kompenzátor", value: String(format: "dual-axis ±%.1f'", s.compensatorRangeArcmin)),
+                SpecificationRow(label: "Krabicová libela", value: String(format: "%.0f'/2 mm", s.circularLevelArcminPer2mm)),
+                SpecificationRow(label: "Pohony", value: s.driveType.title),
+                SpecificationRow(label: "Hmotnost", value: String(format: "%.1f kg", s.weightKg)),
             ]
         case .opticalLevel(let s):
             return [
-                SpecificationRow(label: "Accuracy", value: String(format: "%.1f mm/km double run", s.accuracyMMPerKm)),
-                SpecificationRow(label: "Telescope", value: String(format: "%.0f× · min focus %.1f m", s.magnification, s.minimumFocus)),
-                SpecificationRow(label: "Compensator", value: String(format: "±%.0f' · setting %.1f\"", s.compensatorRangeArcmin, s.compensatorSettingArcsec)),
-                SpecificationRow(label: "Circular level", value: String(format: "%.0f'/2 mm", s.circularLevelArcminPer2mm)),
-                SpecificationRow(label: "Stadia", value: String(format: "1:%.0f", s.stadiaMultiplier)),
-                SpecificationRow(label: "Hz circle", value: s.hasHorizontalCircle ? "400 gon / 360°" : "—"),
-                SpecificationRow(label: "Weight", value: String(format: "%.1f kg", s.weightKg)),
+                SpecificationRow(label: "Přesnost", value: String(format: "%.1f mm/km double run", s.accuracyMMPerKm)),
+                SpecificationRow(label: "Dalekohled", value: String(format: "%.0f× · min focus %.1f m", s.magnification, s.minimumFocus)),
+                SpecificationRow(label: "Kompenzátor", value: String(format: "±%.0f' · setting %.1f\"", s.compensatorRangeArcmin, s.compensatorSettingArcsec)),
+                SpecificationRow(label: "Krabicová libela", value: String(format: "%.0f'/2 mm", s.circularLevelArcminPer2mm)),
+                SpecificationRow(label: "Dálkoměrné rysky", value: String(format: "1:%.0f", s.stadiaMultiplier)),
+                SpecificationRow(label: "Hz kruh", value: s.hasHorizontalCircle ? "400 gon / 360°" : "—"),
+                SpecificationRow(label: "Hmotnost", value: String(format: "%.1f kg", s.weightKg)),
             ]
         case .gnssRover(let s):
             return [
-                SpecificationRow(label: "Channels", value: "\(s.channels)"),
+                SpecificationRow(label: "Kanály", value: "\(s.channels)"),
                 SpecificationRow(label: "RTK Hz", value: String(format: "%.0f mm + %.1f ppm", s.rtkHorizontalMM, s.rtkPPM)),
                 SpecificationRow(label: "RTK V", value: String(format: "%.0f mm + %.1f ppm", s.rtkVerticalMM, s.rtkPPM)),
-                SpecificationRow(label: "Tilt", value: "\(s.tiltCompensationName) ≤ \(Int(s.tiltCompensationMaxDegrees))°"),
-                SpecificationRow(label: "Pole", value: String(format: "%.2f m carbon fibre + bipod", s.poleLength)),
-                SpecificationRow(label: "Weight", value: String(format: "%.2f kg", s.weightKg)),
+                SpecificationRow(label: "Náklon", value: "\(s.tiltCompensationName) ≤ \(Int(s.tiltCompensationMaxDegrees))°"),
+                SpecificationRow(label: "Výtyčka", value: String(format: "%.2f m carbon fibre + bipod", s.poleLength)),
+                SpecificationRow(label: "Hmotnost", value: String(format: "%.2f kg", s.weightKg)),
             ]
         case .tripod(let s):
             return [
-                SpecificationRow(label: "Material", value: s.material),
-                SpecificationRow(label: "Height", value: String(format: "%.2f – %.2f m", s.minimumHeight, s.maximumHeight)),
-                SpecificationRow(label: "Weight", value: String(format: "%.1f kg", s.weightKg)),
+                SpecificationRow(label: "Materiál", value: s.material),
+                SpecificationRow(label: "Výška", value: String(format: "%.2f – %.2f m", s.minimumHeight, s.maximumHeight)),
+                SpecificationRow(label: "Hmotnost", value: String(format: "%.1f kg", s.weightKg)),
             ]
         case .levelingRod(let s):
             return [
-                SpecificationRow(label: "Length", value: String(format: "%.1f m · %d sections", s.length, s.sections)),
-                SpecificationRow(label: "Graduation", value: s.graduation),
-                SpecificationRow(label: "Weight", value: String(format: "%.1f kg", s.weightKg)),
+                SpecificationRow(label: "Délka", value: String(format: "%.1f m · %d sections", s.length, s.sections)),
+                SpecificationRow(label: "Dělení", value: s.graduation),
+                SpecificationRow(label: "Hmotnost", value: String(format: "%.1f kg", s.weightKg)),
             ]
         }
     }
@@ -316,7 +316,7 @@ enum EquipmentCatalog {
                 edmRangePrism: 3500, edmRangeReflectorless: 1000, edmConstantMM: 1, edmPPM: 1.5,
                 compensatorRangeArcmin: 4, circularLevelArcminPer2mm: 6, trunnionHeight: 0.196,
                 driveType: .endlessFriction, fineDriveGonPerTurn: 0.25, weightKg: 5.3, displayName: "TS16 R1000")),
-            tagline: "Self-learning robotic total station",
+            tagline: "Samoučící robotická totální stanice",
             usdzAssetName: "LeicaTS16"),
         EquipmentModel(
             id: "trimble-s7", name: "S7", manufacturer: .trimble, category: .totalStation,
@@ -344,7 +344,7 @@ enum EquipmentCatalog {
                 magnification: 30, accuracyMMPerKm: 1.2, compensatorRangeArcmin: 15, compensatorSettingArcsec: 0.3,
                 circularLevelArcminPer2mm: 10, minimumFocus: 0.5, stadiaMultiplier: 100, lineOfSightHeight: 0.105,
                 fineDriveGonPerTurn: 0.5, weightKg: 1.7, hasHorizontalCircle: true)),
-            tagline: "Automatic level with magnetic-damped compensator",
+            tagline: "Automatický nivelační přístroj s magneticky tlumeným kompenzátorem",
             usdzAssetName: "LeicaNA730"),
         EquipmentModel(
             id: "topcon-atb4a", name: "AT-B4A", manufacturer: .topcon, category: .opticalLevel,
@@ -352,7 +352,7 @@ enum EquipmentCatalog {
                 magnification: 24, accuracyMMPerKm: 2.0, compensatorRangeArcmin: 15, compensatorSettingArcsec: 0.5,
                 circularLevelArcminPer2mm: 10, minimumFocus: 0.2, stadiaMultiplier: 100, lineOfSightHeight: 0.098,
                 fineDriveGonPerTurn: 0.5, weightKg: 1.7, hasHorizontalCircle: true)),
-            tagline: "Rugged construction auto level",
+            tagline: "Odolný stavební nivelační přístroj",
             usdzAssetName: "TopconATB4A"),
 
         // MARK: GNSS rovers
@@ -362,7 +362,7 @@ enum EquipmentCatalog {
                 channels: 555, rtkHorizontalMM: 8, rtkVerticalMM: 15, rtkPPM: 0.5,
                 tiltCompensationName: "IMU (calibration-free)", tiltCompensationMaxDegrees: 30, tiltErrorMMPerDegree: 0.4,
                 poleLength: 2.0, antennaDiameter: 0.17, antennaHeight: 0.095, weightKg: 1.25)),
-            tagline: "World's fastest GNSS RTK rover with tilt",
+            tagline: "Nejrychlejší GNSS RTK rover s kompenzací náklonu",
             usdzAssetName: "LeicaGS18T"),
         EquipmentModel(
             id: "trimble-r12i", name: "R12i", manufacturer: .trimble, category: .gnssRover,
@@ -375,15 +375,15 @@ enum EquipmentCatalog {
 
         // MARK: Accessories
         EquipmentModel(
-            id: "tripod-gst20", name: "Wooden Tripod GST20", manufacturer: .generic, category: .accessory,
-            kind: .tripod(TripodSpec(material: "Varnished beech, yellow hardware", minimumHeight: 1.07, maximumHeight: 1.72,
+            id: "tripod-gst20", name: "Dřevěný stativ GST20", manufacturer: .generic, category: .accessory,
+            kind: .tripod(TripodSpec(material: "Lakovaný buk, žluté kování", minimumHeight: 1.07, maximumHeight: 1.72,
                                      defaultHeadHeight: 1.25, weightKg: 6.4)),
             tagline: "Heavy-duty wooden tripod with 5/8\" centring screw",
             usdzAssetName: nil),
         EquipmentModel(
-            id: "rod-aluminium", name: "Aluminium Levelling Rod", manufacturer: .generic, category: .accessory,
+            id: "rod-aluminium", name: "Hliníková nivelační lať", manufacturer: .generic, category: .accessory,
             kind: .levelingRod(LevelingRodSpec(length: 3.0, sections: 3, graduation: "E-pattern, 1 cm", weightKg: 1.6)),
-            tagline: "Telescopic rod with circular level",
+            tagline: "Teleskopická lať s krabicovou libelou",
             usdzAssetName: nil),
     ]
 

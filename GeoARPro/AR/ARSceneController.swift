@@ -21,7 +21,7 @@ enum InteractionMode: String, CaseIterable, Identifiable, Sendable {
     case touch
 
     var id: String { rawValue }
-    var title: String { self == .handTracking ? "Hand" : "Touch" }
+    var title: String { self == .handTracking ? "Ruka" : "Dotyk" }
     var systemImage: String { self == .handTracking ? "hand.raised.fingers.spread" : "hand.tap" }
 }
 
@@ -75,7 +75,7 @@ final class ARSceneController {
     private(set) var hoveredPart: InstrumentPartKind?
     private(set) var engagedPart: InstrumentPartKind?
     private(set) var handOverlay: HandOverlayState?
-    private(set) var trackingMessage: String? = "Move your iPhone to scan the ground"
+    private(set) var trackingMessage: String? = "Pohybujte iPhonem a naskenujte podlahu"
     private(set) var toast: ToastMessage?
     private(set) var capabilities = SessionCapabilities()
     private(set) var focusDistance: Double = 20
@@ -209,14 +209,14 @@ final class ARSceneController {
         case .normal:
             trackingMessage = nil
         case .notAvailable:
-            trackingMessage = "Tracking unavailable"
+            trackingMessage = "Sledování nedostupné"
         case .limited(let reason):
             switch reason {
-            case .initializing: trackingMessage = "Initialising — move slowly"
-            case .excessiveMotion: trackingMessage = "Slow down"
-            case .insufficientFeatures: trackingMessage = "Point at a textured surface"
-            case .relocalizing: trackingMessage = "Relocalising…"
-            @unknown default: trackingMessage = "Limited tracking"
+            case .initializing: trackingMessage = "Inicializace – pohybujte pomalu"
+            case .excessiveMotion: trackingMessage = "Zpomalte"
+            case .insufficientFeatures: trackingMessage = "Miřte na plochu se strukturou"
+            case .relocalizing: trackingMessage = "Relokalizace…"
+            @unknown default: trackingMessage = "Omezené sledování"
             }
         }
     }
@@ -251,19 +251,24 @@ final class ARSceneController {
 
     func confirmPlacement() {
         guard isPlacing, let model = placingModel, let target = pendingPlacement else {
-            showToast("Aim at the ground until the ring appears", systemImage: "viewfinder", tint: .warning)
+            showToast("Miřte na podlahu, dokud se neobjeví kruh", systemImage: "viewfinder", tint: .warning)
             return
         }
-        if isRepositioning, let anchor = setupAnchor {
-            anchor.position = target.position
-            anchor.orientation = simd_quatf(angle: target.yaw, axis: SIMD3(0, 1, 0))
+        if isRepositioning, let old = setupAnchor, let arView {
+            // Move the whole setup onto a fresh ARKit anchor at the new spot.
+            let anchor = makeWorldAnchor(at: target.position, yaw: target.yaw)
+            for child in Array(old.children) { anchor.addChild(child) }
+            arView.scene.addAnchor(anchor)
+            removeWorldAnchor(old)
+            setupAnchor = anchor
             // A new setup means a new (unlevelled) tripod head.
             if var k = kinematics {
                 k.state.setupTilt = SurveyingKinematics.randomSetupTilt()
+                k.state.legExtensions = [0, 0, 0]
                 kinematics = k
                 instrumentRig?.apply(k)
-                tripodRig?.apply(setupTilt: k.state.setupTilt)
-                showToast("Tripod repositioned — relevel the instrument", systemImage: "scope", tint: .info)
+                tripodRig?.apply(k)
+                showToast("Stativ přemístěn – znovu zhorizontujte", systemImage: "scope", tint: .info)
             }
             gnssSimulator?.reset()
         } else {
@@ -275,7 +280,10 @@ final class ARSceneController {
 
     private func updatePlacementPreview(in arView: ARView) {
         let center = CGPoint(x: arView.bounds.midX, y: arView.bounds.midY)
-        guard let result = arView.raycast(from: center, allowing: .estimatedPlane, alignment: .horizontal).first else {
+        // Prefer the scanned floor plane (stable), fall back to an estimated plane.
+        let result = arView.raycast(from: center, allowing: .existingPlaneGeometry, alignment: .horizontal).first
+            ?? arView.raycast(from: center, allowing: .estimatedPlane, alignment: .horizontal).first
+        guard let result else {
             placementReady = false
             reticle?.isEnabled = false
             pendingPlacement = nil
@@ -289,6 +297,25 @@ final class ARSceneController {
         pendingPlacement = (position, yaw)
     }
 
+    /// Creates an entity anchored to a real ARKit anchor. ARKit keeps refining the
+    /// anchor's pose with the LiDAR map, so the equipment stays locked to the floor
+    /// even after tracking corrections (better than a fixed world transform).
+    private func makeWorldAnchor(at position: SIMD3<Float>, yaw: Float) -> AnchorEntity {
+        var transform = simd_float4x4(simd_quatf(angle: yaw, axis: SIMD3(0, 1, 0)))
+        transform.columns.3 = SIMD4(position.x, position.y, position.z, 1)
+        let arAnchor = ARAnchor(name: "GeoAR.setup", transform: transform)
+        arView?.session.add(anchor: arAnchor)
+        return AnchorEntity(anchor: arAnchor)
+    }
+
+    private func removeWorldAnchor(_ anchor: AnchorEntity) {
+        arView?.scene.removeAnchor(anchor)
+        if let id = anchor.anchorIdentifier,
+           let arAnchor = arView?.session.currentFrame?.anchors.first(where: { $0.identifier == id }) {
+            arView?.session.remove(anchor: arAnchor)
+        }
+    }
+
     /// Yaw that turns the equipment's back (+Z, eyepiece / tablet side) towards the user.
     private func facingYaw(at position: SIMD3<Float>) -> Float {
         let d = cameraTransform.columns.3.xyz - position
@@ -297,8 +324,7 @@ final class ARSceneController {
 
     private func install(_ model: EquipmentModel, at position: SIMD3<Float>, yaw: Float) {
         guard let arView else { return }
-        let anchor = AnchorEntity(world: position)
-        anchor.orientation = simd_quatf(angle: yaw, axis: SIMD3(0, 1, 0))
+        let anchor = makeWorldAnchor(at: position, yaw: yaw)
 
         if case .levelingRod(let spec) = model.kind {
             let rod = generator.makeLevelingRod(spec: spec)
@@ -306,10 +332,10 @@ final class ARSceneController {
             arView.scene.addAnchor(anchor)
             rods.append((anchor, rod))
             if rods.count > 3 {
-                arView.scene.removeAnchor(rods.removeFirst().anchor)
+                removeWorldAnchor(rods.removeFirst().anchor)
             }
             rodCount = rods.count
-            showToast("Levelling rod placed", systemImage: "ruler", tint: .success)
+            showToast("Lať postavena", systemImage: "ruler", tint: .success)
             return
         }
 
@@ -321,11 +347,11 @@ final class ARSceneController {
         case .totalStation(let spec):
             let rig = generator.makeTotalStation(model, spec: spec)
             mountOnTripod(rig, model: model, anchor: anchor, headHeight: headHeight)
-            showToast("Level the instrument with the foot screws", systemImage: "scope", tint: .info)
+            showToast("Zhorizontujte přístroj: nohy stativu nahrubo, šrouby najemno", systemImage: "scope", tint: .info)
         case .opticalLevel(let spec):
             let rig = generator.makeOpticalLevel(model, spec: spec)
             mountOnTripod(rig, model: model, anchor: anchor, headHeight: headHeight)
-            showToast("Centre the circular bubble with the foot screws", systemImage: "level", tint: .info)
+            showToast("Nohami stativu a stavěcími šrouby urovnejte bublinu", systemImage: "level", tint: .info)
         case .tripod:
             let tripod = generator.makeTripod(headHeight: headHeight)
             tripod.apply(setupTilt: SurveyingKinematics.randomSetupTilt())
@@ -338,7 +364,7 @@ final class ARSceneController {
             pole = PoleKinematics(length: spec.poleLength)
             gnssSimulator = GNSSSimulator(spec: spec)
             lastGNSSEpoch = nil
-            showToast("Acquiring satellites…", systemImage: "antenna.radiowaves.left.and.right", tint: .info)
+            showToast("Hledám družice…", systemImage: "antenna.radiowaves.left.and.right", tint: .info)
         case .levelingRod:
             break
         }
@@ -355,7 +381,7 @@ final class ARSceneController {
         k.state.setupTilt = SurveyingKinematics.randomSetupTilt()
         k.state.circleOrientation = 0
         k.setFocusDistance(20)
-        tripod.apply(setupTilt: k.state.setupTilt)
+        tripod.apply(k)
         rig.root.position = SIMD3(0, headHeight, 0)
         rig.apply(k)
         anchor.addChild(tripod.root)
@@ -368,7 +394,7 @@ final class ARSceneController {
     }
 
     private func removeSetup() {
-        if let setupAnchor { arView?.scene.removeAnchor(setupAnchor) }
+        if let setupAnchor { removeWorldAnchor(setupAnchor) }
         setupAnchor = nil
         tripodRig = nil
         instrumentRig = nil
@@ -387,7 +413,7 @@ final class ARSceneController {
 
     func clearScene() {
         removeSetup()
-        for rod in rods { arView?.scene.removeAnchor(rod.anchor) }
+        for rod in rods { removeWorldAnchor(rod.anchor) }
         rods.removeAll()
         rodCount = 0
     }
@@ -527,7 +553,7 @@ final class ARSceneController {
                 .init(label: "N", value: String(format: "%.3f", status.northing), unit: "m"),
                 .init(label: "E", value: String(format: "%.3f", status.easting), unit: "m"),
                 .init(label: "H", value: String(format: "%.3f", status.height), unit: "m"),
-                .init(label: "Sats / PDOP", value: String(format: "%d / %.1f", status.satellitesUsed, status.pdop)),
+                .init(label: "Družice / PDOP", value: String(format: "%d / %.1f", status.satellitesUsed, status.pdop)),
             ],
             style: .tablet))
     }
@@ -619,11 +645,13 @@ final class ARSceneController {
                 case .turnVerticalDrive(let t): feedback.merge(k.turnVerticalTangent(turns: t))
                 case .turnFootScrew(let i, let t): feedback.merge(k.turnFootScrew(i, turns: t))
                 case .turnFocus(let t): k.turnFocus(turns: t)
+                case .adjustLeg(let i, let d): feedback.merge(k.adjustLeg(i, by: d))
                 case .aimPole: break
                 }
             }
             kinematics = k
             rig.apply(k)
+            tripodRig?.apply(k)
             focusDistance = k.state.focusDistance
             handle(feedback)
         }
@@ -641,19 +669,19 @@ final class ARSceneController {
         haptics.detents(feedback.detentTicks)
         if feedback.blockedByClamp {
             haptics.blocked()
-            showToast("Clamp engaged — use the fine drive", systemImage: "lock.fill", tint: .warning)
+            showToast("Svěrka utažená – použijte ustanovku", systemImage: "lock.fill", tint: .warning)
         }
         if feedback.clampReleased {
-            showToast("Engage the clamp before using the tangent screw", systemImage: "lock.open", tint: .warning)
+            showToast("Nejdřív utáhněte svěrku", systemImage: "lock.open", tint: .warning)
         }
         if feedback.hitTravelLimit {
             haptics.blocked()
-            showToast("End of screw travel", systemImage: "arrow.left.and.right", tint: .warning)
+            showToast("Konec chodu", systemImage: "arrow.left.and.right", tint: .warning)
         }
         switch feedback.levelStateChanged {
         case .leveled?:
             haptics.success()
-            showToast("Instrument levelled", systemImage: "checkmark.circle.fill", tint: .success)
+            showToast("Přístroj zhorizontován ✓", systemImage: "checkmark.circle.fill", tint: .success)
         case .outOfRange?:
             haptics.warning()
         default:
@@ -704,7 +732,7 @@ final class ARSceneController {
 
     func setHzZero() {
         mutateKinematics { $0.setHorizontalReading(0) }
-        showToast("Hz set to 0", systemImage: "scope", tint: .success)
+        showToast("Hz nastaveno na 0", systemImage: "scope", tint: .success)
     }
 
     /// Switches between modern endless drives and a classic clamp/tangent-screw instrument.
@@ -719,7 +747,7 @@ final class ARSceneController {
 
     func recordBacksight() {
         guard let reading = readout.rod?.reading else {
-            showToast("Sight a levelling rod first", systemImage: "ruler", tint: .warning)
+            showToast("Nejdřív zamiřte na lať", systemImage: "ruler", tint: .warning)
             return
         }
         levelingLog.backsight = reading
@@ -729,7 +757,7 @@ final class ARSceneController {
 
     func recordForesight() {
         guard let reading = readout.rod?.reading else {
-            showToast("Sight a levelling rod first", systemImage: "ruler", tint: .warning)
+            showToast("Nejdřív zamiřte na lať", systemImage: "ruler", tint: .warning)
             return
         }
         levelingLog.foresight = reading

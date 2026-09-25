@@ -47,7 +47,7 @@ struct CatalogOverlayView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 } else {
                     EquipmentDrawer()
-                        .frame(width: 400)
+                        .frame(width: 400, alignment: .trailing)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
@@ -86,7 +86,7 @@ struct StatusHUDView: View {
             }
 
             HStack(spacing: 8) {
-                Picker("Interaction", selection: $scene.interactionMode) {
+                Picker("Ovládání", selection: $scene.interactionMode) {
                     ForEach(InteractionMode.allCases) { mode in
                         Label(mode.title, systemImage: mode.systemImage).tag(mode)
                     }
@@ -94,7 +94,7 @@ struct StatusHUDView: View {
                 .pickerStyle(.segmented)
                 .frame(maxWidth: 170)
 
-                Picker("Units", selection: $scene.angleUnit) {
+                Picker("Jednotky", selection: $scene.angleUnit) {
                     ForEach(AngleUnit.allCases) { unit in Text(unit.label).tag(unit) }
                 }
                 .pickerStyle(.menu)
@@ -111,7 +111,7 @@ struct StatusHUDView: View {
                             .padding(9)
                             .background(Circle().fill(.ultraThinMaterial))
                     }
-                    .accessibilityLabel("Reposition tripod")
+                    .accessibilityLabel("Přemístit stativ")
                 }
                 Button {
                     model.placeSelected()
@@ -122,11 +122,11 @@ struct StatusHUDView: View {
                         .padding(9)
                         .background(Circle().fill(Color.surveyAccent))
                 }
-                .accessibilityLabel("Place instrument")
+                .accessibilityLabel("Postavit přístroj")
             }
 
             if scene.showNoHandHint {
-                Label("No hand detected — switch to Touch mode for manual control", systemImage: "hand.raised.slash")
+                Label("Ruka nenalezena – přepněte na Dotyk", systemImage: "hand.raised.slash")
                     .font(.caption)
                     .foregroundStyle(Color.surveyAmber)
                     .onTapGesture { scene.interactionMode = .touch }
@@ -141,12 +141,12 @@ struct StatusHUDView: View {
     private var subtitle: String {
         let scene = model.scene
         if let message = scene.trackingMessage { return message }
-        if let engaged = scene.engagedPart { return "Operating: \(engaged.displayName)" }
+        if let engaged = scene.engagedPart { return "Ovládáte: \(engaged.displayName)" }
         if let hovered = scene.hoveredPart { return hovered.displayName }
-        if scene.activeModel == nil { return "Pick equipment below and place it" }
+        if scene.activeModel == nil { return "Vyberte vybavení vpravo dole a postavte ho" }
         return scene.interactionMode == .handTracking
-            ? "Touch the body to rotate · pinch & twist the knobs"
-            : "Drag the body / telescope · drag or twist the knobs"
+            ? "Dotkněte se těla a otáčejte · sevřete a otočte knoflík"
+            : "Táhněte tělo / dalekohled · táhněte nebo otáčejte knoflíky"
     }
 
     @ViewBuilder private var statusPill: some View {
@@ -183,14 +183,14 @@ struct InstrumentReadoutGrid: View {
             HStack {
                 ReadoutCell(label: "Hz", value: GeodeticMath.format(readout.angles?.hz, unit: unit), unit: angleUnitLabel, emphasized: true)
                 if readout.isAutomaticLevel {
-                    ReadoutCell(label: "Rod", value: GeodeticMath.formatDistance(readout.rod?.reading), unit: "m", emphasized: true)
+                    ReadoutCell(label: "Lať", value: GeodeticMath.formatDistance(readout.rod?.reading), unit: "m", emphasized: true)
                 } else {
                     ReadoutCell(label: "V (\(readout.angles?.face.rawValue ?? "I"))", value: GeodeticMath.format(readout.angles?.v, unit: unit),
                                 unit: angleUnitLabel, emphasized: true)
                 }
             }
             HStack {
-                ReadoutCell(label: readout.isAutomaticLevel ? "Stadia D" : "SD", value: GeodeticMath.formatDistance(readout.distance?.slope), unit: "m")
+                ReadoutCell(label: readout.isAutomaticLevel ? "Dálka (rysky)" : "SD", value: GeodeticMath.formatDistance(readout.distance?.slope), unit: "m")
                 if readout.isAutomaticLevel {
                     ReadoutCell(label: "BS", value: GeodeticMath.formatDistance(scene.levelingLog.backsight), unit: "m")
                     ReadoutCell(label: "Δh", value: scene.levelingLog.deltaH.map { String(format: "%+.4f", $0) } ?? "--", unit: "m")
@@ -200,7 +200,7 @@ struct InstrumentReadoutGrid: View {
                 }
             }
             if let source = readout.distance?.source {
-                Text("Target: \(source.rawValue) · hi = \(String(format: "%.3f", readout.instrumentHeight)) m")
+                Text("Cíl: \(source.rawValue) · hi = \(String(format: "%.3f", readout.instrumentHeight)) m")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,20 +217,20 @@ struct GNSSReadoutGrid: View {
         if let gnss = scene.gnss {
             VStack(spacing: 8) {
                 HStack {
-                    ReadoutCell(label: "Northing", value: String(format: "%.3f", gnss.northing), unit: "m", emphasized: true)
-                    ReadoutCell(label: "Easting", value: String(format: "%.3f", gnss.easting), unit: "m", emphasized: true)
+                    ReadoutCell(label: "X (sever)", value: String(format: "%.3f", gnss.northing), unit: "m", emphasized: true)
+                    ReadoutCell(label: "Y (východ)", value: String(format: "%.3f", gnss.easting), unit: "m", emphasized: true)
                 }
                 HStack {
-                    ReadoutCell(label: "Height", value: String(format: "%.3f", gnss.height), unit: "m")
+                    ReadoutCell(label: "Výška", value: String(format: "%.3f", gnss.height), unit: "m")
                     ReadoutCell(label: "HRMS / VRMS", value: String(format: "%.3f / %.3f", gnss.hrms, gnss.vrms))
                 }
                 HStack {
-                    ReadoutCell(label: "Sats", value: "\(gnss.satellitesUsed)/\(gnss.satellitesTracked)")
+                    ReadoutCell(label: "Družice", value: "\(gnss.satellitesUsed)/\(gnss.satellitesTracked)")
                     ReadoutCell(label: "PDOP", value: String(format: "%.1f", gnss.pdop))
-                    ReadoutCell(label: "Tilt", value: String(format: "%.1f°", GeodeticMath.toDegrees(gnss.poleTilt)))
+                    ReadoutCell(label: "Náklon", value: String(format: "%.1f°", GeodeticMath.toDegrees(gnss.poleTilt)))
                 }
                 Toggle(isOn: $scene.tiltCompensationEnabled) {
-                    Label(gnss.tiltCompensated ? "Tilt compensation active" : "Tilt compensation off / out of range",
+                    Label(gnss.tiltCompensated ? "Kompenzace náklonu aktivní" : "Kompenzace náklonu vypnutá / mimo rozsah",
                           systemImage: "gyroscope")
                         .font(.caption)
                 }
@@ -250,18 +250,18 @@ struct InstrumentControlPanel: View {
         let clamps = scene.clamps
         VStack(alignment: .leading, spacing: 8) {
             if !clamps.isLevel {
-                GlassToggleChip(title: "Classic", systemImage: "gearshape.2", isOn: clamps.classicDrives) {
+                GlassToggleChip(title: "Svěrky", systemImage: "gearshape.2", isOn: clamps.classicDrives) {
                     scene.setClassicDrives(!clamps.classicDrives)
                 }
                 if clamps.classicDrives {
-                    GlassToggleChip(title: "Hz clamp", systemImage: clamps.horizontalClamp ? "lock.fill" : "lock.open",
+                    GlassToggleChip(title: "Hz svěrka", systemImage: clamps.horizontalClamp ? "lock.fill" : "lock.open",
                                     isOn: clamps.horizontalClamp) { scene.toggleHorizontalClamp() }
                     GlassToggleChip(title: "V clamp", systemImage: clamps.verticalClamp ? "lock.fill" : "lock.open",
                                     isOn: clamps.verticalClamp) { scene.toggleVerticalClamp() }
                 }
                 GlassToggleChip(title: "Hz hold", systemImage: "pause.circle", isOn: clamps.hzHold) { scene.toggleHzHold() }
             }
-            GlassToggleChip(title: "Comp", systemImage: "scalemass", isOn: clamps.compensator) { scene.toggleCompensator() }
+            GlassToggleChip(title: "Kompenzátor", systemImage: "scalemass", isOn: clamps.compensator) { scene.toggleCompensator() }
             Button {
                 scene.setHzZero()
             } label: {
@@ -294,7 +294,7 @@ struct EyepieceHint: View {
         let optics = model.scene.optics
         if model.scene.hasTelescopeInstrument, let alignment = optics.alignment, alignment.distance < 0.35 {
             let angle = Double(alignment.angularDeviation) * 180 / .pi
-            Label(String(format: "Eyepiece %.0f cm · %.0f° off-axis — bring the lens to the eyepiece", alignment.distance * 100, angle),
+            Label(String(format: "Okulár %.0f cm · odchylka %.0f° – přiložte telefon k okuláru", alignment.distance * 100, angle),
                   systemImage: "eye")
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 12)
@@ -313,16 +313,16 @@ struct PlacementBar: View {
     var body: some View {
         let scene = model.scene
         VStack(spacing: 10) {
-            Label(scene.placementReady ? "Tap Place or tap the screen to set up here"
-                                       : "Aim at the ground to find a surface",
+            Label(scene.placementReady ? "Klepněte na Postavit nebo na obrazovku"
+                                       : "Namiřte na podlahu, ať se najde plocha",
                   systemImage: scene.placementReady ? "scope" : "viewfinder")
                 .font(.subheadline.weight(.semibold))
             Text(scene.placingModel?.displayName ?? "")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack(spacing: 10) {
-                GlassActionButton(title: "Cancel", systemImage: "xmark") { scene.cancelPlacement() }
-                GlassActionButton(title: "Place", systemImage: "checkmark", prominent: true) { scene.confirmPlacement() }
+                GlassActionButton(title: "Zrušit", systemImage: "xmark") { scene.cancelPlacement() }
+                GlassActionButton(title: "Postavit", systemImage: "checkmark", prominent: true) { scene.confirmPlacement() }
                     .disabled(!scene.placementReady)
                     .opacity(scene.placementReady ? 1 : 0.5)
             }
@@ -341,8 +341,26 @@ struct EquipmentDrawer: View {
     @GestureState private var dragOffset: CGFloat = 0
 
     var body: some View {
+        if model.isDrawerCollapsed {
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) { model.isDrawerCollapsed = false }
+            } label: {
+                Label("Vybavení", systemImage: "plus.circle.fill")
+                    .font(.headline)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+            }
+            .buttonStyle(.plain)
+            .glass(cornerRadius: 22)
+            .padding(.trailing, 8)
+        } else {
+            expandedBody
+        }
+    }
+
+    private var expandedBody: some View {
         @Bindable var model = model
-        VStack(spacing: 10) {
+        return VStack(spacing: 10) {
             Capsule()
                 .fill(.white.opacity(0.4))
                 .frame(width: 40, height: 5)
@@ -350,7 +368,7 @@ struct EquipmentDrawer: View {
                 .contentShape(Rectangle().inset(by: -12))
                 .onTapGesture { toggle() }
 
-            Picker("Category", selection: $model.selectedCategory) {
+            Picker("Kategorie", selection: $model.selectedCategory) {
                 ForEach(EquipmentCategory.allCases) { category in
                     Image(systemName: category.systemImage).tag(category)
                         .accessibilityLabel(category.title)
@@ -401,14 +419,21 @@ struct EquipmentDrawer: View {
 
     private var placeTitle: String {
         switch model.selectedModel.kind {
-        case .levelingRod: "Place Rod"
-        case .tripod: "Place Tripod"
-        case .gnssRover: "Place Rover"
-        default: "Place Instrument"
+        case .levelingRod: "Postavit lať"
+        case .tripod: "Postavit stativ"
+        case .gnssRover: "Postavit rover"
+        default: "Postavit přístroj"
         }
     }
 
-    private func toggle() { setExpanded(!model.isDrawerExpanded) }
+    private func toggle() {
+        // With equipment already placed, tapping the handle tucks the catalogue away.
+        if model.scene.activeModel != nil && !model.isDrawerExpanded {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) { model.isDrawerCollapsed = true }
+        } else {
+            setExpanded(!model.isDrawerExpanded)
+        }
+    }
 
     private func setExpanded(_ expanded: Bool) {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) { model.isDrawerExpanded = expanded }
@@ -436,7 +461,7 @@ struct EquipmentCard: View {
                         .background(Capsule().fill(.white.opacity(0.12)))
                 }
             }
-            Text(item.manufacturer == .generic ? "Accessory" : item.manufacturer.shortName)
+            Text(item.manufacturer == .generic ? "Příslušenství" : item.manufacturer.shortName)
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
             Text(item.name)

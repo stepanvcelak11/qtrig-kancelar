@@ -33,6 +33,10 @@ final class ProceduralModelGenerator {
         entity.position = position
         entity.orientation = rotation
         entity.scale = scale
+        if #available(iOS 18.0, *) {
+            // Contact shadow on the real floor – makes the equipment visually "stand" in the room.
+            entity.components.set(GroundingShadowComponent(castsShadow: true))
+        }
         parent.addChild(entity)
         return entity
     }
@@ -450,19 +454,24 @@ final class ProceduralModelGenerator {
                 at: SIMD3(0, clampY, 0.03), rotation: .yToZ)
             add(box(SIMD3(0.034, 0.012, 0.005), radius: 0.002), lib.blackPlastic(), "WingNut", to: leg, at: SIMD3(0, clampY, 0.046))
 
+            // Telescopic lower section: slides along the leg when the leg is lengthened.
+            let slider = node("LegSlider\(i)", in: leg)
             let lowerTop = -0.03 - upperLength + 0.16
             let lowerBottom = -(length - 0.1)
             let lowerLength = lowerTop - lowerBottom
-            add(box(SIMD3(0.022, lowerLength, 0.017), radius: 0.003), wood, "LowerBar", to: leg,
+            add(box(SIMD3(0.022, lowerLength, 0.017), radius: 0.003), wood, "LowerBar", to: slider,
                 at: SIMD3(0, (lowerTop + lowerBottom) / 2, 0))
-
-            add(box(SIMD3(0.028, 0.075, 0.022), radius: 0.003), steel, "Shoe", to: leg, at: SIMD3(0, -(length - 0.0725), 0))
-            add(box(SIMD3(0.045, 0.005, 0.03), radius: 0.001), steel, "FootStep", to: leg, at: SIMD3(0.03, -(length - 0.06), 0))
-            add(MeshFactory.frustum(bottomRadius: 0.011, topRadius: 0.0006, height: 0.035), steel, "Spike", to: leg,
+            add(box(SIMD3(0.028, 0.075, 0.022), radius: 0.003), steel, "Shoe", to: slider, at: SIMD3(0, -(length - 0.0725), 0))
+            add(box(SIMD3(0.045, 0.005, 0.03), radius: 0.001), steel, "FootStep", to: slider, at: SIMD3(0.03, -(length - 0.06), 0))
+            add(MeshFactory.frustum(bottomRadius: 0.011, topRadius: 0.0006, height: 0.035), steel, "Spike", to: slider,
                 at: SIMD3(0, -(length - 0.035), 0), rotation: simd_quatf(angle: .pi, axis: SIMD3(1, 0, 0)))
+            rig.legSliders.append(slider)
 
             leg.addPartCollider(.tripod, shapes: [ShapeResource.generateCapsule(height: length, radius: 0.03)
                 .offsetBy(translation: SIMD3(0, -length / 2, 0))])
+            // The leg clamp is the grab point for lengthening / shortening the leg.
+            leg.addPartCollider(.tripodLeg(i), shapes: [ShapeResource.generateSphere(radius: 0.05)
+                .offsetBy(translation: SIMD3(0, clampY, 0))])
         }
         return rig
     }

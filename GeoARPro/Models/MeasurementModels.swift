@@ -20,9 +20,9 @@ enum LevelState: String, Sendable, Equatable {
 
     var title: String {
         switch self {
-        case .leveled: "Levelled"
-        case .compensated: "Compensated"
-        case .outOfRange: "Tilt out of range"
+        case .leveled: "Zhorizontováno"
+        case .compensated: "Kompenzováno"
+        case .outOfRange: "Mimo rozsah"
         }
     }
 }
@@ -54,8 +54,8 @@ struct AngleReadings: Sendable, Equatable {
 
 enum DistanceSource: String, Sendable, Equatable {
     case lidarMesh = "LiDAR mesh"
-    case estimatedPlane = "Estimated plane"
-    case levelingRod = "Levelling rod"
+    case estimatedPlane = "Odhadnutá rovina"
+    case levelingRod = "Nivelační lať"
 }
 
 struct DistanceMeasurement: Sendable, Equatable {
@@ -130,8 +130,8 @@ struct LevelingLog: Sendable, Equatable {
 // MARK: - GNSS
 
 enum GNSSFixType: String, Sendable, Equatable {
-    case none = "No position"
-    case autonomous = "Autonomous"
+    case none = "Bez polohy"
+    case autonomous = "Autonomní"
     case rtkFloat = "RTK Float"
     case rtkFixed = "RTK Fixed"
 }

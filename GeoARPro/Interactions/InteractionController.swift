@@ -44,6 +44,8 @@ enum KinematicIntent {
     case turnVerticalDrive(Double)
     case turnFootScrew(Int, Double)
     case turnFocus(Double)
+    /// Lengthen (+) / shorten (−) a tripod leg by metres.
+    case adjustLeg(Int, Double)
     /// Lean the range pole so it points at this world position.
     case aimPole(SIMD3<Float>)
 }
@@ -231,6 +233,17 @@ final class InteractionController {
             // projected onto a sphere around the tip.
             let point = p.rayOrigin + p.rayDirection * e.grabDistance
             return simd_distance(point, tip) > 0.2 ? [.aimPole(point)] : []
+
+        case .tripodLeg0, .tripodLeg1, .tripodLeg2:
+            // Lift the leg clamp = longer leg (that side of the head rises), push down = shorter.
+            let index = e.kind.tripodLegIndex ?? 0
+            if let tip = p.fingertipWorld {
+                defer { e.lastAngle = Double(tip.y) }
+                guard let last = e.lastAngle else { return [] }
+                return [.adjustLeg(index, Double(tip.y) - last)]
+            }
+            let metresPerPoint = p.source == .touch ? 0.0006 : 0.0008
+            return dy == 0 ? [] : [.adjustLeg(index, -dy * metresPerPoint)]
 
         case .tripod, .levelingRod:
             return []

@@ -62,7 +62,7 @@ struct LevelBubbleView: View {
         .padding(10)
         .glass(cornerRadius: 20)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Circular level: \(state.state.title), tilt \(tiltText)")
+        .accessibilityLabel("Krabicová libela: \(state.state.title), sklon \(tiltText)")
     }
 
     private var bubbleOffset: CGSize {

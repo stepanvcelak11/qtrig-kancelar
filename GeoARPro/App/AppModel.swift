@@ -20,6 +20,8 @@ final class AppModel {
     var selectedCategory: EquipmentCategory = .totalStation
     var selectedModelID: String = EquipmentCatalog.defaultModel.id
     var isDrawerExpanded = false
+    /// After placing equipment the catalogue shrinks to a small button, so the AR view stays clear.
+    var isDrawerCollapsed = false
 
     var selectedModel: EquipmentModel {
         EquipmentCatalog.model(id: selectedModelID) ?? EquipmentCatalog.defaultModel
@@ -51,6 +53,9 @@ final class AppModel {
 
     func placeSelected() {
         scene.beginPlacement(of: selectedModel)
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) { isDrawerExpanded = false }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+            isDrawerExpanded = false
+            isDrawerCollapsed = true
+        }
     }
 }
