@@ -130,8 +130,7 @@ function setMode(mode) {
   document.querySelectorAll('#modeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
   $('handBtn').classList.toggle('hidden', !ar);
   if (!ar && S.hand) toggleHand();
-  if (!ar) camera.fov = 55; else camera.fov = 62;
-  camera.updateProjectionMatrix();
+  updateFov();
 }
 
 // Orientace zařízení → kvaternion kamery (algoritmus DeviceOrientationControls).
@@ -659,7 +658,8 @@ function updateHUD() {
   }
   $('levelBox').classList.toggle('hidden', !(st?.k || st?.rover));
   const top = $('hud').getBoundingClientRect().bottom + 10;
-  $('controls').style.top = `${top}px`; $('levelBox').style.top = `${top}px`;
+  if (!landscape.matches) { $('controls').style.top = `${top}px`; $('levelBox').style.top = `${top}px`; }
+  else { $('controls').style.top = ''; $('levelBox').style.top = ''; }
   if (!subOverride) $('hudSub').textContent = subtitle();
 }
 
@@ -975,10 +975,35 @@ function begin(ar) {
 $('startAR').addEventListener('click', () => begin(true));
 $('start3D').addEventListener('click', () => begin(false));
 
+const landscape = matchMedia('(orientation: landscape)');
+
+/**
+ * Svislé zorné pole virtuální kamery tak, aby odpovídalo videu zobrazenému s object-fit: cover.
+ * Delší strana snímače má u hlavní kamery iPhonu zorné pole ≈ 65°; na výšku obrazovky se
+ * zobrazí jen její část (ořez), proto se pole přepočítá přes měřítko zobrazení.
+ */
+function updateFov() {
+  const v = $('cam');
+  if (S.mode === 'ar' && v.videoWidth) {
+    const s = Math.max(innerWidth / v.videoWidth, innerHeight / v.videoHeight);
+    const tanPerPx = Math.tan(deg(65) / 2) / (Math.max(v.videoWidth, v.videoHeight) / 2);
+    camera.fov = toDeg(2 * Math.atan(tanPerPx * (innerHeight / 2) / s));
+  } else {
+    camera.fov = landscape.matches ? 42 : 55;
+  }
+  // Ve 3D na šířku posuneme obraz doprava dolů, aby přístroj nezakrýval horní panel.
+  // (V AR se obraz posouvat nesmí – musí sedět na video.)
+  if (S.mode !== 'ar' && landscape.matches) camera.setViewOffset(innerWidth, innerHeight, -0.16 * innerWidth, -0.1 * innerHeight, innerWidth, innerHeight);
+  else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+}
+$('cam').addEventListener('loadedmetadata', updateFov);
+$('cam').addEventListener('resize', updateFov);
+
 function resize() {
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
+  updateFov();
 }
 addEventListener('resize', resize);
 resize();
