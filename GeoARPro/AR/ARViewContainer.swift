@@ -11,6 +11,7 @@
 //   • the ARSessionDelegate bridge feeding `ARSceneController`.
 //
 
+import Foundation
 import ARKit
 import RealityKit
 import SwiftUI

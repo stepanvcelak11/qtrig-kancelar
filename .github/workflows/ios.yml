@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-15
@@ -31,11 +34,21 @@ jobs:
           xcodebuild build \
             -project GeoARPro.xcodeproj \
             -scheme GeoARPro \
-            -configuration Debug \
+            -configuration Release \
+            -sdk iphoneos \
             -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee build.log | grep -E "error:|warning: .*(concurren|Sendable|isolat)|BUILD" || true
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee build.log | grep -E "error:|BUILD" || true
           grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Package unsigned IPA
+        run: |
+          APP=$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry GeoARPro-unsigned.ipa Payload
+          ls -lh GeoARPro-unsigned.ipa
 
       - name: Unit tests (surveying core, macOS)
         run: |
@@ -44,8 +57,26 @@ jobs:
             -project GeoARPro.xcodeproj \
             -scheme SurveyingCoreTests \
             -destination 'platform=macOS' \
-            | tee test.log | grep -E "error:|Test Case .* (passed|failed)|TEST (SUCCEEDED|FAILED)|Executed" || true
+            | tee test.log | grep -E "error:|failed|TEST (SUCCEEDED|FAILED)|Executed" || true
           grep -q "TEST SUCCEEDED" test.log
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GeoARPro-unsigned-ipa
+          path: GeoARPro-unsigned.ipa
+
+      - name: Publish download link (GitHub Release)
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${GITHUB_REF_NAME//\//-}"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" GeoARPro-unsigned.ipa \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "GeoAR Pro – test build (${GITHUB_REF_NAME})" \
+            --notes "Unsigned build of commit ${GITHUB_SHA}. Install with Sideloadly or AltStore using your Apple ID (see README)."
 
       - name: Upload logs
         if: always()

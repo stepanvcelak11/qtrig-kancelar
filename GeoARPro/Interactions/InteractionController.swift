@@ -16,6 +16,7 @@
 //  finger exactly; otherwise a screen-space gain is used.
 //
 
+import Foundation
 import CoreGraphics
 import RealityKit
 import simd

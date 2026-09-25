@@ -7,6 +7,7 @@
 //  fine drives (the real knobs are out of reach while looking through).
 //
 
+import Foundation
 import SwiftUI
 
 struct TelescopeView: View {

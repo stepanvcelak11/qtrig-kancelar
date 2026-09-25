@@ -7,6 +7,7 @@
 //  the bottom equipment catalogue drawer.
 //
 
+import Foundation
 import SwiftUI
 
 struct CatalogOverlayView: View {

@@ -3,6 +3,7 @@
 //  GeoAR Pro: Surveying Simulator
 //
 
+import Foundation
 import SwiftUI
 
 struct RootView: View {

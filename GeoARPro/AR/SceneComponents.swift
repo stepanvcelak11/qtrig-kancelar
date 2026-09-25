@@ -6,6 +6,7 @@
 //  the model generator, hand tracking and optics services.
 //
 
+import Foundation
 import RealityKit
 import simd
 

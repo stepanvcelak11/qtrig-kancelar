@@ -5,6 +5,7 @@
 //  Glassmorphism building blocks shared by all overlays.
 //
 
+import Foundation
 import SwiftUI
 
 extension Color {

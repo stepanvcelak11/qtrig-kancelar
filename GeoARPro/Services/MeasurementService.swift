@@ -8,6 +8,7 @@
 //  ARKit estimated-plane raycast from an arbitrary origin.
 //
 
+import Foundation
 import ARKit
 import RealityKit
 import simd

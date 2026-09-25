@@ -6,6 +6,7 @@
 //  rate limited so fast knob spins feel like a ratchet instead of a buzz.
 //
 
+import Foundation
 import QuartzCore
 import UIKit
 

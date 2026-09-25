@@ -13,6 +13,7 @@
 //  colliders stay procedural (see `applyUSDZOverride`).
 //
 
+import Foundation
 import RealityKit
 import simd
 import UIKit

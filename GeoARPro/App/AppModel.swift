@@ -6,6 +6,7 @@
 //  The AR scene state lives in `ARSceneController`.
 //
 
+import Foundation
 import Observation
 import SwiftUI
 

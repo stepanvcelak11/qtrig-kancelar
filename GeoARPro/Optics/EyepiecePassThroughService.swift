@@ -24,6 +24,7 @@
 //  parallax between the phone camera and the virtual telescope is small.
 //
 
+import Foundation
 import ARKit
 import CoreImage
 import Observation

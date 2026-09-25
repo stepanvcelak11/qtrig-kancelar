@@ -8,6 +8,7 @@
 //  knobs, telescope tubes, radomes, shoe spikes and tori are all lathes.
 //
 
+import Foundation
 import RealityKit
 import simd
 

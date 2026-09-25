@@ -19,6 +19,7 @@
 //                      └─ eyepiece zone (collision sphere r = 4 cm)
 //
 
+import Foundation
 import RealityKit
 import simd
 import UIKit

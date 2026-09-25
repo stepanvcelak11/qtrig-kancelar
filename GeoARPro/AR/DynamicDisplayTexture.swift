@@ -8,6 +8,7 @@
 //  references the texture updates without rebuilding entities.
 //
 
+import Foundation
 import RealityKit
 import UIKit
 

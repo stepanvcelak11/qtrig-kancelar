@@ -6,6 +6,7 @@
 //  ring and the name of the part under the finger.
 //
 
+import Foundation
 import SwiftUI
 
 struct HandOverlayView: View {

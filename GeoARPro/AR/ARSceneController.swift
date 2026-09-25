@@ -8,6 +8,7 @@
 //  controller into the kinematics solver, and publishes observable UI state.
 //
 
+import Foundation
 import ARKit
 import Observation
 import QuartzCore

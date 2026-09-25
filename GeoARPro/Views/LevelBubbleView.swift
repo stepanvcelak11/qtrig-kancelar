@@ -8,6 +8,7 @@
 //  moves the same way as the bubble seen on the virtual tribrach.
 //
 
+import Foundation
 import SwiftUI
 
 struct LevelBubbleView: View {

@@ -6,6 +6,7 @@
 //  portrait lock and keeping the screen awake while surveying.
 //
 
+import Foundation
 import ARKit
 import AVFoundation
 import os
