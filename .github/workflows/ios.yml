@@ -1,0 +1,58 @@
+name: iOS Build & Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build app (device, unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GeoARPro.xcodeproj \
+            -scheme GeoARPro \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log | grep -E "error:|warning: .*(concurren|Sendable|isolat)|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Unit tests (surveying core, macOS)
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project GeoARPro.xcodeproj \
+            -scheme SurveyingCoreTests \
+            -destination 'platform=macOS' \
+            | tee test.log | grep -E "error:|Test Case .* (passed|failed)|TEST (SUCCEEDED|FAILED)|Executed" || true
+          grep -q "TEST SUCCEEDED" test.log
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-logs
+          path: |
+            build.log
+            test.log
+          if-no-files-found: ignore

@@ -1,8 +1,17 @@
-__pycache__/
-*.pyc
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+build/
+*.xcresult
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# macOS
 .DS_Store
-_diag/
-zap_husovice.zap
-SS_BP.txt
-*.zap
-*.crd
