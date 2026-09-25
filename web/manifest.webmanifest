@@ -1,0 +1,16 @@
+{
+  "name": "GeoAR Pro – simulátor geodetických přístrojů",
+  "short_name": "GeoAR Pro",
+  "description": "Totální stanice, nivelační přístroje a GNSS rovery v rozšířené realitě.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#05101c",
+  "theme_color": "#05101c",
+  "lang": "cs",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

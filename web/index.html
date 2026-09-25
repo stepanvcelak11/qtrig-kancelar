@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoAR Pro">
+  <meta name="theme-color" content="#05101c">
+  <meta name="description" content="Simulátor geodetických přístrojů v rozšířené realitě: totální stanice, nivelační přístroje, GNSS rovery.">
+  <title>GeoAR Pro</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+</head>
+<body>
+  <video id="cam" playsinline muted autoplay></video>
+  <canvas id="scene"></canvas>
+  <canvas id="handLayer"></canvas>
+
+  <!-- Horní panel -->
+  <header id="hud" class="glass hidden">
+    <div class="row">
+      <div class="grow">
+        <div id="hudTitle" class="title">GeoAR Pro</div>
+        <div id="hudSub" class="sub">Vyberte vybavení dole a umístěte ho</div>
+      </div>
+      <div id="statusPill" class="pill hidden"></div>
+    </div>
+    <div id="readout" class="grid hidden"></div>
+    <div class="row gap">
+      <div class="seg" id="modeSeg">
+        <button data-mode="ar">📷 AR</button>
+        <button data-mode="3d">🧊 3D</button>
+      </div>
+      <button id="handBtn" class="chip" title="Ovládání rukou">✋ Ruka</button>
+      <button id="unitBtn" class="chip">gon</button>
+    </div>
+  </header>
+
+  <!-- Boční ovládání -->
+  <aside id="controls" class="hidden">
+    <div id="clampPanel" class="stack"></div>
+  </aside>
+  <aside id="levelBox" class="glass hidden">
+    <canvas id="bubble" width="200" height="200"></canvas>
+    <div id="tiltText" class="mono small"></div>
+    <div id="ltText" class="mono tiny"></div>
+  </aside>
+  <div id="walk" class="hidden">
+    <button data-walk="left" title="Obejít vlevo">⟲</button>
+    <button data-walk="near" title="Přiblížit">▲</button>
+    <button data-walk="far" title="Oddálit">▼</button>
+    <button data-walk="right" title="Obejít vpravo">⟳</button>
+  </div>
+
+  <!-- Spodní katalog -->
+  <section id="drawer" class="glass hidden">
+    <div class="handle" id="drawerHandle"></div>
+    <div class="seg" id="catSeg"></div>
+    <div id="cards" class="cards"></div>
+    <div id="specs" class="specs hidden"></div>
+    <button id="placeBtn" class="primary">⌖ Umístit přístroj</button>
+  </section>
+
+  <!-- Umísťování -->
+  <section id="placeBar" class="glass hidden">
+    <div class="title small" id="placeText">Namiřte na zem, kam chcete přístroj postavit</div>
+    <div class="row gap">
+      <button id="placeCancel">✕ Zrušit</button>
+      <button id="placeOk" class="primary">✓ Postavit</button>
+    </div>
+  </section>
+
+  <!-- Pohled okulárem -->
+  <section id="telescope" class="hidden">
+    <div class="row tel-head">
+      <div class="grow"><div class="title">Pohled dalekohledem</div><div class="sub" id="telSub"></div></div>
+      <button id="telExit" class="round">✕</button>
+    </div>
+    <div id="eyepiece">
+      <canvas id="telVideo"></canvas>
+      <canvas id="telScene"></canvas>
+      <canvas id="reticle"></canvas>
+      <div class="vignette"></div>
+    </div>
+    <div id="telReadout" class="glass grid"></div>
+    <div class="glass tel-ctl">
+      <div class="row gap">
+        <div class="jog" data-jog="h"><span>Hz ustanovka</span><canvas></canvas></div>
+        <div class="jog" data-jog="v" id="jogV"><span>V ustanovka</span><canvas></canvas></div>
+        <div class="jog" data-jog="f"><span>Ostření</span><canvas></canvas></div>
+      </div>
+      <div class="row gap">
+        <span>🔍</span><input id="zoom" type="range" min="10" max="30" step="1" value="30"><span id="zoomText" class="mono">30×</span>
+        <button id="afBtn" class="chip">AF</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Úvod -->
+  <section id="start" class="screen">
+    <img src="icons/icon-192.png" alt="" width="96" height="96">
+    <h1>GeoAR Pro</h1>
+    <p class="sub">Simulátor geodetických přístrojů</p>
+    <p class="small">Totální stanice, nivelační přístroje a GNSS rovery v rozšířené realitě. Horizontace stavěcími šrouby, ustanovky, kompenzátor, pohled dalekohledem s dálkoměrnými ryskami.</p>
+    <button id="startAR" class="primary big">📷 Spustit s kamerou (AR)</button>
+    <button id="start3D" class="big">🧊 Spustit ve 3D bez kamery</button>
+    <p class="tiny">Tip: v Safari zvolte Sdílet → Přidat na plochu. Aplikace pak funguje i offline.</p>
+  </section>
+
+  <div id="toast" class="glass hidden"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

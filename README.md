@@ -1,5 +1,14 @@
 # GeoAR Pro: Surveying Simulator
 
+> **Webová verze (PWA):** složka [`web/`](web/) – otevřete ji v Safari/Chrome na telefonu a přidejte na plochu
+> (Sdílet → Přidat na plochu). Nasazuje se automaticky na GitHub Pages (`.github/workflows/pages.yml`).
+> Obsahuje totální stanice, nivelační přístroje, GNSS rovery, stativ a lať; AR nad kamerou s gyroskopem nebo 3D režim,
+> ovládání dotykem i rukou (MediaPipe), horizontaci stavěcími šrouby, kompenzátor, ustanovky a pohled dalekohledem
+> s dálkoměrnými ryskami. Vše (Three.js, MediaPipe a model ruky) je přibaleno, takže po prvním načtení běží offline.
+> Lokálně: `cd web && python3 -m http.server` a testy mechaniky `node web/tests/kinematics.test.mjs`.
+>
+> Níže je popsána nativní iOS verze (Swift 6), která je v repozitáři také.
+
 An augmented-reality simulator of surveying equipment for iPhone (iOS 17+, optimised for LiDAR iPhone Pro models).
 You can place virtual **total stations**, **automatic levels**, **GNSS RTK rovers**, **tripods** and **levelling rods**
 in the real world, operate them with your **tracked hand** (or with touch), level them with the foot screws, and

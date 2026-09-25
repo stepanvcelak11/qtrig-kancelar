@@ -1,8 +1,7 @@
 name: iOS Build & Tests
 
+# Spouští se ručně (macOS minuty jsou drahé); webová verze se nasazuje přes pages.yml.
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:
