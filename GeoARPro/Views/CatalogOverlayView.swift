@@ -15,30 +15,44 @@ struct CatalogOverlayView: View {
 
     var body: some View {
         let scene = model.scene
-        VStack(spacing: 10) {
-            StatusHUDView()
-            HStack(alignment: .top) {
+        // Landscape layout: status + instrument controls on the left, circular level
+        // and the equipment catalogue on the right, the AR scene in between.
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
+                StatusHUDView()
+                    .frame(maxWidth: 440)
                 if scene.clamps.hasInstrument {
-                    InstrumentControlPanel()
-                        .transition(.move(edge: .leading).combined(with: .opacity))
+                    ScrollView(showsIndicators: false) {
+                        InstrumentControlPanel()
+                            .padding(.leading, 12)
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 }
-                Spacer()
+                Spacer(minLength: 0)
+                EyepieceHint()
+                    .padding(.leading, 12)
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 8) {
                 if scene.level.isAvailable {
                     LevelBubbleView(state: scene.level, unit: scene.angleUnit)
+                        .padding(.trailing, 12)
+                        .padding(.top, 8)
                         .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
-            }
-            .padding(.horizontal, 12)
-            Spacer()
-            if scene.isPlacing {
-                PlacementBar()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else {
-                EyepieceHint()
-                EquipmentDrawer()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                Spacer(minLength: 0)
+                if scene.isPlacing {
+                    PlacementBar()
+                        .frame(width: 380)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                } else {
+                    EquipmentDrawer()
+                        .frame(width: 400)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
         }
+        .padding(.bottom, 6)
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: scene.isPlacing)
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: scene.clamps.hasInstrument)
     }
@@ -358,8 +372,11 @@ struct EquipmentDrawer: View {
             }
 
             if model.isDrawerExpanded {
-                EquipmentSpecSheet(item: model.selectedModel)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                ScrollView {
+                    EquipmentSpecSheet(item: model.selectedModel)
+                }
+                .frame(maxHeight: 140)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             GlassActionButton(title: placeTitle, systemImage: "scope", prominent: true) {

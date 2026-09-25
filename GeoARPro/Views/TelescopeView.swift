@@ -17,11 +17,11 @@ struct TelescopeView: View {
         let scene = model.scene
         let optics = scene.optics
         GeometryReader { geometry in
-            let diameter = min(geometry.size.width - 24, geometry.size.height * 0.56)
+            // Landscape: eyepiece on the left, readings and drives on the right.
+            let diameter = min(geometry.size.height - 16, geometry.size.width * 0.55)
             ZStack {
                 Color.black.ignoresSafeArea()
-                VStack(spacing: 14) {
-                    header
+                HStack(spacing: 16) {
                     ZStack {
                         eyepieceImage(optics: optics, diameter: diameter, defocus: scene.defocus)
                         ReticleView(fieldOfView: optics.fieldOfViewRadians)
@@ -33,10 +33,17 @@ struct TelescopeView: View {
                     .overlay(Circle().strokeBorder(.black, lineWidth: 6))
                     .shadow(color: .surveyAccent.opacity(0.15), radius: 30)
 
-                    TelescopeMeasurementPanel()
-                    TelescopeDriveControls()
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 12) {
+                            header
+                            TelescopeMeasurementPanel()
+                            TelescopeDriveControls()
+                        }
+                    }
+                    .frame(maxWidth: 400)
                 }
                 .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -217,11 +224,12 @@ struct JogWheel: View {
                 let spacing: CGFloat = 7
                 var x = phase.truncatingRemainder(dividingBy: spacing)
                 while x < size.width {
-                    let t = abs(x - size.width / 2) / (size.width / 2)
+                    let t: Double = Double(abs(x - size.width / 2) / (size.width / 2))
                     var line = Path()
                     line.move(to: CGPoint(x: x, y: 4))
                     line.addLine(to: CGPoint(x: x, y: size.height - 4))
-                    context.stroke(line, with: .color(.white.opacity(0.55 * (1 - t * 0.8))), lineWidth: 1.5)
+                    let alpha: Double = 0.55 * (1 - t * 0.8)
+                    context.stroke(line, with: .color(Color.white.opacity(alpha)), lineWidth: 1.5)
                     x += spacing
                 }
             }

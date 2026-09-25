@@ -123,6 +123,11 @@ final class ARSceneController {
     @ObservationIgnored private var targetDistance: Double?
     @ObservationIgnored private var cameraTransform = matrix_identity_float4x4
 
+    /// Current interface orientation (landscape left/right) for image ↔ screen mapping.
+    var interfaceOrientation: UIInterfaceOrientation {
+        arView?.window?.windowScene?.interfaceOrientation ?? .landscapeRight
+    }
+
     private var hasInteractiveContent: Bool { instrumentRig != nil || roverRig != nil }
 
     var hasTelescopeInstrument: Bool { instrumentRig != nil }
@@ -172,7 +177,7 @@ final class ARSceneController {
         if isPlacing { updatePlacementPreview(in: arView) }
 
         if interactionMode == .handTracking, optics.mode == .standard, hasInteractiveContent, !isPlacing {
-            handTracking.submit(frame, viewportSize: arView.bounds.size)
+            handTracking.submit(frame, viewportSize: arView.bounds.size, orientation: interfaceOrientation)
             // Suggest the touch fallback after 10 s without a detected hand.
             if contentInstalledAt == 0 { contentInstalledAt = now }
             let hint = now - max(lastHandSeen, contentInstalledAt) > 10
@@ -184,7 +189,8 @@ final class ARSceneController {
 
         if let rig = instrumentRig, kinematics != nil {
             let geometry = rig.geometry
-            if optics.update(frame: frame, geometry: geometry, aimDistance: targetDistance) {
+            if optics.update(frame: frame, geometry: geometry, aimDistance: targetDistance,
+                             orientation: interfaceOrientation) {
                 opticsModeChanged()
             }
             if now - lastMeasurement >= 1.0 / 15.0 {

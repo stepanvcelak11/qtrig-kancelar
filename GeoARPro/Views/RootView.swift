@@ -72,7 +72,7 @@ struct ToastOverlay: View {
             }
             Spacer()
         }
-        .padding(.top, 150)
+        .padding(.top, 70)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: model.scene.toast)
         .allowsHitTesting(false)
     }

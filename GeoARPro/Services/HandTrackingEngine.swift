@@ -23,6 +23,7 @@ import CoreVideo
 import Foundation
 import Observation
 import simd
+import UIKit
 import Vision
 
 // MARK: - Sendable transport types
@@ -229,7 +230,7 @@ final class HandTrackingEngine {
     }
 
     /// Submits an AR frame. Frames are dropped while a detection is in flight.
-    func submit(_ frame: ARFrame, viewportSize: CGSize) {
+    func submit(_ frame: ARFrame, viewportSize: CGSize, orientation: UIInterfaceOrientation) {
         guard isEnabled, !inFlight, viewportSize.width > 0,
               frame.timestamp - lastSubmit >= 1.0 / maximumRate else { return }
         inFlight = true
@@ -241,7 +242,7 @@ final class HandTrackingEngine {
             cameraTransform: frame.camera.transform,
             intrinsics: frame.camera.intrinsics,
             imageResolution: frame.camera.imageResolution,
-            displayTransform: frame.displayTransform(for: .portrait, viewportSize: viewportSize),
+            displayTransform: frame.displayTransform(for: orientation, viewportSize: viewportSize),
             viewportSize: viewportSize,
             timestamp: frame.timestamp)
 

@@ -30,8 +30,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication,
                      supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        // Hand-tracking maths and the eyepiece crop assume a portrait interface.
-        .portrait
+        // The simulator is played in landscape (hand tracking and the eyepiece crop
+        // follow the current landscape orientation).
+        .landscape
     }
 
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {

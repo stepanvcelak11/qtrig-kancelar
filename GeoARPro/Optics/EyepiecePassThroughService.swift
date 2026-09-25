@@ -88,7 +88,8 @@ final class EyepiecePassThroughService {
     /// Evaluates alignment and, in telescope mode, requests a new zoomed frame.
     /// Returns `true` when the mode changed.
     @discardableResult
-    func update(frame: ARFrame, geometry: RigGeometry, aimDistance: Double?) -> Bool {
+    func update(frame: ARFrame, geometry: RigGeometry, aimDistance: Double?,
+                orientation: UIInterfaceOrientation = .landscapeRight) -> Bool {
         guard isEnabled else { return false }
         let camera = frame.camera.transform
         let cameraPosition = camera.columns.3.xyz
@@ -125,12 +126,12 @@ final class EyepiecePassThroughService {
         if mode == .telescope {
             let range = Float(aimDistance ?? 50)
             let aimPoint = geometry.objectivePosition + geometry.opticalForward * max(range, 1)
-            requestFrame(frame, aimPoint: aimPoint)
+            requestFrame(frame, aimPoint: aimPoint, orientation: orientation)
         }
         return mode != previous
     }
 
-    private func requestFrame(_ frame: ARFrame, aimPoint: SIMD3<Float>) {
+    private func requestFrame(_ frame: ARFrame, aimPoint: SIMD3<Float>, orientation: UIInterfaceOrientation) {
         guard !renderInFlight, frame.timestamp - lastRender >= 1.0 / 30.0 else { return }
         renderInFlight = true
         lastRender = frame.timestamp
@@ -143,7 +144,16 @@ final class EyepiecePassThroughService {
         let fx = Double(frame.camera.intrinsics[0][0])
         fieldOfViewRadians = Double(side) / fx
 
-        let input = TelescopeRenderInput(pixelBuffer: frame.capturedImage, center: center, cropSide: side, outputSide: 720)
+        // The sensor image is landscape-right; rotate it to match the interface.
+        let imageOrientation: CGImagePropertyOrientation
+        switch orientation {
+        case .landscapeLeft: imageOrientation = .down
+        case .portrait: imageOrientation = .right
+        case .portraitUpsideDown: imageOrientation = .left
+        default: imageOrientation = .up
+        }
+        let input = TelescopeRenderInput(pixelBuffer: frame.capturedImage, center: center, cropSide: side, outputSide: 720,
+                                         orientation: imageOrientation)
         Task { [renderer] in
             let rendered = await renderer.render(input)
             self.renderInFlight = false
@@ -161,6 +171,7 @@ struct TelescopeRenderInput: @unchecked Sendable {
     let center: CGPoint
     let cropSide: CGFloat
     let outputSide: CGFloat
+    let orientation: CGImagePropertyOrientation
 }
 
 struct RenderedFrame: @unchecked Sendable {
@@ -191,8 +202,7 @@ final class TelescopeFrameRenderer: @unchecked Sendable {
 
         var image = source.cropped(to: rect)
             .transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
-            // Sensor is landscape-right; rotate to the portrait UI.
-            .oriented(.right)
+            .oriented(input.orientation)
         let scale = input.outputSide / side
         image = image.applyingFilter("CILanczosScaleTransform", parameters: [
             kCIInputScaleKey: scale,
