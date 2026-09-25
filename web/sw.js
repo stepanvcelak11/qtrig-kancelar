@@ -1,6 +1,6 @@
 // Offline: aplikace i knihovny (Three.js, MediaPipe + model ruky) jdou do cache.
 // HTML/JS: síť napřed (aktualizace), velké knihovny: cache napřed.
-const CACHE = 'geoar-v1';
+const CACHE = 'geoar-v2';
 const CORE = ['./', 'index.html', 'style.css', 'manifest.webmanifest', 'js/app.js', 'js/catalog.js', 'js/geodesy.js',
   'js/hands.js', 'js/kinematics.js', 'js/models.js', 'vendor/three.module.min.js', 'vendor/RoomEnvironment.js',
   'vendor/RoundedBoxGeometry.js', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
