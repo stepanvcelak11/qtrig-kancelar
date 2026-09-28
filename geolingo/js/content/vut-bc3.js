@@ -324,7 +324,7 @@ export default [
         ],
       },
       {
-        id: 'vyukal3', title: 'Nivelační pořad', icon: '📏', gens: ['levelSetup', 'fieldbook'],
+        id: 'vyukal3', title: 'Nivelační pořad', icon: '📏', gens: ['levelSetup', 'fieldbook', 'blunder'],
         items: [
           { t: 'o', q: 'Seřaďte práci na jedné nivelační sestavě', s: ['Postavit přístroj uprostřed mezi latě', 'Urovnat krabicovou libelu', 'Zacílit a přečíst lať vzad', 'Zacílit a přečíst lať vpřed', 'Zapsat čtení a spočítat převýšení', 'Zadní lať přechází dopředu'], e: 'Zadní figurant se přesouvá na další přestavový bod, přední lať zůstává na podložce.' },
           { t: 'c', q: 'Figurant hlásí, že během přesunu přístroje omylem zvedl a posunul nivelační podložku. Co uděláš?', a: 'Měříš znovu od posledního pevného bodu', w: ['Podložku vrátíš odhadem', 'Pokračuješ, chyba je malá', 'Opravíš výšku o 1 cm'], e: 'Přestavový bod ztratil výšku – spojitost pořadu je přerušena.' },

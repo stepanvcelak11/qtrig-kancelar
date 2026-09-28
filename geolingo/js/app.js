@@ -1,6 +1,6 @@
 // Geolingo – uživatelské rozhraní: mapa lekcí, cvičení, terénní praxe, profil.
 
-import { UNITS, LESSONS, TIPS, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
+import { UNITS, LESSONS, TIPS, EXAMS, buildExam, examGrade, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
 import { fmt, generate } from './generators.js';
 import { W, H, checkField, solutionCells, turnScrew, SCREWS, FIELD_TYPES, pdop } from './field.js';
 import * as store from './store.js';
@@ -208,7 +208,7 @@ function renderPath() {
       const hasField = (l.gens ?? []).some(isField);
       const p = pts[li];
       return `<div class="node-wrap" style="top:${p.y}px;left:calc(50% + ${p.x}px)">
-          ${index === cur ? `<div class="toti-here" style="${p.x > 0 ? 'right:128px' : 'left:128px'}">${mascot('happy')}<span class="start-tip">${done ? 'Opakovat' : 'Start'}</span></div>` : ''}
+          ${index === cur ? `<div class="toti-here" data-say="${u.id}" role="button" aria-label="Toti radí" style="${p.x > 0 ? 'right:128px' : 'left:128px'}">${mascot('happy')}<span class="start-tip">${done ? 'Opakovat' : 'Start'}</span></div>` : ''}
           <button class="node ${cls}" data-lesson="${l.id}" aria-label="${esc(l.title)}"><span class="ic">${unlocked ? l.icon : '🔒'}</span>
             ${times ? `<span class="times">${times > 1 ? '×' + Math.min(times, 9) : '✓'}</span>` : ''}${hasField ? '<span class="fieldmark" title="Obsahuje terénní úlohu">🦺</span>' : ''}${isRusty(l.id) ? '<span class="rustmark" title="Oprášit – dlouho neopakováno">🧹</span>' : ''}</button>
           <div class="node-label">${esc(l.title)}</div></div>`;
@@ -250,6 +250,19 @@ function renderPath() {
   app.innerHTML = topStats() + `<main class="path">${dailyCard()}${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>
     <button class="index-btn" id="index" aria-label="Klad mapových listů">${ICON.map}<span>Listy</span></button>` + tabs();
   app.querySelectorAll('[data-lesson]').forEach((b) => b.addEventListener('click', () => lessonSheet(b.dataset.lesson)));
+  // Klepnutí na Totiho: tip z taháku aktuální kapitoly.
+  app.querySelectorAll('[data-say]').forEach((t) => t.addEventListener('click', () => {
+    const tips = TIPS[t.dataset.say];
+    const pool = tips ? [...(tips.points ?? []), tips.tip].filter(Boolean) : ['Klepni na lekci vedle mě a jdeme měřit!'];
+    t.querySelector('.say')?.remove();
+    const b = document.createElement('div');
+    b.className = 'say';
+    b.textContent = pool[Math.floor(Math.random() * pool.length)];
+    t.append(b); beep('tick');
+    t.querySelector('.toti').classList.remove('hop'); void t.offsetWidth; t.querySelector('.toti').classList.add('hop');
+    clearTimeout(t.sayTimer);
+    t.sayTimer = setTimeout(() => b.remove(), 7000);
+  }));
   $('#chest')?.addEventListener('click', () => {
     const xp = store.claimDaily();
     if (xp) { beep('done'); confetti(); toast(`Truhla otevřena: +${xp} XP`); setTimeout(() => show('path'), 900); }
@@ -370,7 +383,7 @@ function begin(items, meta) {
 
 const KIND = {
   c: 'Vyber správnou odpověď', tf: 'Pravda, nebo ne?', m: 'Spoj dvojice', o: 'Seřaď kroky', n: 'Vypočítej', rod: 'Odečti lať',
-  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', dirbook: 'Terén · směrová osnova', traverse: 'Terén · polygonový pořad', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
+  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', dirbook: 'Terén · směrová osnova', traverse: 'Terén · polygonový pořad', blunder: 'Terén · kontrola zápisníku', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
 };
 
 function renderExercise() {
@@ -381,7 +394,7 @@ function renderExercise() {
     <div class="lesson-top"><button class="x" id="quit" aria-label="Ukončit">✕</button>
       <div class="bar"><i style="width:${pct}%"></i>${run.combo >= 3 ? `<em>${run.combo}× v řadě</em>` : ''}</div>
       ${run.meta.unitId && TIPS[run.meta.unitId] ? '<button class="chip small tipchip" id="ltips" aria-label="Tahák">📒</button>' : ''}
-      ${run.meta.practice ? '<span class="chip small">🎯</span>' : `<span class="chip small">${battery(store.S().hearts)}</span>`}</div>
+      ${run.meta.exam ? `<span class="chip small timer" id="timer">⏱ ${fmtTime(run.meta.deadline - Date.now())}</span>` : run.meta.practice ? '<span class="chip small">🎯</span>' : `<span class="chip small">${battery(store.S().hearts)}</span>`}</div>
     <div class="ex ${isField(ex.t) ? 'field' : ''}"><div class="kind ${isField(ex.t) ? 'terrain' : ''}">${KIND[ex.t]}</div>${exerciseBody(ex)}</div>
     ${ex.t === 'm' ? '' : '<div class="check-bar"><div><button class="btn primary wide" id="check" disabled>Zkontrolovat</button></div></div>'}
   </div>`;
@@ -445,6 +458,13 @@ function exerciseBody(ex) {
     case 'bubble':
       return `<p class="prompt">Urovnej krabicovou libelu stavěcími šrouby – dostaň bublinu do kroužku.</p>${bubbleSvg(ex)}
         <div class="screws">${SCREWS.map((_, i) => `<div class="screw"><small>Šroub ${i + 1}</small><button class="btn" data-screw="${i}" data-dir="1">▲ zvednout</button><button class="btn" data-screw="${i}" data-dir="-1">▼ snížit</button></div>`).join('')}</div>`;
+    case 'blunder':
+      return `<p class="prompt">Kolega vyplnil nivelační zápisník. Na kterém stanovisku udělal hrubou chybu?</p>
+        <div class="book"><table class="pick"><thead><tr><th>Stan.</th><th>Vzad</th><th>Vpřed</th><th>Δh</th><th>H [m]</th></tr></thead><tbody>
+        <tr class="start"><td>Z</td><td></td><td></td><td></td><td>${fmt(ex.HZ, 3)}</td></tr>
+        ${ex.rows.map((r, i) => `<tr data-row="${i}"><td>${i + 1}</td><td>${fmt(r.z, 3)}</td><td>${fmt(r.p, 3)}</td><td>${fmt(r.shown, 3)}</td><td>${fmt(r.H, 3)}</td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="hint">Klepni na řádek s chybou. Tip: přepočítej Δh = vzad − vpřed.</div>`;
     case 'traverse':
       return `<p class="prompt">Uzavřený polygonový pořad: vypočti úhlový uzávěr, opravu a opravené vnitřní úhly.</p>
         <div class="book"><table><thead><tr><th>Vrchol</th><th>Měřený ω [gon]</th><th>Opravený ω</th></tr></thead><tbody>
@@ -680,6 +700,15 @@ function wireExercise(ex) {
     }));
   }
 
+  if (ex.t === 'blunder') {
+    app.querySelectorAll('[data-row]').forEach((tr) => tr.addEventListener('click', () => {
+      if (run.locked) return;
+      app.querySelectorAll('[data-row]').forEach((x) => x.classList.remove('sel'));
+      tr.classList.add('sel'); beep('tick');
+      setAnswer(+tr.dataset.row);
+    }));
+  }
+
   if (ex.t === 'sky') {
     const sel = [];
     app.querySelectorAll('[data-sat]').forEach((g) => g.addEventListener('click', () => {
@@ -759,6 +788,9 @@ function check() {
         c.classList.add(detail.cells[i] ? 'good' : 'bad');
         if (!detail.cells[i]) c.value = fmt(ex.a[i], ex.t === 'dirbook' || (ex.t === 'traverse' && i < ex.n) ? 4 : ex.t === 'traverse' ? 0 : 3);
       });
+    } else if (ex.t === 'blunder') {
+      $(`[data-row="${ex.a}"]`).classList.add('good');
+      if (!detail.ok) $(`[data-row="${run.answer}"]`).classList.add('bad');
     } else if (ex.t === 'contour') {
       const p = run.answer, Q = ex.Q, O = ex.other;
       $('#ov').innerHTML = (O ? `<line class="cline" x1="${Q.x}" y1="${Q.y}" x2="${O.x}" y2="${O.y}"/>` : '') + `<circle class="tol" cx="${Q.x}" cy="${Q.y}" r="${ex.tolM}"/>`;
@@ -786,7 +818,7 @@ function finishExercise(ok, ex, reason = '') {
     run.mistakes++; run.combo = 0;
     if (!run.meta.practice) store.loseHeart();
     // Chybnou otázku zopakovat na konci (jednou); výpočty a terénní úlohy s novými čísly.
-    if (!run.retried.has(run.i) && ex.t !== 'm') {
+    if (!run.meta.exam && !run.retried.has(run.i) && ex.t !== 'm') {
       run.retried.add(run.items.length);
       run.items.push(ex.gen ? prepare(generate(ex.gen)) : prepare(ex, ex.ref));
     }
@@ -822,7 +854,49 @@ function next() {
   window.scrollTo(0, 0);
 }
 
+// --- Zkouškový test s časovým limitem -------------------------------------------------------
+
+const fmtTime = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+let examTimer = null;
+
+function startExam(level) {
+  const cfg = EXAMS[level];
+  clearInterval(examTimer);
+  begin(buildExam(level), { lessonId: null, title: cfg.title, practice: true, exam: level, color: '#0f4c5c', deadline: Date.now() + cfg.minutes * 60000 });
+  examTimer = setInterval(() => {
+    if (!run?.meta.exam) return clearInterval(examTimer);
+    const left = run.meta.deadline - Date.now(), el = $('#timer');
+    if (el) { el.textContent = `⏱ ${fmtTime(left)}`; el.classList.toggle('low', left < 60000); }
+    if (left <= 0) { clearInterval(examTimer); toast('Čas vypršel'); finishExam(true); }
+  }, 500);
+}
+
+function finishExam(timeout = false) {
+  clearInterval(examTimer);
+  const r = run, level = r.meta.exam, cfg = EXAMS[level];
+  const total = r.items.length, pct = Math.round((r.correct / total) * 100), gradeL = examGrade(pct);
+  const best = store.saveExam(level, pct, gradeL);
+  const bonus = pct >= 50 ? 20 : 0;
+  store.completeLesson(null, { mistakes: r.mistakes, practice: true });
+  if (bonus) store.addXp(bonus);
+  run = null;
+  beep(pct >= 50 ? 'done' : 'bad');
+  const mins = Math.max(1, Math.round((Date.now() - r.started) / 60000));
+  app.innerHTML = `<div class="done-screen exam-result">
+    ${mascot(pct >= 50 ? 'wow' : 'sad', 'big')}
+    <h1>${esc(cfg.title)}</h1>
+    <div class="grade g${gradeL}">${gradeL}</div>
+    <p><b>${r.correct} / ${total}</b> správně (${pct} %) · ${timeout ? 'čas vypršel' : `${mins} min`}</p>
+    <p>${pct >= 50 ? `Prošel jsi! +${bonus + 5} XP` : 'Tentokrát to nevyšlo – na zkoušku potřebuješ aspoň 50 %.'}</p>
+    <p class="hint">Nejlepší výsledek: ${best.grade} (${best.pct} %) · stupnice ECTS jako na VUT</p>
+    <button class="btn primary wide" id="cont">Zpět do terénu</button>
+  </div>`;
+  if (pct >= 50) confetti();
+  $('#cont').addEventListener('click', () => show('practice'));
+}
+
 function finishRun() {
+  if (run.meta.exam) return finishExam();
   const r = run;
   const total = r.correct + r.mistakes;
   const result = store.completeLesson(r.meta.lessonId, { mistakes: r.mistakes, practice: r.meta.practice, unitTest: r.meta.unitTest });
@@ -972,12 +1046,19 @@ function renderPractice() {
       ${fieldCard('f-azimuth', 'Směrník a kvadranty', 'Natoč ručičku podle ΔY a ΔX', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><path d="M30 20 40 9" class="a3"/><path d="M30 4v32M14 20h32" class="a6"/></svg>')}
       ${fieldCard('f-circle', 'Čtení kruhu', 'Vodorovný i svislý kruh v mikroskopu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
       ${fieldCard('f-dirbook', 'Směrová osnova', 'Dvě polohy dalekohledu, průměry a úhel', '<svg viewBox="0 0 60 40"><rect x="10" y="5" width="40" height="30" rx="2" class="a9"/><path d="M14 13h32M14 19h32M14 25h32M24 7v26M36 7v26" class="a6"/></svg>')}
+      ${fieldCard('f-blunder', 'Najdi chybu', 'Kde se v zápisníku stala hrubá chyba?', '<svg viewBox="0 0 60 40"><rect x="10" y="5" width="40" height="30" rx="2" class="a9"/><path d="M14 13h32M14 25h32M24 7v26" class="a6"/><rect x="12" y="15" width="36" height="8" rx="2" fill="rgba(229,72,77,.35)"/></svg>')}
       ${fieldCard('f-traverse', 'Polygonový pořad', 'Úhlový uzávěr a opravené úhly', '<svg viewBox="0 0 60 40"><path d="M10 30 22 8 48 10 52 32Z" class="a3"/><circle cx="10" cy="30" r="2.5" class="a2"/><circle cx="22" cy="8" r="2.5" class="a2"/><circle cx="48" cy="10" r="2.5" class="a2"/><circle cx="52" cy="32" r="2.5" class="a2"/></svg>')}
       ${fieldCard('f-contour', 'Vrstevnice', 'Interpolace mezi výškovými body', '<svg viewBox="0 0 60 40"><path d="M8 32 30 6 52 30Z" class="a6"/><path d="M14 25C24 20 34 22 47 24" class="a3"/><circle cx="8" cy="32" r="2" class="a2"/><circle cx="30" cy="6" r="2" class="a2"/><circle cx="52" cy="30" r="2" class="a2"/></svg>')}
       ${fieldCard('f-sky', 'Geometrie družic', 'Vyber 4 družice s nejnižším PDOP', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="17" class="a7"/><circle cx="30" cy="20" r="3" class="a2"/><circle cx="16" cy="14" r="3" class="a2"/><circle cx="44" cy="12" r="3" class="a2"/><circle cx="36" cy="33" r="3" class="a2"/></svg>')}
       ${fieldCard('f-rod', 'Čtení latě', 'Trénink oka na milimetry', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><rect x="25" y="4" width="10" height="32" class="a9"/><path d="M14 20h32M30 4v32" class="a6"/></svg>')}
     </div>
     <button class="btn blue wide" data-p="f-all">Terénní směs · 6 úloh</button>
+    <h3 class="sec">Zkoušky nanečisto</h3>
+    <div class="exams">${Object.entries(EXAMS).map(([lvl, cfg]) => {
+      const best = s.exams?.[lvl];
+      return `<button class="exam-card" data-exam-lvl="${lvl}"><span class="grade-s ${best ? 'g' + best.grade : ''}">${best ? best.grade : '–'}</span>
+        <b>${cfg.title}</b><small>${cfg.length} otázek · ${cfg.minutes} min${best ? ` · nejlépe ${best.pct} %` : ''}</small></button>`;
+    }).join('')}</div>
     <h3 class="sec">Výpočty</h3>
     ${card('calc', '🧮', 'Rychlé výpočty', 'Nekonečné příklady se stále novými čísly')}
     ${card('coords', '📍', 'Souřadnicové úlohy', 'Směrník, délka, polární metoda, výměry')}
@@ -989,6 +1070,10 @@ function renderPractice() {
     ${card('rusty', '🧹', 'Oprášit staré lekce', rusty.length ? `${rusty.length} lekcí neopakovaných déle než ${RUSTY_DAYS} dní` : 'Všechno máš čerstvě procvičené', !rusty.length)}
     ${card('mix', '🎲', 'Mix z probraného', doneIds.length ? `Náhodné otázky z ${doneIds.length} dokončených lekcí` : 'Nejdřív dokonči nějakou lekci', !doneIds.length)}
   </div>` + tabs();
+  app.querySelectorAll('[data-exam-lvl]').forEach((b) => b.addEventListener('click', () => {
+    const cfg = EXAMS[b.dataset.examLvl];
+    if (confirm(`${cfg.title}: ${cfg.length} otázek, limit ${cfg.minutes} minut. Hodnotí se stupnicí A–F, na úspěch potřebuješ aspoň 50 %. Začít?`)) startExam(b.dataset.examLvl);
+  }));
   app.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => {
     const p = b.dataset.p;
     if (p === 'mistakes') startPractice(buildMistakes(s.mistakes), 'Opakování chyb');

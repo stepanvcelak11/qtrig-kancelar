@@ -135,7 +135,7 @@ export default [
         ],
       },
       {
-        id: 'u6l2', title: 'Nivelační pořad', icon: '🪜', gens: ['levelClosure', 'fieldbook'],
+        id: 'u6l2', title: 'Nivelační pořad', icon: '🪜', gens: ['levelClosure', 'fieldbook', 'blunder'],
         items: [
           { t: 'c', q: 'Přestavový bod je bod, na kterém…', a: 'se lať čte vpřed a po přestavení přístroje vzad', w: ['stojí přístroj', 'pořad začíná', 'je nivelační značka'], e: 'Spojuje dvě sestavy.' },
           { t: 'c', q: 'Výškový uzávěr pořadu: u = …', a: 'Σ Δh − (H_K − H_Z)', w: ['H_K + H_Z', 'Σ Δh', 'Σ vzad + Σ vpřed'], e: 'Rozdíl naměřeného a daného převýšení.' },

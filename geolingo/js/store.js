@@ -72,6 +72,24 @@ export function claimDaily() {
 }
 export const dailyClaimed = () => daily().claimed;
 
+/** Bonusové XP (zkoušky apod.) – započítá se do dne i do deníku. */
+export function addXp(xp) {
+  state.xp += xp; state.xpToday += xp;
+  state.history = { ...state.history, [today()]: (state.history?.[today()] ?? 0) + xp };
+  save();
+}
+
+/** Uloží výsledek zkouškového testu, vrací nejlepší výsledek pro danou úroveň. */
+export function saveExam(level, pct, grade) {
+  const ex = { ...(state.exams ?? {}) };
+  const prev = ex[level];
+  if (!prev || pct > prev.pct) ex[level] = { pct, grade, at: Date.now() };
+  ex[level].tries = (prev?.tries ?? 0) + 1;
+  state.exams = ex;
+  save();
+  return ex[level];
+}
+
 /** Po oprášení se lekce znovu počítají jako čerstvé. */
 export function refreshLessons(ids) {
   const now = Date.now();

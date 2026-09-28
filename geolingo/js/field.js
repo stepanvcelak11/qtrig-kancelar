@@ -372,7 +372,31 @@ export function checkTraverse(ex, values) {
   return { ok: cells.every(Boolean), cells, reason: cells.every(Boolean) ? '' : 'Některé hodnoty nesedí – správné jsou doplněny.' };
 }
 
-export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky, dirbook, traverse };
+// --- 11) Najdi hrubou chybu v nivelačním zápisníku -----------------------------------------
+
+function blunder() {
+  const n = rint(4, 6), HZ = round(rnd(220, 480), 3);
+  const rows = Array.from({ length: n }, () => ({ z: round(rnd(0.6, 2.8), 3), p: round(rnd(0.6, 2.8), 3) }));
+  rows.forEach((r) => { r.dh = round(r.z - r.p, 3); });
+  const bad = rint(0, n - 1), kind = pick(['swap', 'digit', 'sign']);
+  const r = rows[bad], right = r.dh;
+  if (kind === 'sign' && Math.abs(right) > 0.05) r.shown = -right;
+  else if (kind === 'swap') r.shown = round(right + pick([-1, 1]) * pick([0.009, 0.018, 0.027, 0.09]), 3);
+  else r.shown = round(right + pick([-1, 1]) * pick([0.1, 0.01, 0.2]), 3);
+  let H = HZ;
+  rows.forEach((x) => { x.shown ??= x.dh; H = round(H + x.shown, 3); x.H = H; });
+  const what = r.shown === -right ? 'zapsané s opačným znaménkem' : `zapsané ${fmt3(r.shown)} m místo ${fmt3(right)} m`;
+  return { t: 'blunder', HZ, rows, a: bad,
+    e: `Na stanovisku ${bad + 1} má být Δh = ${fmt3(r.z)} − ${fmt3(r.p)} = ${fmt3(right)} m, v zápisníku je převýšení ${what}. Chyba se přenesla do všech dalších výšek – proto se zápisník vždy kontroluje: Σvzad − Σvpřed = ΣΔh.` };
+}
+const fmt3 = (x) => (x < 0 ? '−' : '') + Math.abs(x).toFixed(3).replace('.', ',');
+
+export function checkBlunder(ex, i) {
+  const ok = i === ex.a;
+  return { ok, reason: ok ? '' : `Chyba je na stanovisku ${ex.a + 1}.` };
+}
+
+export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky, dirbook, traverse, blunder };
 
 /** Jednotné hodnocení praktických úloh. */
 export function checkField(ex, answer) {
@@ -387,6 +411,7 @@ export function checkField(ex, answer) {
     case 'sky': return checkSky(ex, answer);
     case 'dirbook': return checkDirbook(ex, answer);
     case 'traverse': return checkTraverse(ex, answer);
+    case 'blunder': return checkBlunder(ex, answer);
     default: return { ok: false };
   }
 }

@@ -54,7 +54,7 @@ export default [
           { t: 'c', q: 'Vektorová data reprezentují objekty jako…', a: 'body, linie a polygony', w: ['pixely', 'pouze text', 'zvuk'], e: 'Každý objekt může mít atributy.' },
           { t: 'c', q: 'Rastrová data tvoří…', a: 'mřížka buněk (pixelů)', w: ['uzly a hrany', 'body s atributy', 'vrstevnice'], e: 'Např. ortofoto nebo DMR v mřížce.' },
           { t: 'c', q: 'Výměnný formát katastru (VFK) slouží k…', a: 'předávání dat katastru', w: ['měření GNSS', 'ručnímu kreslení map', 'nivelaci'], e: 'Obsahuje grafická i popisná data.' },
-          { t: 'm', q: 'Spojte formát s obsahem', p: [['DXF', 'CAD výkresy'], ['SHP', 'Vrstvy GIS'], ['VFK', 'Data katastru'], ['LAS', 'Mračna bodů']] },
+          { t: 'm', q: 'Spojte formát s obsahem', p: [['DXF', 'CAD výkresy'], ['SHP', 'Vrstvy GIS'], ['VFK', 'Data katastru'], ['LAS', 'Mračna bodů']], e: 'VFK je výměnný formát katastru od ČÚZK, LAS (komprimovaně LAZ) standard pro mračna bodů z laserového skenování.' },
         ],
       },
     ],
@@ -67,7 +67,7 @@ export default [
       {
         id: 'u8l1', title: 'Druhy chyb', icon: '⚠️',
         items: [
-          { t: 'm', q: 'Spojte druh chyby s popisem', p: [['Hrubá chyba', 'Omyl, přehlédnutí'], ['Systematická chyba', 'Stálé znaménko, lze opravit'], ['Nahodilá chyba', 'Náhodná, nelze vyloučit'], ['Oprava', 'Opačné znaménko než chyba']] },
+          { t: 'm', q: 'Spojte druh chyby s popisem', p: [['Hrubá chyba', 'Omyl, přehlédnutí'], ['Systematická chyba', 'Stálé znaménko, lze opravit'], ['Nahodilá chyba', 'Náhodná, nelze vyloučit'], ['Oprava', 'Opačné znaménko než chyba']], e: 'Hrubé chyby odhalí kontrolní měření, systematické se odstraní opravami nebo metodou měření, nahodilé se zmenšují opakováním a vyrovnáním.' },
           { t: 'c', q: 'Chyba z nesprávné délky pásma je chyba…', a: 'systematická', w: ['hrubá', 'nahodilá', 'žádná'], e: 'Působí pořád stejně – lze ji opravit kalibrací.' },
           { t: 'c', q: 'Zápis 1,583 místo 1,853 je chyba…', a: 'hrubá', w: ['nahodilá', 'systematická', 'přístrojová'], e: 'Odhalí se kontrolním měřením.' },
           { t: 'c', q: 'Nahodilé chyby mají rozdělení blízké…', a: 'normálnímu (Gaussovu)', w: ['rovnoměrnému', 'exponenciálnímu', 'žádnému'], e: 'Malé chyby jsou častější než velké.' },
@@ -139,7 +139,7 @@ export default [
           { t: 'c', q: 'List vlastnictví (LV) obsahuje…', a: 'vlastníky a jejich nemovitosti', w: ['souřadnice všech bodů', 'mapu obce', 'výsledky nivelace'], e: 'Veřejně dostupný výpis z katastru.' },
           { t: 'c', q: 'Katastrální mapa digitalizovaná (KMD) vznikla…', a: 'převodem analogové mapy do digitální podoby', w: ['novým GNSS měřením všech bodů', 'z laserového skenování', 'ze satelitních snímků'], e: 'Proto mají její body často horší kód kvality.' },
           { t: 'tf', q: 'Parcela je pozemek geometricky a polohově určený a zobrazený v katastrální mapě.', a: true, e: 'Má parcelní číslo.' },
-          { t: 'm', q: 'Spojte zkratku s významem', p: [['LV', 'Vlastníci a nemovitosti'], ['SGI', 'Mapa a souřadnice bodů'], ['SPI', 'Popisné údaje'], ['KMD', 'Digitalizovaná mapa']] },
+          { t: 'm', q: 'Spojte zkratku s významem', p: [['LV', 'Vlastníci a nemovitosti'], ['SGI', 'Mapa a souřadnice bodů'], ['SPI', 'Popisné údaje'], ['KMD', 'Digitalizovaná mapa']], e: 'Katastrální operát tvoří SGI (katastrální mapa a souřadnice) a SPI (popisné údaje); list vlastnictví je výstup ze SPI.' },
         ],
       },
       {

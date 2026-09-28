@@ -84,6 +84,26 @@ export function buildUnitTest(unit, length = 12) {
   return shuffle(list);
 }
 
+/** Zkouškový test: průřez celou úrovní studia (SŠ = maturita, Bc., Ing.). */
+export const EXAMS = {
+  'SŠ': { title: 'Maturita z geodézie', minutes: 15, length: 20 },
+  'Bc.': { title: 'Bakalářská státnice', minutes: 20, length: 25 },
+  'Ing.': { title: 'Inženýrská státnice', minutes: 20, length: 25 },
+};
+export function buildExam(level, length = EXAMS[level].length) {
+  const lessons = LESSONS.filter((l) => (l.unit.level ?? 'SŠ') === level);
+  const statics = shuffle(lessons.flatMap((l) => l.items.map((it, i) => ({ l, it, i })))).slice(0, Math.round(length * 0.7));
+  const list = statics.map(({ l, it, i }) => prepare(it, { lesson: l.id, idx: i }));
+  const gens = shuffle([...new Set(lessons.flatMap((l) => l.gens ?? []))]);
+  for (let k = 0; list.length < length && gens.length; k++) list.push(prepare(generate(gens[k % gens.length])));
+  return shuffle(list);
+}
+
+/** Známka podle stupnice ECTS používané na VUT. */
+export function examGrade(pct) {
+  return pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : pct >= 50 ? 'E' : 'F';
+}
+
 /** Terénní praxe: praktické úlohy (výběr stanoviska, vytyčení, libela…). */
 export function buildFieldPractice(length = 6, only = null) {
   const names = only ?? FIELD_TYPES;

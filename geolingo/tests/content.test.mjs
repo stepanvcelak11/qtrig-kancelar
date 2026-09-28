@@ -1,6 +1,6 @@
 // Kontrola osnovy a generátorů: node geolingo/tests/content.test.mjs
 import assert from 'node:assert/strict';
-import { UNITS, LESSONS, TIPS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
+import { UNITS, LESSONS, TIPS, buildExam, examGrade, EXAMS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
 import { GEN, generate, fmt, bearingGon, polygonArea } from '../js/generators.js';
 import { FIELD, checkField, turnScrew, blocked, pdop } from '../js/field.js';
 
@@ -214,6 +214,15 @@ for (let k = 0; k < 300; k++) {
   ok(checkField(t, t.a.map((v, i) => (i < n ? v.toFixed(4) : String(v)))).ok, 'pořad: správné hodnoty');
   ok(!checkField(t, t.a.map((v, i) => (i < n ? v.toFixed(4) : String(-v)))).ok || t.a[n] === 0, 'pořad: opačné znaménko je chyba');
 }
+// Zápisník s hrubou chybou: právě jedna chybná řádka a hodnocení podle ní.
+for (let k = 0; k < 300; k++) {
+  const b = generate('blunder');
+  ok(b.rows.filter((r) => Math.abs(r.shown - r.dh) > 1e-9).length === 1, 'zápisník s chybou: právě jedna chyba');
+  ok(checkField(b, b.a).ok && !checkField(b, (b.a + 1) % b.rows.length).ok, 'zápisník s chybou: hodnocení');
+}
+// Zkouškové testy a stupnice ECTS.
+for (const lvl of Object.keys(EXAMS)) { const ex = buildExam(lvl); ok(ex.length === EXAMS[lvl].length, `zkouška ${lvl}: délka ${ex.length}`); }
+ok(examGrade(95) === 'A' && examGrade(85) === 'B' && examGrade(50) === 'E' && examGrade(49) === 'F', 'stupnice ECTS');
 console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 
 console.log(`Geolingo: ${checks} kontrol OK (${LESSONS.length} lekcí, ${LESSONS.reduce((s, l) => s + l.items.length, 0)} otázek, ${Object.keys(GEN).length} generátorů)`);
