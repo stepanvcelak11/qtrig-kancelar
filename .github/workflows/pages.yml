@@ -1,9 +1,9 @@
-name: Web (GitHub Pages)
+name: Web – Geolingo + GeoAR (GitHub Pages)
 
 on:
   push:
     branches: [main, claude/geoar-pro-surveying-app-afjx3m]
-    paths: ['web/**', '.github/workflows/pages.yml']
+    paths: ['geolingo/**', 'web/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -23,12 +23,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Test mechaniky
+      - name: Test osnovy a výpočtů (Geolingo)
+        run: node geolingo/tests/content.test.mjs
+      - name: Test mechaniky (GeoAR)
         run: node web/tests/kinematics.test.mjs
-      - run: touch web/.nojekyll
+      - name: Sestavení webu (Geolingo v kořeni, GeoAR v /geoar/)
+        run: |
+          mkdir _site
+          cp -r geolingo/. _site/
+          rm -rf _site/tests
+          cp -r web _site/geoar
+          rm -rf _site/geoar/tests
+          touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

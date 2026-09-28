@@ -1,6 +1,13 @@
-# GeoAR Pro: Surveying Simulator
+# Geolingo + GeoAR Pro
 
-> **Webová verze (PWA):** složka [`web/`](web/) – otevřete ji v Safari/Chrome na telefonu a přidejte na plochu
+> **Geolingo** (složka [`geolingo/`](geolingo/)) – aplikace ve stylu Duolinga na výuku geodézie pro studenty SŠ a VŠ.
+> 10 kapitol / 50 lekcí (základy, souřadnicové systémy, přístroje, měření úhlů a délek, výpočty v rovině, nivelace,
+> GNSS, chyby měření, katastr, mapování a inženýrská geodézie), generované výpočtové příklady s novými čísly,
+> odečítání nivelační latě, XP, série dní, životy, denní cíl a úspěchy. Průvodcem je maskot Toti.
+> Běží na https://stepanvcelak11.github.io/qtrig-kancelar/ (přidejte na plochu), offline díky service workeru.
+> Lokálně: `cd geolingo && python3 -m http.server`, testy `node geolingo/tests/content.test.mjs`.
+>
+> **GeoAR – webová verze (PWA):** složka [`web/`](web/), nasazená na `/geoar/` – otevřete ji v Safari/Chrome na telefonu a přidejte na plochu
 > (Sdílet → Přidat na plochu). Nasazuje se automaticky na GitHub Pages (`.github/workflows/pages.yml`).
 > Obsahuje totální stanice, nivelační přístroje, GNSS rovery, stativ a lať; AR nad kamerou s gyroskopem nebo 3D režim,
 > ovládání dotykem i rukou (MediaPipe), horizontaci stavěcími šrouby, kompenzátor, ustanovky a pohled dalekohledem
