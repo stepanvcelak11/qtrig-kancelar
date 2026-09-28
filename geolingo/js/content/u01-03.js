@@ -148,7 +148,7 @@ export default [
     desc: 'Totální stanice, osové podmínky, nivelační přístroj, GNSS přijímač a měřické pomůcky.',
     lessons: [
       {
-        id: 'u3l1', title: 'Totální stanice', icon: '🔭', gens: ['hzCircle'],
+        id: 'u3l1', title: 'Totální stanice', icon: '🔭', gens: ['hzCircle', 'instrumentPart'],
         items: [
           { t: 'm', q: 'Spojte označení osy s jejím názvem', p: [['V', 'Svislá (točná) osa'], ['H', 'Klopná osa'], ['Z', 'Záměrná přímka'], ['L', 'Osa alhidádové libely']], e: 'Osové podmínky: L ⊥ V (jinak zůstane svislá osa skloněná), Z ⊥ H (jinak kolimační chyba) a H ⊥ V (jinak úklonná chyba).' },
           { t: 'c', q: 'Otočná horní část přístroje, která nese dalekohled, se nazývá…', a: 'alhidáda', w: ['limbus', 'trojnožka', 'podložka'], e: 'Alhidáda se otáčí kolem svislé osy.' },

@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null, lastDone: {}, theme: 'auto', outfit: {},
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null, lastDone: {}, theme: 'auto', outfit: {}, freezes: 0, textSize: 'm',
 });
 
 let state;
@@ -107,8 +107,14 @@ export function tick() {
     }
   } else state.heartsAt = now;
   if (state.xpDay !== today()) { state.xpDay = today(); state.xpToday = 0; }
-  // Série se přeruší, pokud včera ani dnes nebyla lekce.
-  if (state.lastDay && state.lastDay !== today() && state.lastDay !== yesterday()) state.streak = 0;
+  // Série se přeruší, pokud včera ani dnes nebyla lekce – leda by ji zachránil náhradní akumulátor
+  // (vynechaný právě jeden den).
+  if (state.lastDay && state.lastDay !== today() && state.lastDay !== yesterday()) {
+    const dayBefore = localDay(Date.now() - 2 * 86400000);
+    if (state.lastDay === dayBefore && state.freezes > 0 && state.streak > 0) {
+      state.freezes--; state.lastDay = yesterday(); state.freezeUsedOn = today();
+    } else state.streak = 0;
+  }
   save();
 }
 
@@ -165,6 +171,8 @@ export function completeLesson(lessonId, { mistakes, practice = false, unitTest 
     state.streak = state.lastDay === yesterday() ? state.streak + 1 : 1;
     state.lastDay = today();
     streakUp = true;
+    // Každých 7 dní v řadě = náhradní akumulátor (max. 2).
+    if (state.streak % 7 === 0 && (state.freezes ?? 0) < 2) { state.freezes = (state.freezes ?? 0) + 1; state.freezeEarned = true; }
   }
   if ((lessonId || unitTest) && !practice) { daily().lessons++; if (mistakes === 0) daily().perfect++; }
   if (lessonId) {

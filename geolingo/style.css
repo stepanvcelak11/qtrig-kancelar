@@ -331,6 +331,13 @@ main.path { flex: 1; padding: 14px 14px 120px; }
 .feedback.bad .fb-head .toti { animation: droop .6s ease-out; transform-origin: 50% 100%; }
 @keyframes droop { 40% { transform: rotate(-8deg) translateY(3px); } 70% { transform: rotate(4deg); } }
 
+/* Náhradní akumulátor, právě dokončená lekce, větší písmo */
+.chip .frz { font: 700 10.5px var(--head); color: var(--green-d); margin-left: -2px; }
+.node.just { animation: justdone 1.2s cubic-bezier(.2, 1.6, .4, 1); }
+.node.just .times { animation: pop .6s cubic-bezier(.2, 1.6, .4, 1) .5s both; }
+@keyframes justdone { 0% { transform: scale(.6); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+html[data-text="l"] #app, html[data-text="l"] .sheet { zoom: 1.12; }
+
 /* Klad listů */
 .index-btn { position: fixed; right: max(14px, calc(50% - 266px)); bottom: calc(var(--sb) + 84px); z-index: 6; display: flex; align-items: center; gap: 6px;
   border: 0; border-radius: 99px; padding: 10px 14px; background: var(--petrol); color: #fff; box-shadow: var(--shadow); font: 600 14px var(--head); }

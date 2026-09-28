@@ -336,6 +336,11 @@ export const GEN = {
     return { t: 'circle', label: 'V', a, tol: 0.0015, dec: 3, unit: 'gon',
       e: `Zenitový úhel = číslo ryšky (${Math.floor(a)} gon) + poloha na stupnici ${fmt(a - Math.floor(a), 3)} gon = ${fmt(a, 3)} gon. Vodorovná záměra má z = 100 gon.` };
   },
+  instrumentPart() {
+    const k = Math.floor(Math.random() * TS_PARTS.length), part = TS_PARTS[k];
+    const wrong = TS_PARTS.filter((_, i) => i !== k).sort(() => Math.random() - 0.5).slice(0, 3).map((x) => x.name);
+    return { t: 'c', q: `Jak se jmenuje část totální stanice označená číslem ${k + 1}?`, img: tsSvg(k), a: part.name, w: wrong, e: part.e };
+  },
   mapSymbol() {
     const S = MAP_SYMBOLS, k = Math.floor(Math.random() * S.length);
     const wrong = S.filter((_, i) => i !== k).sort(() => Math.random() - 0.5).slice(0, 3).map((x) => x.name);
@@ -399,6 +404,41 @@ function polar(axis) {
       e: `Y_P = Y_A + d · sin σ = ${fmt(Y, 2)} m.` }
     : { q: `Polární metoda: ${pt('A', A)}, směrník σ = ${fmt(s, 4)} gon, délka d = ${fmt(d, 3)} m. Vypočtěte souřadnici X bodu P.`, a: X, tol: 0.011, dec: 2, unit: 'm',
       e: `X_P = X_A + d · cos σ = ${fmt(X, 2)} m.` };
+}
+
+// Části totální stanice (schéma s číslovanými popisky).
+const TS_PARTS = [
+  { name: 'dalekohled', at: [132, 74], e: 'Dalekohled s objektivem a okulárem; u totálních stanic je jeho osou i paprsek dálkoměru.' },
+  { name: 'kolimátor (hledáček)', at: [100, 52], e: 'Kolimátor slouží k hrubému zacílení na cíl ještě před pohledem do dalekohledu.' },
+  { name: 'nosná vidlice alhidády', at: [66, 100], e: 'Alhidáda je otočná horní část přístroje; ve vidlici je uložena klopná osa dalekohledu.' },
+  { name: 'displej a klávesnice', at: [100, 142], e: 'Přes displej a klávesnici se ovládá měření, zobrazují se úhly, délky i souřadnice.' },
+  { name: 'jemná vodorovná ustanovka', at: [152, 150], e: 'Jemná ustanovka (šroub) umožňuje přesné dotočení na cíl v daném směru.' },
+  { name: 'trojnožka', at: [66, 174], e: 'Trojnožka spojuje přístroj se stativem; nese stavěcí šrouby a krabicovou libelu.' },
+  { name: 'stavěcí šroub', at: [134, 190], e: 'Třemi stavěcími šrouby se přístroj horizontuje (urovnává libela).' },
+  { name: 'krabicová libela', at: [100, 168], e: 'Krabicová libela slouží k hrubé horizontaci; přesnou zajišťuje elektronická nebo alhidádová libela.' },
+];
+function tsSvg(hi) {
+  const callout = (i, [x, y], [lx, ly]) => `<line x1="${x}" y1="${y}" x2="${lx}" y2="${ly}" stroke="#555" stroke-width="1"/>` +
+    `<circle cx="${lx}" cy="${ly}" r="9" fill="${i === hi ? '#e5484d' : '#fff'}" stroke="${i === hi ? '#b91c1c' : '#555'}" stroke-width="1.5"/>` +
+    `<text x="${lx}" y="${ly + 4}" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif" fill="${i === hi ? '#fff' : '#333'}">${i + 1}</text>`;
+  const labels = [[182, 60], [100, 18], [18, 80], [42, 136], [186, 128], [16, 190], [186, 204], [70, 204]];
+  return `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="220" rx="10" fill="#fbf8ef"/>
+    <path d="M70 186h60l8 10H62z" fill="#6f7480"/>
+    <rect x="58" y="160" width="84" height="24" rx="5" fill="#3d4452"/>
+    <circle cx="100" cy="168" r="5" fill="#d9f2e6" stroke="#1e2430" stroke-width="1.5"/><circle cx="101" cy="167" r="1.8" fill="#fff"/>
+    <g fill="#9aa3ad" stroke="#3d4452" stroke-width="1.5"><rect x="62" y="184" width="12" height="10" rx="3"/><rect x="126" y="184" width="12" height="10" rx="3"/><rect x="94" y="186" width="12" height="9" rx="3"/></g>
+    <rect x="56" y="128" width="88" height="32" rx="6" fill="#f2c230" stroke="#c9981c" stroke-width="2"/>
+    <rect x="80" y="134" width="40" height="18" rx="3" fill="#0f1c2a"/><rect x="84" y="137" width="32" height="6" rx="1" fill="#6ce5ff"/>
+    <rect x="144" y="143" width="10" height="12" rx="3" fill="#3d4452"/>
+    <rect x="58" y="60" width="22" height="72" rx="8" fill="#f2c230" stroke="#c9981c" stroke-width="2"/>
+    <rect x="120" y="60" width="22" height="72" rx="8" fill="#f2c230" stroke="#c9981c" stroke-width="2"/>
+    <path d="M66 60Q100 30 134 60" fill="none" stroke="#3d4452" stroke-width="5" stroke-linecap="round"/>
+    <path d="M62 66h86v18H62z" fill="#2e9a6a" stroke="#237a53" stroke-width="2"/>
+    <rect x="146" y="62" width="10" height="26" rx="4" fill="#1e2430"/><circle cx="154" cy="75" r="5" fill="#93c5fd"/>
+    <rect x="52" y="68" width="10" height="14" rx="3" fill="#1e2430"/>
+    <rect x="92" y="54" width="18" height="10" rx="2" fill="#1e2430"/>
+    ${TS_PARTS.map((p, i) => callout(i, p.at, labels[i])).join('')}
+  </svg>`;
 }
 
 // Mapové značky (obecné kartografické konvence topografických map).

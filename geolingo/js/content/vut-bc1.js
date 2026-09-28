@@ -20,7 +20,7 @@ export default [
         ],
       },
       {
-        id: 'bea003l2', title: 'Teodolit a totální stanice', icon: '🔭', gens: ['station'],
+        id: 'bea003l2', title: 'Teodolit a totální stanice', icon: '🔭', gens: ['station', 'instrumentPart'],
         items: [
           { t: 'c', q: 'Kolem které osy se otáčí dalekohled teodolitu?', a: 'Točné (klopné) osy H', w: ['Svislé (vertikální) osy V', 'Záměrné osy Z', 'Osy alhidádové libely L'], e: 'Dalekohled se klopí kolem točné osy H, alhidáda se otáčí kolem svislé osy V.' },
           { t: 'c', q: 'Osa alhidádové libely L musí být kolmá k…', a: 'svislé ose V', w: ['záměrné ose Z', 'točné ose H', 'ose optického dostřeďovače'], e: 'Podmínka L ⊥ V: po urovnání libely je svislá osa ve svislici.' },

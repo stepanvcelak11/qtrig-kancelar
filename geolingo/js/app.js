@@ -123,7 +123,7 @@ function topStats() {
   return `<header class="top"><div class="top-in">
     <div class="brand">${mascot('happy', 'mini')}<span>Geo<b>lingo</b></span></div>
     <div class="chips">
-      <div class="chip" title="Dní v terénu v řadě">${ICON.flame}<b>${s.streak}</b></div>
+      <div class="chip" title="Dní v terénu v řadě${s.freezes ? ` · náhradní akumulátory: ${s.freezes}` : ''}">${ICON.flame}<b>${s.streak}</b>${s.freezes ? `<small class="frz">+${s.freezes}🔋</small>` : ''}</div>
       <div class="chip" title="Zkušenosti (dnes ${s.xpToday} / ${s.dailyGoal} XP)" style="--p:${goal}">${ICON.star}<b>${s.xp}</b><i class="goalbar"></i></div>
       <div class="chip batt-chip" title="Baterie přístroje – za chybu ubude dílek">${battery(s.hearts)}</div>
     </div></div>
@@ -203,7 +203,7 @@ function renderPath() {
     const nodes = u.lessons.map((l, li) => {
       const index = k++;
       const done = isDone(l.id), unlocked = isUnlocked(index);
-      const cls = (done ? 'done' : !unlocked ? 'locked' : index === cur ? 'current' : 'open') + (isRusty(l.id) ? ' rusty' : '');
+      const cls = (done ? 'done' : !unlocked ? 'locked' : index === cur ? 'current' : 'open') + (isRusty(l.id) ? ' rusty' : '') + (l.id === justDone ? ' just' : '');
       const times = store.S().done[l.id] ?? 0;
       const hasField = (l.gens ?? []).some(isField);
       const p = pts[li];
@@ -268,6 +268,7 @@ function renderPath() {
     if (xp) { beep('done'); confetti(); toast(`Truhla otevřena: +${xp} XP`); setTimeout(() => show('path'), 900); }
   });
   $('#index').addEventListener('click', indexSheet);
+  if (justDone) { const n = $('.node.just'); if (n) setTimeout(() => n.classList.remove('just'), 1600); justDone = null; }
   app.querySelectorAll('[data-tips]').forEach((b) => b.addEventListener('click', () => tipsSheet(b.dataset.tips)));
   app.querySelectorAll('[data-exam]').forEach((b) => b.addEventListener('click', () => {
     const u = UNITS[+b.dataset.exam];
@@ -895,9 +896,12 @@ function finishExam(timeout = false) {
   $('#cont').addEventListener('click', () => show('practice'));
 }
 
+let justDone = null;
+
 function finishRun() {
   if (run.meta.exam) return finishExam();
   const r = run;
+  justDone = r.meta.lessonId;
   const total = r.correct + r.mistakes;
   const result = store.completeLesson(r.meta.lessonId, { mistakes: r.mistakes, practice: r.meta.practice, unitTest: r.meta.unitTest });
   if (r.meta.practice) store.gainHeart();
@@ -920,6 +924,7 @@ function finishRun() {
     </div>
     <div class="done-notes">
     ${promoted ? `<div class="promo"><span>🎖️</span><div><small>Povýšení!</small><b>${rk.title}</b>${OUTFIT.some((it) => it.rank === rk.index) ? `<small class="gearnew">Nová výbava pro Totiho: ${OUTFIT.filter((it) => it.rank === rk.index).map((it) => it.name).join(', ')}</small>` : ''}</div></div>` : ''}
+    ${s.freezeEarned ? (() => { s.freezeEarned = false; store.save(); return '<p class="newach">🔋 Za 7 dní v řadě máš náhradní akumulátor – zachrání sérii, když jeden den vynecháš.</p>'; })() : ''}
     ${result.streakUp ? `<div class="streak-up"><span class="flame">${ICON.flame}</span><b>${s.streak} ${s.streak === 1 ? 'den' : s.streak < 5 ? 'dny' : 'dní'} v terénu v řadě!</b></div>` : ''}
     ${s.xpToday >= s.dailyGoal ? '<p>🎯 Denní cíl splněn!</p>' : `<p>Denní cíl: ${s.xpToday} / ${s.dailyGoal} XP</p>`}
     <p>Hodnost: <b>${rk.title}</b>${rk.next ? ` · do další ${rk.next.xp - s.xp} XP` : ''}</p>
@@ -1119,6 +1124,7 @@ function renderProfile() {
       <div class="statbox"><span class="emo">📚</span><b>${doneCount} / ${LESSONS.length}</b><small>lekcí dokončeno</small></div>
       <div class="statbox"><span class="emo">🎯</span><b>${acc} %</b><small>přesnost odpovědí</small></div>
       <div class="statbox"><span class="emo">🦺</span><b>${s.stats.field}</b><small>terénních úloh</small></div>
+      <div class="statbox"><span class="emo">🔋</span><b>${s.freezes ?? 0} / 2</b><small>náhradní akumulátory (za 7 dní v řadě)</small></div>
       <div class="statbox"><span class="emo">🧮</span><b>${s.stats.calc}</b><small>správných výpočtů</small></div>
     </div>
     <h3 class="sec">Mapa znalostí</h3>${knowledgeMap()}
@@ -1129,6 +1135,7 @@ function renderProfile() {
     <div class="ach-grid">${store.ACHIEVEMENTS.map((a) => `<div class="ach ${s.achievements.includes(a.id) ? '' : 'locked'}"><span class="ic">${a.icon}</span><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></div>`).join('')}</div>
     <h3 class="sec">Nastavení</h3>
     <div class="seg"><span>Studuji</span><button data-track="ss" class="${s.track !== 'vs' ? 'on' : ''}">Střední školu</button><button data-track="vs" class="${s.track === 'vs' ? 'on' : ''}">Vysokou školu</button></div>
+    <div class="seg"><span>Písmo</span>${[['m', 'Normální'], ['l', 'Větší']].map(([v, t]) => `<button data-text-set="${v}" class="${(s.textSize ?? 'm') === v ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div class="seg"><span>Vzhled</span>${[['auto', 'Auto'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([v, t]) => `<button data-theme-set="${v}" class="${(s.theme ?? 'auto') === v ? 'on' : ''}">${t}</button>`).join('')}</div>
     <label class="toggle">Zvuky <input type="checkbox" id="snd" ${s.sound ? 'checked' : ''}></label>
     <label class="toggle">Odemknout všechny lekce <input type="checkbox" id="unl" ${s.unlockAll ? 'checked' : ''}></label>
@@ -1144,6 +1151,7 @@ function renderProfile() {
     s.outfit[it.slot] = s.outfit[it.slot] === it.id ? null : it.id;
     store.save(); beep('tick'); renderProfile();
   }));
+  app.querySelectorAll('[data-text-set]').forEach((b) => b.addEventListener('click', () => { s.textSize = b.dataset.textSet; store.save(); applyTheme(); renderProfile(); }));
   app.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => { s.theme = b.dataset.themeSet; store.save(); applyTheme(); renderProfile(); }));
   app.querySelectorAll('[data-km]').forEach((b) => b.addEventListener('click', () => {
     const u = UNITS[+b.dataset.km];
@@ -1239,6 +1247,7 @@ function welcomeGoal() {
 }
 
 function applyTheme() {
+  document.documentElement.dataset.text = store.S().textSize ?? 'm';
   const t = store.S().theme ?? 'auto';
   if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
   const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -1247,6 +1256,7 @@ function applyTheme() {
 applyTheme();
 backdrop();
 store.tick();
+if (store.S().freezeUsedOn === new Date().toLocaleDateString('sv-SE') && !sessionStorage.getItem('frzShown')) { setTimeout(() => toast('🔋 Náhradní akumulátor zachránil tvou sérii!'), 800); try { sessionStorage.setItem('frzShown', '1'); } catch { /* */ } }
 if (localStorage.getItem('geolingo.onboarded')) show('path'); else welcome();
 setInterval(() => { if (!run && !document.querySelector('.sheet-bg')) { const before = store.S().hearts; store.tick(); if (store.S().hearts !== before && tab !== 'profile') show(tab); } }, 60000);
 

@@ -7,7 +7,27 @@ function rng(seed) {
 
 const VW = 1000, VH = 1700;
 
+const CACHE_KEY = 'geolingo.backdrop.v1';
+
+/** Pozadí je deterministické – vygeneruje se jednou a uloží; při dalším spuštění je okamžitě. */
 export function backdrop() {
+  let svg = null;
+  try { svg = localStorage.getItem(CACHE_KEY); } catch { /* bez úložiště */ }
+  if (svg) return mount(svg);
+  const run = () => { svg = build(); try { localStorage.setItem(CACHE_KEY, svg); } catch { /* plné úložiště */ } mount(svg); };
+  // Poprvé až po vykreslení první obrazovky, ať start nečeká.
+  if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 1500 }); else setTimeout(run, 200);
+}
+
+function mount(svg) {
+  const el = document.createElement('div');
+  el.id = 'backdrop';
+  el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = svg;
+  document.body.prepend(el);
+}
+
+function build() {
   const r = rng(20260928);
   // Terén: součet gaussovských kopců a údolí + mírný sklon.
   const hills = Array.from({ length: 9 }, () => ({ x: r() * VW, y: r() * VH, h: (r() < 0.75 ? 1 : -0.6) * (60 + r() * 90), s: 140 + r() * 220 }));
@@ -63,12 +83,8 @@ export function backdrop() {
     if (y === 100) crosses.push(`<text x="${x + 6}" y="${y + 18}" class="bg-lbl sm">Y ${(598000 + x).toLocaleString('cs-CZ')}</text>`);
   }
 
-  const el = document.createElement('div');
-  el.id = 'backdrop';
-  el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = `<svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid slice">
+  return `<svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid slice">
     <path class="bg-c" d="${thin.join('')}"/><path class="bg-c idx" d="${thick.join('')}"/>
     <path class="bg-net" d="${net.join('')}"/>${crosses.join('')}${labels.join('')}${trigSym}
   </svg>`;
-  document.body.prepend(el);
 }
