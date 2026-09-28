@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null, lastDone: {}, theme: 'auto',
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null, lastDone: {}, theme: 'auto', outfit: {},
 });
 
 let state;

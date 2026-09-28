@@ -99,6 +99,7 @@ const recompute = {
   cutVolume: (n) => (n[0] + n[1]) / 2 * n[2],
   stereoDepth: (n) => n[0] * n[1] / n[2],
   popDensity: (n) => n[0] / n[1],
+  parcelSplit: (n) => { const [a, b, h, P] = n; let lo = 0, hi = h; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; (a * m + (b - a) * m * m / (2 * h) < P ? (lo = m) : (hi = m)); } return lo; },
 };
 for (const name of Object.keys(GEN)) {
   for (let k = 0; k < 300; k++) {

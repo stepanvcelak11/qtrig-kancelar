@@ -341,6 +341,16 @@ export const GEN = {
     const wrong = S.filter((_, i) => i !== k).sort(() => Math.random() - 0.5).slice(0, 3).map((x) => x.name);
     return { t: 'c', q: 'Co znamená tato mapová značka?', img: S[k].svg, a: S[k].name, w: wrong, e: S[k].e };
   },
+  parcelSplit() {
+    // Pravoúhlý lichoběžník: dolní strana a, horní b, výška h; dělicí čára rovnoběžná s dolní stranou.
+    const a = rint(30, 80), b = rint(20, 90), h = rint(25, 70);
+    const total = (a + b) / 2 * h, P = Math.round(total * rnd(0.3, 0.7));
+    const k = (b - a) / h;
+    const x = Math.abs(k) < 1e-9 ? P / a : (-a + Math.sqrt(a * a + 2 * k * P)) / k;
+    return { q: `Pozemek tvaru pravoúhlého lichoběžníku: dolní strana ${a} m, horní strana ${b} m, výška ${h} m. Oddělte od dolní strany dílec o výměře ${fmt(P, 0)} m² čarou rovnoběžnou s dolní stranou. V jaké vzdálenosti od dolní strany vede dělicí čára?`,
+      a: x, tol: 0.011, dec: 2, unit: 'm',
+      e: `Šířka ve vzdálenosti x je a + (b − a)·x/h, plocha P = a·x + (b − a)·x²/(2h). Kvadratická rovnice dává x = ${fmt(x, 2)} m (dělicí čára má délku ${fmt(a + k * x, 2)} m).` };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',

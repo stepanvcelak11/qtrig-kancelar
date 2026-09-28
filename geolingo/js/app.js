@@ -14,11 +14,11 @@ const isField = (t) => FIELD_TYPES.includes(t);
 // ---------------------------------------------------------------------------------------
 // Maskot Toti (totální stanice na stativu) – přesně podle předlohy.
 
-function mascot(mood = 'happy', cls = '') {
+function mascot(mood = 'happy', cls = '', outfit = null) {
   // Oči na displeji: normální ovály, smutné = přivřené, překvapené = větší.
   const eh = mood === 'sad' ? 26 : mood === 'wow' ? 66 : 55;
   const ey = mood === 'sad' ? 482 : 480 - eh / 2;
-  return `<svg class="toti ${cls}" viewBox="60 90 720 870" aria-hidden="true">
+  return `<svg class="toti ${cls}" viewBox="60 50 720 910" aria-hidden="true">
     <g stroke-linecap="round">
       <line x1="355" y1="650" x2="118" y2="928" stroke="#b87a38" stroke-width="32"/>
       <line x1="355" y1="650" x2="592" y2="928" stroke="#b87a38" stroke-width="32"/>
@@ -42,7 +42,26 @@ function mascot(mood = 'happy', cls = '') {
     <line class="laser" x1="590" y1="283" x2="748" y2="277" stroke="#d9434e" stroke-width="7" stroke-linecap="round"/>
     <circle class="laser" cx="748" cy="277" r="14" fill="#d9434e"/>
     <circle cx="572" cy="283" r="26" fill="#93c5fd"/>
+    ${outfitSvg(outfit)}
   </svg>`;
+}
+
+// ---------------------------------------------------------------------------------------
+// Výbava pro Totiho – odemyká se hodnostmi (kosmetická odměna)
+
+export const OUTFIT = [
+  { id: 'reflex', slot: 'legs', name: 'Reflexní pásky', rank: 1, svg: '<line x1="236" y1="789" x2="208" y2="822" stroke="#f97316" stroke-width="36"/><line x1="226" y1="802" x2="219" y2="810" stroke="#f1f5f9" stroke-width="38"/><line x1="474" y1="789" x2="502" y2="822" stroke="#f97316" stroke-width="36"/><line x1="484" y1="802" x2="491" y2="810" stroke="#f1f5f9" stroke-width="38"/><line x1="355" y1="790" x2="355" y2="824" stroke="#f97316" stroke-width="36"/><line x1="355" y1="803" x2="355" y2="811" stroke="#f1f5f9" stroke-width="38"/>' },
+  { id: 'cap', slot: 'head', name: 'Kšiltovka', rank: 1, svg: '<path d="M250 170 Q355 60 462 170Z" fill="#2b8fd6" stroke="#1f6fab" stroke-width="6"/><path d="M440 166 L560 176 Q540 150 470 150Z" fill="#1f6fab"/><circle cx="355" cy="104" r="10" fill="#1f6fab"/>' },
+  { id: 'helmet', slot: 'head', name: 'Ochranná přilba', rank: 2, svg: '<path d="M228 176 Q228 70 357 66 Q486 70 486 176Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="6"/><rect x="210" y="166" width="294" height="22" rx="11" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="4"/><path d="M357 70V172" stroke="#e2e8f0" stroke-width="16"/>' },
+  { id: 'pole', slot: 'side', name: 'Výtyčka', rank: 2, svg: '<g><rect x="690" y="330" width="16" height="620" fill="#fff" stroke="#999" stroke-width="3"/><rect x="690" y="330" width="16" height="70" fill="#dc2626"/><rect x="690" y="470" width="16" height="70" fill="#dc2626"/><rect x="690" y="610" width="16" height="70" fill="#dc2626"/><rect x="690" y="750" width="16" height="70" fill="#dc2626"/><path d="M698 950 690 930h16Z" fill="#555"/></g>' },
+  { id: 'glasses', slot: 'face', name: 'Sluneční brýle', rank: 3, svg: '<g fill="#0b1220" stroke="#334155" stroke-width="5"><rect x="270" y="446" width="80" height="58" rx="18"/><rect x="362" y="446" width="80" height="58" rx="18"/></g><path d="M350 470h12" stroke="#334155" stroke-width="6"/><path d="M285 458l30 0" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" opacity=".7"/>' },
+  { id: 'gnss', slot: 'head', name: 'GNSS anténa', rank: 4, svg: '<rect x="345" y="96" width="20" height="60" fill="#475569"/><ellipse cx="355" cy="96" rx="70" ry="16" fill="#e5e7eb" stroke="#94a3b8" stroke-width="5"/><ellipse cx="355" cy="90" rx="30" ry="8" fill="#94a3b8"/>' },
+  { id: 'gold', slot: 'head', name: 'Zlatá přilba ÚOZI', rank: 5, svg: '<path d="M228 176 Q228 70 357 66 Q486 70 486 176Z" fill="#facc15" stroke="#ca8a04" stroke-width="6"/><rect x="210" y="166" width="294" height="22" rx="11" fill="#eab308" stroke="#ca8a04" stroke-width="4"/><path d="M357 70V172" stroke="#fde047" stroke-width="16"/><path d="M330 120l27-20 27 20-27 20z" fill="#fff" opacity=".7"/>' },
+];
+
+function outfitSvg(override = null) {
+  const o = override ?? store.S().outfit ?? {};
+  return ['side', 'legs', 'face', 'head'].map((slot) => OUTFIT.find((it) => it.slot === slot && o[slot] === it.id)?.svg ?? '').join('');
 }
 
 // ---------------------------------------------------------------------------------------
@@ -808,7 +827,7 @@ function finishRun() {
       <div class="card" style="--c:#2b8fd6"><b>Čas</b><span>${mins} min</span></div>
     </div>
     <div class="done-notes">
-    ${promoted ? `<div class="promo"><span>🎖️</span><div><small>Povýšení!</small><b>${rk.title}</b></div></div>` : ''}
+    ${promoted ? `<div class="promo"><span>🎖️</span><div><small>Povýšení!</small><b>${rk.title}</b>${OUTFIT.some((it) => it.rank === rk.index) ? `<small class="gearnew">Nová výbava pro Totiho: ${OUTFIT.filter((it) => it.rank === rk.index).map((it) => it.name).join(', ')}</small>` : ''}</div></div>` : ''}
     ${result.streakUp ? `<div class="streak-up"><span class="flame">${ICON.flame}</span><b>${s.streak} ${s.streak === 1 ? 'den' : s.streak < 5 ? 'dny' : 'dní'} v terénu v řadě!</b></div>` : ''}
     ${s.xpToday >= s.dailyGoal ? '<p>🎯 Denní cíl splněn!</p>' : `<p>Denní cíl: ${s.xpToday} / ${s.dailyGoal} XP</p>`}
     <p>Hodnost: <b>${rk.title}</b>${rk.next ? ` · do další ${rk.next.xp - s.xp} XP` : ''}</p>
@@ -984,6 +1003,12 @@ function renderProfile() {
         <div class="rankbar"><i style="width:${rkPct * 100}%"></i></div>
         <div class="hint">${rk.next ? `${s.xp} / ${rk.next.xp} XP do hodnosti ${rk.next.title}` : 'Nejvyšší hodnost – gratuluji!'}</div></div>
     </div>
+    <h3 class="sec">Totiho výbava</h3>
+    <div class="outfit">${OUTFIT.map((it) => {
+      const unlocked = rk.index >= it.rank, on = (s.outfit ?? {})[it.slot] === it.id;
+      return `<button class="gear ${on ? 'on' : ''}" data-gear="${it.id}" ${unlocked ? '' : 'disabled'}>
+        <span class="gear-prev">${mascot('happy', '', { [it.slot]: it.id })}</span><b>${it.name}</b><small>${unlocked ? (on ? 'Nasazeno' : 'Nasadit') : `od hodnosti ${store.RANKS[it.rank].title}`}</small></button>`;
+    }).join('')}</div>
     <div class="grid2">
       <div class="statbox">${ICON.flame}<b>${s.streak}</b><small>dní v terénu v řadě</small></div>
       <div class="statbox">${ICON.star}<b>${s.xp}</b><small>celkem XP</small></div>
@@ -1007,6 +1032,12 @@ function renderProfile() {
   </div>` + tabs();
   app.querySelectorAll('[data-goal]').forEach((b) => b.addEventListener('click', () => { s.dailyGoal = +b.dataset.goal; store.save(); renderProfile(); }));
   app.querySelectorAll('[data-track]').forEach((b) => b.addEventListener('click', () => { s.track = b.dataset.track; store.save(); renderProfile(); }));
+  app.querySelectorAll('[data-gear]').forEach((b) => b.addEventListener('click', () => {
+    const it = OUTFIT.find((x) => x.id === b.dataset.gear);
+    s.outfit = { ...(s.outfit ?? {}) };
+    s.outfit[it.slot] = s.outfit[it.slot] === it.id ? null : it.id;
+    store.save(); beep('tick'); renderProfile();
+  }));
   app.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => { s.theme = b.dataset.themeSet; store.save(); applyTheme(); renderProfile(); }));
   $('#snd').addEventListener('change', (e) => { s.sound = e.target.checked; store.save(); });
   $('#unl').addEventListener('change', (e) => { s.unlockAll = e.target.checked; store.save(); });
@@ -1080,7 +1111,17 @@ if (localStorage.getItem('geolingo.onboarded')) show('path'); else welcome();
 setInterval(() => { if (!run && !document.querySelector('.sheet-bg')) { const before = store.S().hearts; store.tick(); if (store.S().hearts !== before && tab !== 'profile') show(tab); } }, 60000);
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('sw.js').then((r) => r.update()).catch(() => {});
+  // Nová verze aplikace převzala řízení → nabídnout načtení (uprostřed lekce jen oznámit).
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || document.getElementById('update')) return;
+    const bar = document.createElement('div');
+    bar.id = 'update';
+    bar.innerHTML = `${mascot('wow')}<span><b>Nová verze Geolinga</b><small>Toti se naučil něco nového.</small></span><button class="btn primary">Načíst</button>`;
+    bar.querySelector('button').addEventListener('click', () => location.reload());
+    document.body.append(bar);
+  });
 }
 
 // Pro testy v prohlížeči.
