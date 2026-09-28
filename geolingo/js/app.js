@@ -224,7 +224,7 @@ function renderPath() {
     const u = UNITS[+b.dataset.exam];
     if (!u.lessons.every((l) => isDone(l.id)) && !store.S().unlockAll) return toast('Zkouška se odemkne po dokončení všech lekcí listu');
     scrollMemory = window.scrollY;
-    begin(buildUnitTest(u), { lessonId: null, unitTest: u.id, title: `Zkouška: ${u.title}`, practice: false, color: u.color });
+    begin(buildUnitTest(u), { lessonId: null, unitTest: u.id, unitId: u.id, title: `Zkouška: ${u.title}`, practice: false, color: u.color });
   }));
 }
 
@@ -299,7 +299,7 @@ function startLesson(id) {
   store.tick();
   if (store.S().hearts <= 0) return noHearts();
   const l = lessonById(id);
-  begin(buildLesson(l), { lessonId: id, title: l.title, practice: false, color: l.unit.color });
+  begin(buildLesson(l), { lessonId: id, unitId: l.unit.id, title: l.title, practice: false, color: l.unit.color });
 }
 
 function startPractice(items, title) {
@@ -324,12 +324,14 @@ function renderExercise() {
   app.innerHTML = `<div class="lesson" style="--c:${run.meta.color}">
     <div class="lesson-top"><button class="x" id="quit" aria-label="Ukončit">✕</button>
       <div class="bar"><i style="width:${pct}%"></i>${run.combo >= 3 ? `<em>${run.combo}× v řadě</em>` : ''}</div>
+      ${run.meta.unitId && TIPS[run.meta.unitId] ? '<button class="chip small tipchip" id="ltips" aria-label="Tahák">📒</button>' : ''}
       ${run.meta.practice ? '<span class="chip small">🎯</span>' : `<span class="chip small">${battery(store.S().hearts)}</span>`}</div>
     <div class="ex ${isField(ex.t) ? 'field' : ''}"><div class="kind ${isField(ex.t) ? 'terrain' : ''}">${KIND[ex.t]}</div>${exerciseBody(ex)}</div>
     ${ex.t === 'm' ? '' : '<div class="check-bar"><div><button class="btn primary wide" id="check" disabled>Zkontrolovat</button></div></div>'}
   </div>`;
   $('#quit').addEventListener('click', () => { if (confirm('Opravdu ukončit? Pokrok v lekci se neuloží.')) { run = null; show(tab); } });
   $('#check')?.addEventListener('click', check);
+  $('#ltips')?.addEventListener('click', () => tipsSheet(run.meta.unitId));
   wireExercise(ex);
 }
 

@@ -116,6 +116,7 @@ main.path, .page, .ex, .done-screen { animation: appear .28s ease-out; }
 .chip b { font-weight: 700; }
 .chip .goalbar { position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--gold); }
 .chip.small { padding: 4px 8px; font-size: 16px; }
+.tipchip { border: 0; cursor: pointer; }
 .batt { width: 30px !important; height: 24px !important; color: var(--muted); }
 
 /* Mapa lekcí */
