@@ -17,7 +17,7 @@ export default [
           { t: 'c', q: 'Součet úhlů sférického trojúhelníku je…', a: 'větší než 180° o sférický exces', w: ['přesně 180°', 'menší než 180° o sférický exces', 'vždy právě 270°'], e: 'Sférický exces ε = P / R² (v radiánech) roste s plochou trojúhelníku.' },
           { t: 'c', q: 'Legendreova věta říká, že malý sférický trojúhelník lze řešit jako rovinný, když…', a: 'každý úhel zmenšíme o třetinu excesu', w: ['každou stranu zkrátíme o exces', 'úhly zvětšíme o celý exces', 'poloměr koule položíme roven 1'], e: 'Rovinný trojúhelník se stejnými stranami má úhly α − ε/3, β − ε/3, γ − ε/3.' },
           { t: 'n', q: 'Jaká je délka oblouku 1° poledníku na kouli o poloměru R = 6 371 km?', a: 111.19, tol: 0.05, dec: 2, unit: 'km', e: 'd = 2πR / 360 = 40 030 km / 360 ≈ 111,19 km.' },
-          { t: 'm', q: 'Spojte pojem s popisem', p: [['Hlavní kružnice', 'Rovina prochází středem koule'], ['Loxodroma', 'Stálý azimut'], ['Poledník', 'Spojuje oba póly'], ['Rovník', 'Rovnoběžka se šířkou 0°']] },
+          { t: 'm', q: 'Spojte pojem s popisem', p: [['Hlavní kružnice', 'Rovina prochází středem koule'], ['Loxodroma', 'Stálý azimut'], ['Poledník', 'Spojuje oba póly'], ['Rovník', 'Rovnoběžka se šířkou 0°']], e: 'Nejkratší spojnicí na kouli je ortodroma (oblouk hlavní kružnice), loxodroma protíná poledníky pod stálým úhlem a je delší; poledníkové kružnice jsou hlavní kružnice, z rovnoběžek jen rovník.' },
         ],
       },
       {
@@ -30,7 +30,7 @@ export default [
           { t: 'c', q: 'Zobrazení v obecné (šikmé) poloze má osu zobrazovací plochy…', a: 'odkloněnou od zemské osy i od roviny rovníku', w: ['totožnou se zemskou osou', 'ležící v rovině rovníku', 'kolmou k rovině poledníku 0°'], e: 'Normální poloha: osa = zemská osa; příčná (transverzální): osa v rovině rovníku; obecná: jinak.' },
           { t: 'c', q: 'Vyrovnávací (kompenzační) zobrazení…', a: 'zkresluje vše, ale žádnou veličinu příliš', w: ['nezkresluje žádnou veličinu', 'zachovává úhly i plochy', 'lze použít jen pro plány'], e: 'Příkladem je Robinsonovo zobrazení pro mapy světa.' },
           { t: 'c', q: 'Sečné zobrazení má oproti tečnému…', a: 'dvě nezkreslené linie a menší extrémy zkreslení', w: ['žádnou nezkreslenou linii', 'vždy konformní vlastnost', 'větší zkreslení uprostřed území'], e: 'Uprostřed je délkové zkreslení mírně pod 1, na okrajích nad 1 – zkreslení se rozloží rovnoměrněji.' },
-          { t: 'm', q: 'Přiřaďte zobrazovací plochu druhu zobrazení', p: [['Rovina', 'Azimutální'], ['Kužel', 'Kuželové'], ['Válec', 'Válcové'], ['Koule (z elipsoidu)', 'Dvojité zobrazení']] },
+          { t: 'm', q: 'Přiřaďte zobrazovací plochu druhu zobrazení', p: [['Rovina', 'Azimutální'], ['Kužel', 'Kuželové'], ['Válec', 'Válcové'], ['Koule (z elipsoidu)', 'Dvojité zobrazení']], e: 'Rovina dává azimutální, kužel kuželové a válec válcové zobrazení; při dvojitém zobrazení se elipsoid nejprve zobrazí na kouli a teprve ta do roviny – tak pracuje Křovákovo zobrazení.' },
         ],
       },
       {
@@ -43,7 +43,7 @@ export default [
           { t: 'c', q: 'Délkové zkreslení m = 1,000 1 znamená, že délka 1 km se v obraze…', a: 'prodlouží o 10 cm', w: ['zkrátí o 10 cm', 'prodlouží o 1 m', 'prodlouží o 1 cm'], e: '(m − 1) · 1 000 m = 0,000 1 · 1 000 m = 0,1 m = 10 cm/km.' },
           { t: 'n', q: 'Mercatorovo zobrazení koule: délkové zkreslení je m = 1 / cos φ. Jaké je plošné zkreslení na rovnoběžce φ = 60°?', a: 4, tol: 0.001, dec: 0, unit: '', e: 'Konformní zobrazení: P = m² = (1 / cos 60°)² = 2² = 4. Plochy jsou tu čtyřikrát zvětšené.' },
           { t: 'tf', q: 'Úhlové zkreslení v bodě závisí na rozdílu poloos a a b Tissotovy indikatrix.', a: true, e: 'Když a = b, úhly se nezkreslují; čím víc se a a b liší, tím větší je maximální úhlové zkreslení.' },
-          { t: 'm', q: 'Spojte pojem s vlastností Tissotovy indikatrix', p: [['Konformní', 'a = b'], ['Ekvivalentní', 'a · b = 1'], ['Ekvidistantní v polednících', 'Jedna poloosa rovna 1'], ['Plošné zkreslení', 'P = a · b']] },
+          { t: 'm', q: 'Spojte pojem s vlastností Tissotovy indikatrix', p: [['Konformní', 'a = b'], ['Ekvivalentní', 'a · b = 1'], ['Ekvidistantní v polednících', 'Jedna poloosa rovna 1'], ['Plošné zkreslení', 'P = a · b']], e: 'Tissotova indikatrix je obraz nekonečně malé kružnice: konformní zobrazení ji ponechá kružnicí (mění jen velikost), ekvivalentní ji změní v elipsu o stejné ploše.' },
         ],
       },
       {
@@ -56,7 +56,7 @@ export default [
           { t: 'c', q: 'V normálním válcovém zobrazení jsou poledníky…', a: 'rovnoběžné přímky', w: ['přímky sbíhající se v pólu', 'kruhové oblouky', 'elipsy'], e: 'Rovnoběžky jsou přímky kolmé k poledníkům – síť je pravoúhlá.' },
           { t: 'c', q: 'Nepravá zobrazení se liší od jednoduchých tím, že…', a: 'poledníky jsou obecné křivky', w: ['rovnoběžky jsou vždy elipsy', 'nepoužívají žádnou zobrazovací plochu', 'jsou vždy konformní'], e: 'Rovnoběžky mají tvar jako u „vzoru“ (přímky, oblouky), poledníky se ale zakřivují – např. Sansonovo, Mollweidovo, Bonneovo.' },
           { t: 'tf', q: 'Gaussovo zobrazení elipsoidu na kouli je konformní.', a: true, e: 'Používá se např. v Křovákově zobrazení: Besselův elipsoid → Gaussova koule s nezkreslenou rovnoběžkou 49°30′.' },
-          { t: 'm', q: 'Spojte zobrazení s jeho vlastností', p: [['Mercatorovo', 'Válcové konformní'], ['Mollweidovo', 'Nepravé válcové stejnoploché'], ['Bonneovo', 'Nepravé kuželové stejnoploché'], ['Lambertovo kuželové', 'Kuželové konformní']] },
+          { t: 'm', q: 'Spojte zobrazení s jeho vlastností', p: [['Mercatorovo', 'Válcové konformní'], ['Mollweidovo', 'Nepravé válcové stejnoploché'], ['Bonneovo', 'Nepravé kuželové stejnoploché'], ['Lambertovo kuželové', 'Kuželové konformní']], e: 'Mercatorovo zobrazení zachovává úhly, proto se v něm loxodroma zobrazí jako přímka a slouží k navigaci; nepravá zobrazení (Mollweide, Bonne) mají zakřivené poledníky a bývají stejnoplochá.' },
         ],
       },
       {
@@ -70,7 +70,7 @@ export default [
           { t: 'c', q: 'Ve kterých pásech UTM leží Česká republika?', a: '33 a 34', w: ['31 a 32', '3 a 4', '35 a 36'], e: 'Pás 33 má střední poledník 15° v. d., pás 34 poledník 21° v. d. (Pásy 3 a 4 patří k S-42.)' },
           { t: 'c', q: 'Ve kterém zobrazení byly vedeny mapy stabilního katastru?', a: 'Cassini-Soldnerově', w: ['Křovákově', 'Gauss-Krügerově', 'Mercatorově'], e: 'Transverzální válcové ekvidistantní zobrazení se systémy Gusterberg (Čechy) a Svatý Štěpán (Morava a Slezsko).' },
           { t: 'tf', q: 'Pro území protáhlé ve směru poledníku se hodí válcové zobrazení v příčné poloze.', a: true, e: 'Nezkreslená linie (střední poledník) pak prochází podélně územím – proto GK a UTM používají úzké poledníkové pásy.' },
-          { t: 'm', q: 'Spojte systém se zobrazením', p: [['S-JTSK', 'Křovákovo'], ['S-42', 'Gauss-Krügerovo'], ['WGS84 (AČR)', 'UTM'], ['Stabilní katastr', 'Cassini-Soldnerovo']] },
+          { t: 'm', q: 'Spojte systém se zobrazením', p: [['S-JTSK', 'Křovákovo'], ['S-42', 'Gauss-Krügerovo'], ['WGS84 (AČR)', 'UTM'], ['Stabilní katastr', 'Cassini-Soldnerovo']], e: 'Křovákovo zobrazení je dvojité konformní kuželové v obecné poloze; Gauss-Krügerovo i UTM jsou příčná válcová konformní zobrazení v poledníkových pásech, UTM navíc s měřítkem 0,9996 na středním poledníku.' },
         ],
       },
     ],
@@ -90,7 +90,7 @@ export default [
           { t: 'c', q: 'Topografická mapa na rozdíl od tematické…', a: 'zobrazuje obecně polohopis, výškopis a popis', w: ['znázorňuje jen jeden vybraný jev', 'nemá souřadnicovou síť', 'nesmí obsahovat vrstevnice'], e: 'Tematická mapa klade důraz na zvolené téma (hustota, geologie…) na zjednodušeném topografickém podkladu.' },
           { t: 'tf', q: 'Kartometrie se zabývá měřením na mapách (délek, ploch, úhlů).', a: true, e: 'Patří k ní i hodnocení přesnosti map a oprava o srážku mapového listu.' },
           { t: 'c', q: 'Která disciplína kartografie řeší zobrazení a zkreslení?', a: 'Matematická kartografie', w: ['Tematická kartografie', 'Kartografická polygrafie', 'Dějiny kartografie'], e: 'Matematická kartografie tvoří geometrický základ všech map.' },
-          { t: 'm', q: 'Spojte kartografické dílo s druhem', p: [['Glóbus', 'Prostorové'], ['Turistická mapa', 'Rovinné'], ['Mapový portál', 'Digitální'], ['Školní atlas', 'Soubor map']] },
+          { t: 'm', q: 'Spojte kartografické dílo s druhem', p: [['Glóbus', 'Prostorové'], ['Turistická mapa', 'Rovinné'], ['Mapový portál', 'Digitální'], ['Školní atlas', 'Soubor map']], e: 'Kartografická díla lze dělit podle formy: glóbus je prostorové dílo, mapa rovinné a mapový portál digitální; atlas je soubor map se společnou koncepcí.' },
         ],
       },
       {
@@ -103,7 +103,7 @@ export default [
           { t: 'tf', q: 'Grafické měřítko zůstane správné i po zmenšení kopie mapy.', a: true, e: 'Úsečka se zmenší ve stejném poměru jako mapa; číselné měřítko by po kopírování neplatilo.' },
           { t: 'c', q: 'Nomenklatura mapového listu je…', a: 'jednoznačné označení listu v kladu', w: ['seznam místních názvů', 'vysvětlivka znaků', 'údaj o magnetické deklinaci'], e: 'Klad listů určuje rozdělení území na listy, nomenklatura je jejich označení.' },
           { t: 'c', q: 'Topografický obsah mapy tvoří…', a: 'polohopis, výškopis a popis', w: ['legenda, tiráž a rám', 'jen vodstvo a sídla', 'souřadnice a nadmořské výšky bodů bodového pole'], e: 'Polohopis = objekty a jejich poloha; výškopis = tvar terénu; popis = názvy a čísla.' },
-          { t: 'm', q: 'Spojte prvek mapy s jeho úlohou', p: [['Legenda', 'Vysvětluje znaky'], ['Tiráž', 'Údaje o vydání'], ['Směrovka', 'Orientace k severu'], ['Měřítko', 'Poměr zmenšení']] },
+          { t: 'm', q: 'Spojte prvek mapy s jeho úlohou', p: [['Legenda', 'Vysvětluje znaky'], ['Tiráž', 'Údaje o vydání'], ['Směrovka', 'Orientace k severu'], ['Měřítko', 'Poměr zmenšení']], e: 'Spolu s mapovým polem a názvem tvoří tyto prvky kompozici mapy; měřítko 1 : 10 000 znamená, že 1 cm v mapě odpovídá 100 m ve skutečnosti.' },
         ],
       },
       {
@@ -116,7 +116,7 @@ export default [
           { t: 'c', q: 'Která grafická proměnná se hodí pro vyjádření množství?', a: 'Velikost znaku', w: ['Tvar znaku', 'Orientace znaku', 'Druh písma'], e: 'Velikost a světlost jsou vnímány jako uspořádané; tvar a barevný tón spíš kvalitativně.' },
           { t: 'tf', q: 'Vrstevnice je čára spojující body se stejnou nadmořskou výškou.', a: true, e: 'Rozlišujeme základní, zdůrazněné a doplňkové vrstevnice.' },
           { t: 'c', q: 'Která metoda vyjádření výškopisu je čistě plastická a neměřitelná?', a: 'Stínování', w: ['Vrstevnice', 'Výškové kóty', 'Barevná hypsometrie po vrstvách'], e: 'Stínování dává dojem reliéfu, ale výšku z něj neodečteme – proto se kombinuje s vrstevnicemi.' },
-          { t: 'm', q: 'Spojte metodu tematické kartografie s použitím', p: [['Kartogram', 'Hustota zalidnění'], ['Kartodiagram', 'Počet obyvatel obcí'], ['Izolinie', 'Průměrná teplota'], ['Metoda areálů', 'Výskyt druhu rostliny']] },
+          { t: 'm', q: 'Spojte metodu tematické kartografie s použitím', p: [['Kartogram', 'Hustota zalidnění'], ['Kartodiagram', 'Počet obyvatel obcí'], ['Izolinie', 'Průměrná teplota'], ['Metoda areálů', 'Výskyt druhu rostliny']], e: 'Kartogram vyjadřuje relativní hodnoty vztažené k ploše, kartodiagram absolutní hodnoty diagramem; izolinie spojují místa se stejnou hodnotou spojitého jevu.' },
         ],
       },
       {
@@ -163,7 +163,7 @@ export default [
           { t: 'c', q: 'Hlavní rozdíl GIS oproti CAD je, že GIS…', a: 'pracuje s atributy a prostorovými vztahy', w: ['neumí kreslit linie', 'nepoužívá souřadnice', 'slouží jen pro tisk map'], e: 'CAD je zaměřen na přesnou kresbu a konstrukci; GIS na databázi, topologii a analýzy.' },
           { t: 'tf', q: 'QGIS je otevřený (open source) GIS software.', a: true, e: 'Na rozdíl od komerčního ArcGIS firmy Esri je QGIS volně dostupný.' },
           { t: 'c', q: 'Geografický (topografický) objekt v GIS se popisuje…', a: 'geometrií a atributy', w: ['jen barvou a symbolem', 'jen názvem', 'jen souřadnicí středu listu'], e: 'Geometrie říká „kde“ a jaký tvar, atributy „co“ a „jaké“.' },
-          { t: 'm', q: 'Spojte funkci GIS s příkladem', p: [['Sběr dat', 'Zaměření GNSS'], ['Správa dat', 'Uložení do databáze'], ['Analýza', 'Obalová zóna kolem řeky'], ['Prezentace', 'Tisk tematické mapy']] },
+          { t: 'm', q: 'Spojte funkci GIS s příkladem', p: [['Sběr dat', 'Zaměření GNSS'], ['Správa dat', 'Uložení do databáze'], ['Analýza', 'Obalová zóna kolem řeky'], ['Prezentace', 'Tisk tematické mapy']], e: 'GIS se popisuje čtyřmi funkcemi: sběr, správa, analýza a prezentace dat; právě analýzy (obalové zóny, překryv vrstev) ho odlišují od pouhého kreslicího programu.' },
         ],
       },
       {
@@ -176,7 +176,7 @@ export default [
           { t: 'c', q: 'GeoInfoStrategie je…', a: 'strategie rozvoje infrastruktury pro prostorové informace v ČR', w: ['program pro výpočet GP', 'evropská norma pro metadata', 'mapový portál ČÚZK'], e: 'Cílem je koordinované využívání prostorových dat ve veřejné správě a omezení duplicit.' },
           { t: 'tf', q: 'Digitální technickou mapu (DTM) v ČR vedou kraje.', a: true, e: 'DTM kraje obsahuje dopravní a technickou infrastrukturu a objekty základní prostorové situace.' },
           { t: 'c', q: 'Metadata jsou…', a: 'data o datech (původ, přesnost, aktuálnost)', w: ['data zmenšená generalizací', 'nejpodrobnější data v GIS', 'data bez souřadnic'], e: 'Díky metadatům lze data vyhledat a posoudit, zda se hodí k danému účelu.' },
-          { t: 'm', q: 'Spojte systém s obsahem', p: [['ISKN', 'Parcely a vlastnická práva'], ['RÚIAN', 'Adresní místa a stavební objekty'], ['ZABAGED', 'Topografická data'], ['INSPIRE', 'Evropská infrastruktura dat']] },
+          { t: 'm', q: 'Spojte systém s obsahem', p: [['ISKN', 'Parcely a vlastnická práva'], ['RÚIAN', 'Adresní místa a stavební objekty'], ['ZABAGED', 'Topografická data'], ['INSPIRE', 'Evropská infrastruktura dat']], e: 'ISKN a RÚIAN spravuje ČÚZK, ZABAGED vytváří Zeměměřický úřad; INSPIRE je směrnice EU, která sjednocuje a zpřístupňuje prostorová data členských států.' },
         ],
       },
       {
@@ -202,7 +202,7 @@ export default [
           { t: 'c', q: 'Linie končí kousek před jinou linií, se kterou se má spojit. Jde o chybu…', a: 'nedotah (undershoot)', w: ['přetah (overshoot)', 'sliver polygon', 'duplicitní uzel'], e: 'Topologická kontrola s tolerancí takové chyby najde a opraví přichycením (snap).' },
           { t: 'tf', q: 'Úzké mezery a překryty mezi sousedními polygony (sliver) jsou topologické chyby.', a: true, e: 'Vznikají typicky při samostatné digitalizaci sousedních ploch bez sdílené hranice.' },
           { t: 'c', q: 'Model DE-9IM slouží k popisu…', a: 'topologických vztahů dvou geometrií', w: ['komprese rastrových dat', 'transformace souřadnic', 'kódování barev mapy'], e: 'Porovnává vnitřek, hranici a vnějšek obou geometrií (matice 3 × 3).' },
-          { t: 'm', q: 'Spojte topologický vztah s příkladem', p: [['Sousednost', 'Dvě parcely se společnou hranicí'], ['Spojitost', 'Úseky silnice propojené v uzlu'], ['Obsažení', 'Budova uvnitř parcely'], ['Disjunkce', 'Dva vzdálené rybníky']] },
+          { t: 'm', q: 'Spojte topologický vztah s příkladem', p: [['Sousednost', 'Dvě parcely se společnou hranicí'], ['Spojitost', 'Úseky silnice propojené v uzlu'], ['Obsažení', 'Budova uvnitř parcely'], ['Disjunkce', 'Dva vzdálené rybníky']], e: 'Topologické vztahy se nemění při spojité deformaci (natažení, ohnutí) a GIS je využívá ke kontrole dat, např. že se sousední parcely nepřekrývají ani mezi nimi nejsou mezery.' },
         ],
       },
       {
@@ -216,7 +216,7 @@ export default [
           { t: 'c', q: 'Delaunayova triangulace pro TIN splňuje podmínku, že…', a: 'kružnice opsaná trojúhelníku neobsahuje jiný bod', w: ['všechny trojúhelníky jsou shodné', 'každý bod má právě 3 sousedy', 'hrany jsou rovnoběžné s osami'], e: 'Tím se maximalizuje nejmenší úhel a vznikají co nejméně protáhlé trojúhelníky.' },
           { t: 'tf', q: 'GRID je model terénu v pravidelné mřížce, TIN v nepravidelné trojúhelníkové síti.', a: true, e: 'TIN lépe vystihne terénní hrany a lokálně hustší body, GRID se snáz analyzuje.' },
           { t: 'c', q: 'Interpolační metoda IDW odhaduje hodnotu jako…', a: 'vážený průměr s váhou klesající se vzdáleností', w: ['hodnotu nejvzdálenějšího bodu', 'aritmetický průměr všech bodů', 'maximum z okolních bodů'], e: 'Inverse Distance Weighting – bližší body mají větší vliv.' },
-          { t: 'm', q: 'Spojte službu OGC s obsahem', p: [['WMS', 'Obrázek mapy'], ['WMTS', 'Dlaždice'], ['WFS', 'Vektorové objekty'], ['WCS', 'Rastrová data (coverage)'], ['CSW', 'Katalog metadat']] },
+          { t: 'm', q: 'Spojte službu OGC s obsahem', p: [['WMS', 'Obrázek mapy'], ['WMTS', 'Dlaždice'], ['WFS', 'Vektorové objekty'], ['WCS', 'Rastrová data (coverage)'], ['CSW', 'Katalog metadat']], e: 'Všechny jsou standardy OGC: WMS a WMTS vracejí jen obraz, WFS a WCS skutečná data (vektorová, resp. rastrová) a CSW umožňuje vyhledávat v metadatech.' },
         ],
       },
     ],
@@ -249,7 +249,7 @@ export default [
           { t: 'c', q: 'Rotační laser se na stavbě používá hlavně k vytyčení…', a: 'vodorovné (nebo skloněné) roviny', w: ['polohy lomových bodů', 'svislice', 'směrníků'], e: 'Rotující paprsek vytvoří referenční rovinu, kterou snímá detektor na lati.' },
           { t: 'tf', q: 'Při vytyčení vodorovné délky ve svahu musí geodet vytyčit delší šikmou délku.', a: true, e: 's = d / cos α (α je sklon); totální stanice to přepočítá automaticky.' },
           { t: 'c', q: 'Před vytyčením délky dálkoměrem je nutné zadat…', a: 'teplotu a tlak vzduchu', w: ['barvu hranolu', 'číslo katastrálního území', 'čas východu Slunce'], e: 'Z nich se vypočte atmosférická (fyzikální) oprava délky v ppm.' },
-          { t: 'm', q: 'Spojte vytyčovanou veličinu s pomůckou', p: [['Výška', 'Nivelační přístroj a lať'], ['Svislice', 'Provažovač'], ['Vodorovná rovina', 'Rotační laser'], ['Úhel a délka', 'Totální stanice']] },
+          { t: 'm', q: 'Spojte vytyčovanou veličinu s pomůckou', p: [['Výška', 'Nivelační přístroj a lať'], ['Svislice', 'Provažovač'], ['Vodorovná rovina', 'Rotační laser'], ['Úhel a délka', 'Totální stanice']], e: 'Rotační laser vytvoří vodorovnou (i skloněnou) rovinu, kterou snímá detektor na lati – jeden člověk tak vytyčí výšky na celé stavbě; provažovač přenáší svislici např. do vyšších pater.' },
         ],
       },
       {
@@ -287,7 +287,7 @@ export default [
           { t: 'c', q: 'Přechodnice (klotoida) má tu vlastnost, že…', a: 'křivost roste lineárně s délkou', w: ['má konstantní poloměr', 'je vždy přímá', 'má nulovou délku'], e: 'Platí A² = R · L; zajišťuje plynulý přechod z přímé do oblouku.' },
           { t: 'tf', q: 'Staničení udává vzdálenost bodu od začátku trasy měřenou po ose.', a: true, e: 'Zapisuje se např. km 1,250 00; příčné profily se vztahují ke staničení.' },
           { t: 'c', q: 'Podrobné body oblouku lze vytyčit…', a: 'pravoúhlými souřadnicemi od tečny', w: ['jen protínáním z délek', 'jen nivelací', 'pouze z vrcholu kužele'], e: 'Další možnosti: z tětivy, polárně ze stanoviska nebo GNSS RTK.' },
-          { t: 'm', q: 'Spojte druh sítě s použitím', p: [['Stavební mřížka', 'Pravoúhlé budovy v areálu'], ['Polygonová síť', 'Liniová stavba'], ['Mikrosíť', 'Most nebo tunel'], ['Výšková síť', 'Vytyčení výšek']] },
+          { t: 'm', q: 'Spojte druh sítě s použitím', p: [['Stavební mřížka', 'Pravoúhlé budovy v areálu'], ['Polygonová síť', 'Liniová stavba'], ['Mikrosíť', 'Most nebo tunel'], ['Výšková síť', 'Vytyčení výšek']], e: 'Vytyčovací síť se volí podle tvaru stavby: stavební mřížka pro pravoúhlé areály, polygonový pořad podél liniové stavby a přesná mikrosíť s nucenou centrací pro mosty a tunely.' },
         ],
       },
     ],
@@ -307,7 +307,7 @@ export default [
           { t: 'tf', q: 'Výtyčka s hranolem musí být při měření svislá podle krabicové libely.', a: true, e: 'Naklonění o 1° při výšce 1,5 m posune hranol o asi 2,6 cm.' },
           { t: 'c', q: 'Proč se před prací kontroluje rektifikace přístrojů?', a: 'Aby se odhalily přístrojové chyby', w: ['Aby se nabily baterie', 'Kvůli vyšší ceně měření', 'Aby šel přístroj rychleji'], e: 'Např. i-chyba nivelačního přístroje se ověří zkouškou ze středu a z konce.' },
           { t: 'c', q: 'Při rekognoskaci zjistíš, že mezi dvěma navrženými body brání výhledu nové oplocení. Co uděláš?', a: 'Navrhneš jinou polohu bodu', w: ['Budeš měřit skrz plot', 'Zkrátíš záměru odhadem', 'Bod vynecháš bez náhrady'], e: 'Právě proto se viditelnost ověřuje před měřením, ne až při něm.' },
-          { t: 'm', q: 'Spojte pomůcku s účelem', p: [['Stativ', 'Stabilní podložka přístroje'], ['Trojnožka', 'Upevnění a horizontace'], ['Výtyčka s hranolem', 'Cíl pro dálkoměr'], ['Nivelační podložka', 'Přestavový bod latě']] },
+          { t: 'm', q: 'Spojte pomůcku s účelem', p: [['Stativ', 'Stabilní podložka přístroje'], ['Trojnožka', 'Upevnění a horizontace'], ['Výtyčka s hranolem', 'Cíl pro dálkoměr'], ['Nivelační podložka', 'Přestavový bod latě']], e: 'Trojnožka se stavěcími šrouby umožňuje přístroj urovnat a vyměnit za cíl bez změny centrace (nucená centrace); nivelační podložka zaručí stálou výšku latě na přestavovém bodě.' },
         ],
       },
       {
@@ -320,7 +320,7 @@ export default [
           { t: 'c', q: 'Proč se u polygonu používá nucená centrace (trojpodstavcová soustava)?', a: 'Omezí chyby z centrace přístroje a cílů', w: ['Zrychlí výpočet uzávěru', 'Nahradí orientaci', 'Odstraní refrakci'], e: 'Přístroj a terče se vyměňují v trojnožkách, které zůstávají na místě.' },
           { t: 'c', q: 'U protínání vpřed vidíš, že úhel na určovaném bodě bude jen asi 20 gon. Co uděláš?', a: 'Zvolíš jinou dvojici daných bodů', w: ['Nic, výsledek bude přesný', 'Budeš měřit jen v I. poloze', 'Zvětšíš výšku cíle'], e: 'Ostrý úhel protnutí výrazně zhoršuje přesnost polohy; ideál je kolem 100 gon.' },
           { t: 'c', q: 'Oboustranně připojený a orientovaný polygon umožňuje kontrolu…', a: 'úhlů i souřadnic', w: ['jen výšek', 'jen úhlů', 'žádnou kontrolu'], e: 'Z orientací na obou koncích vyjde úhlový uzávěr, z koncového bodu souřadnicové uzávěry.' },
-          { t: 'm', q: 'Spojte uzávěr s tím, co kontroluje', p: [['Úhlový uzávěr', 'Vrcholové úhly'], ['Souřadnicový uzávěr', 'Úhly i délky'], ['Rozdíl délek tam a zpět', 'Měření jedné strany'], ['Výškový uzávěr', 'Převýšení']] },
+          { t: 'm', q: 'Spojte uzávěr s tím, co kontroluje', p: [['Úhlový uzávěr', 'Vrcholové úhly'], ['Souřadnicový uzávěr', 'Úhly i délky'], ['Rozdíl délek tam a zpět', 'Měření jedné strany'], ['Výškový uzávěr', 'Převýšení']], e: 'Úhlový uzávěr lze spočítat jen v pořadu připojeném a orientovaném na obou koncích; souřadnicový (polohový) uzávěr pak odhalí chyby délek i zbytkové úhlové chyby.' },
         ],
       },
       {
@@ -333,7 +333,7 @@ export default [
           { t: 'c', q: 'Proč se volí sudý počet sestav v oddílu?', a: 'Vyloučí se rozdíl nul obou latí', w: ['Zkrátí se délka pořadu', 'Není třeba měřit zpět', 'Přístroj se méně zahřeje'], e: 'Latě se střídají vzad a vpřed, takže se jejich indexová chyba při sudém počtu sestav odečte.' },
           { t: 'c', q: 'Rozdíl převýšení oddílu tam a zpět je větší než mezní odchylka. Co uděláš?', a: 'Oddíl přeměříš', w: ['Vezmeš průměr', 'Použiješ jen měření tam', 'Zmenšíš počet sestav ve výpočtu'], e: 'Nesplněný limit znamená chybu v měření – průměrování ji jen zamaskuje.' },
           { t: 'c', q: 'Figurant hlásí, že lať stojí v měkké hlíně a pomalu se boří. Co uděláš?', a: 'Použiješ nivelační podložku', w: ['Budeš číst rychleji', 'Lať podložíš rukou', 'Budeš číst jen vpřed'], e: 'Podložka (žabka) zajišťuje stabilní výšku přestavového bodu.' },
-          { t: 'm', q: 'Spojte pojem nivelace s významem', p: [['Záměra vzad', 'Čtení na bodě známé výšky'], ['Záměra vpřed', 'Čtení na určovaném bodě'], ['Přestavový bod', 'Dočasný bod mezi sestavami'], ['Oddíl', 'Úsek mezi dvěma nivelačními body']] },
+          { t: 'm', q: 'Spojte pojem nivelace s významem', p: [['Záměra vzad', 'Čtení na bodě známé výšky'], ['Záměra vpřed', 'Čtení na určovaném bodě'], ['Přestavový bod', 'Dočasný bod mezi sestavami'], ['Oddíl', 'Úsek mezi dvěma nivelačními body']], e: 'Převýšení sestavy je čtení vzad minus čtení vpřed (Δh = z − p); oddíl se měří tam i zpět a rozdíl obou měření se porovnává s mezní odchylkou.' },
         ],
       },
       {
@@ -359,7 +359,7 @@ export default [
           { t: 'tf', q: 'Vytyčený bod se kontroluje nezávislým měřením, ideálně z jiného stanoviska.', a: true, e: 'Kontrola ze stejného stanoviska neodhalí chybu v orientaci ani v souřadnicích stanoviska.' },
           { t: 'c', q: 'Figurant hlásí, že bagr stojí na bodě vytyčovací sítě. Co uděláš?', a: 'Ověříš stabilitu bodu z ostatních bodů', w: ['Bod dál bez kontroly používáš', 'Bod smažeš ze seznamu', 'Opravíš souřadnice odhadem'], e: 'Bod mohl být posunut – proto se body sítě během stavby pravidelně kontrolují.' },
           { t: 'c', q: 'Osa liniové stavby se v terénu vyznačuje body…', a: 'v pravidelném staničení a v hlavních bodech', w: ['jen na začátku a konci', 'náhodně podle terénu', 'jen v obloucích'], e: 'Hlavní body (ZO, KO, VB) i body po staničení jsou podkladem pro příčné profily a výškové vytyčení.' },
-          { t: 'm', q: 'Spojte kontrolu s odhalenou chybou', p: [['Úhlopříčky obdélníka', 'Chyba pravého úhlu'], ['Kontrola orientace', 'Pootočená osnova'], ['Oměrná míra strany', 'Chyba délky'], ['Nivelace zpět na reper', 'Chyba výšky']] },
+          { t: 'm', q: 'Spojte kontrolu s odhalenou chybou', p: [['Úhlopříčky obdélníka', 'Chyba pravého úhlu'], ['Kontrola orientace', 'Pootočená osnova'], ['Oměrná míra strany', 'Chyba délky'], ['Nivelace zpět na reper', 'Chyba výšky']], e: 'Úhlopříčky vytyčeného obdélníka musí být shodné, rozdíl prozradí nepravý úhel; obecně má kontrola ověřit výsledek nezávislou cestou, např. nivelací zpět na známý reper.' },
         ],
       },
     ],
