@@ -1,5 +1,5 @@
 // Offline cache: aplikace funguje i bez signálu (v terénu).
-const CACHE = 'geolingo-v4';
+const CACHE = 'geolingo-v5';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
   'js/app.js', 'js/engine.js', 'js/store.js', 'js/generators.js', 'js/field.js', 'js/backdrop.js',

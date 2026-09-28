@@ -3,7 +3,7 @@
 
 export default [
   {
-    id: 'u11', title: 'Vyšší geodézie', color: '#0e7490', level: 'Bc.', course: 'BEA025', sem: '3. ročník · LS',
+    id: 'u11', title: 'Teoretická geodézie 1', color: '#0e7490', level: 'Bc.', course: 'BEA025', sem: '3. ročník · LS',
     desc: 'Elipsoid, poloměry křivosti, geodetické a pravoúhlé souřadnice, úlohy na elipsoidu a kartografická zobrazení v ČR.',
     lessons: [
       {
@@ -76,7 +76,7 @@ export default [
   },
 
   {
-    id: 'u12', title: 'Fyzikální geodézie a výšky', color: '#7c3aed', level: 'Ing.', course: 'NEA037', sem: '1. ročník · LS',
+    id: 'u12', title: 'Teoretická geodézie 2', color: '#7c3aed', level: 'Ing.', course: 'NEA037', sem: '1. ročník · LS',
     desc: 'Tíhové pole Země, geoid a kvazigeoid, výškové systémy, gravimetrie a tížnicové odchylky.',
     lessons: [
       {
@@ -148,7 +148,7 @@ export default [
   },
 
   {
-    id: 'u13', title: 'Vyrovnávací počet', color: '#be123c', level: 'Bc.', course: 'BEA013', sem: '2. ročník · ZS',
+    id: 'u13', title: 'Teorie chyb a vyrovnávací počet 2', color: '#be123c', level: 'Bc.', course: 'BEA013', sem: '2. ročník · ZS',
     desc: 'Chyby měření, zákon hromadění chyb, metoda nejmenších čtverců a hodnocení přesnosti a spolehlivosti.',
     lessons: [
       {

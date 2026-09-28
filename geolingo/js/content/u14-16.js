@@ -75,7 +75,7 @@ export default [
   },
 
   {
-    id: 'u15', title: 'Družicová geodézie', color: '#0d9488', level: 'Ing.', course: 'NEA032', sem: '1. ročník · ZS',
+    id: 'u15', title: 'Kosmická geodézie 1', color: '#0d9488', level: 'Ing.', course: 'NEA032', sem: '1. ročník · ZS',
     desc: 'Referenční rámce, GNSS signály a pozorování, zdroje chyb, metody měření, čas a oběžné dráhy.',
     lessons: [
       {
@@ -147,7 +147,7 @@ export default [
   },
 
   {
-    id: 'u16', title: 'Geodetické sítě a deformace', color: '#4d7c0f', level: 'Bc.', course: 'BEA015', sem: '2. ročník · LS',
+    id: 'u16', title: 'Geodetické sítě', color: '#4d7c0f', level: 'Bc.', course: 'BEA015', sem: '2. ročník · LS',
     desc: 'Návrh a optimalizace sítí, vytyčení staveb, měření posunů, inženýrské aplikace a monitoring.',
     lessons: [
       {
