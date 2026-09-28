@@ -137,7 +137,15 @@ app.addEventListener('click', (e) => {
 
 const isDone = (id) => (store.S().done[id] ?? 0) > 0;
 const levelOf = (l) => l.unit.level ?? 'SŠ';
-const firstVs = () => LESSONS.findIndex((l) => levelOf(l) === 'VŠ');
+const isUni = (lvl) => lvl !== 'SŠ';
+const firstVs = () => LESSONS.findIndex((l) => isUni(levelOf(l)));
+
+// Oddíly mapy podle úrovně studia.
+const LEVELS = {
+  'VŠ': { icon: '🎓', title: 'Vysokoškolská nadstavba', desc: 'Vyšší a fyzikální geodézie, vyrovnání, fotogrammetrie, družicová geodézie, sítě a deformace.' },
+  'Bc.': { icon: '🎓', title: 'Bakalářské studium', desc: 'Obsah odpovídá bakalářskému programu Geodézie a kartografie (VUT FAST).' },
+  'Ing.': { icon: '🏛️', title: 'Inženýrské studium', desc: 'Navazující magisterský program Geodézie a kartografie (VUT FAST).' },
+};
 
 function isUnlocked(index) {
   const s = store.S();
@@ -148,7 +156,7 @@ function isUnlocked(index) {
 function currentIndex() {
   const s = store.S();
   const order = LESSONS.map((l, i) => i);
-  if (s.track === 'vs') order.sort((a, b) => (levelOf(LESSONS[b]) === 'VŠ') - (levelOf(LESSONS[a]) === 'VŠ') || a - b);
+  if (s.track === 'vs') order.sort((a, b) => isUni(levelOf(LESSONS[b])) - isUni(levelOf(LESSONS[a])) || a - b);
   const i = order.find((k) => isUnlocked(k) && !isDone(LESSONS[k].id));
   return i ?? LESSONS.length - 1;
 }
@@ -158,14 +166,15 @@ const ROW = 118;
 
 function renderPath() {
   const cur = currentIndex();
-  let k = 0, vsShown = false;
+  let k = 0, lastLevel = 'SŠ';
   const html = UNITS.map((u, ui) => {
     const lvl = u.level ?? 'SŠ';
     let divider = '';
-    if (lvl === 'VŠ' && !vsShown) {
-      vsShown = true;
-      divider = `<div class="divider"><span>🎓</span><div><b>Vysokoškolská nadstavba</b><small>Vyšší a fyzikální geodézie, vyrovnání, fotogrammetrie, družicová geodézie, sítě a deformace.</small></div></div>`;
+    if (lvl !== lastLevel && LEVELS[lvl]) {
+      const L = LEVELS[lvl];
+      divider = `<div class="divider" id="lvl-${ui}"><span>${L.icon}</span><div><b>${L.title}</b><small>${L.desc}</small></div></div>`;
     }
+    lastLevel = lvl;
     const doneN = u.lessons.filter((l) => isDone(l.id)).length;
     const pts = u.lessons.map((_, li) => ({ x: ZIGZAG[(ui * 5 + li) % ZIGZAG.length], y: li * ROW + 44 }));
     const nodes = u.lessons.map((l, li) => {
@@ -186,9 +195,9 @@ function renderPath() {
       const a = pts[i], solid = isDone(u.lessons[i].id);
       return `<line x1="${a.x}" y1="${a.y + 36}" x2="${p.x}" y2="${p.y + 36}" class="${solid ? 'solid' : ''}"/>`;
     }).join('');
-    return `${divider}<section class="unit" style="--c:${u.color}">
+    return `${divider}<section class="unit" id="unit-${ui}" style="--c:${u.color}">
       <div class="sheet-head">
-        <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${lvl === 'VŠ' ? 'vs' : ''}">${lvl}</span></div>
+        <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${isUni(lvl) ? 'vs' : ''}">${lvl}</span></div>
         <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>
         <div class="sheet-prog"><i style="width:${(doneN / u.lessons.length) * 100}%"></i></div><small>${doneN} / ${u.lessons.length} lekcí</small>
         <svg class="contours" viewBox="0 0 120 80" aria-hidden="true"><path d="M10 70c20-30 40-10 60-35s35-20 45-30M0 78c25-25 45-5 68-28s32-18 52-26M25 80c15-15 30-5 45-20s30-12 50-18"/></svg>
@@ -197,8 +206,31 @@ function renderPath() {
       <div class="nodes" style="height:${u.lessons.length * ROW - 20}px"><svg class="traverse" width="1" height="${u.lessons.length * ROW}">${seg}</svg>${nodes}</div>
     </section>`;
   }).join('');
-  app.innerHTML = topStats() + `<main class="path">${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>` + tabs();
+  app.innerHTML = topStats() + `<main class="path">${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>
+    <button class="index-btn" id="index" aria-label="Klad mapových listů">${ICON.map}<span>Listy</span></button>` + tabs();
   app.querySelectorAll('[data-lesson]').forEach((b) => b.addEventListener('click', () => lessonSheet(b.dataset.lesson)));
+  $('#index').addEventListener('click', indexSheet);
+}
+
+/** Klad mapových listů: rychlý skok na kapitolu. */
+function indexSheet() {
+  let last = null;
+  const rows = UNITS.map((u, ui) => {
+    const lvl = u.level ?? 'SŠ';
+    const head = lvl !== last ? `<h4>${lvl === 'SŠ' ? 'Střední škola' : LEVELS[lvl]?.title ?? lvl}</h4>` : '';
+    last = lvl;
+    const doneN = u.lessons.filter((l) => isDone(l.id)).length;
+    return `${head}<button class="idx" data-unit="${ui}" style="--c:${u.color}"><span class="no">${String(ui + 1).padStart(2, '0')}</span><span class="grow">${esc(u.title)}</span><span class="pr">${doneN}/${u.lessons.length}</span></button>`;
+  }).join('');
+  const bg = document.createElement('div');
+  bg.className = 'sheet-bg';
+  bg.innerHTML = `<div class="sheet index-sheet" style="--c:var(--petrol)"><h3>Klad mapových listů</h3><div class="idx-list">${rows}</div></div>`;
+  document.body.append(bg);
+  bg.addEventListener('click', (e) => {
+    if (e.target === bg) return bg.remove();
+    const b = e.target.closest('[data-unit]');
+    if (b) { bg.remove(); document.getElementById(`unit-${b.dataset.unit}`).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
 }
 
 function lessonSheet(id) {
@@ -757,7 +789,7 @@ function renderProfile() {
 // Úvod a start
 
 function welcome() {
-  const nSS = UNITS.filter((u) => (u.level ?? 'SŠ') === 'SŠ').length, nVS = UNITS.length - nSS;
+  const nSS = UNITS.filter((u) => !isUni(u.level ?? 'SŠ')).length, nVS = UNITS.length - nSS;
   app.innerHTML = `<div class="done-screen welcome">
     ${mascot('happy', 'big')}
     <h1>Ahoj, já jsem Toti!</h1>

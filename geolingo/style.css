@@ -135,6 +135,17 @@ main.path { flex: 1; padding: 14px 14px 120px; }
 .path-end { text-align: center; color: var(--muted); padding: 10px 0 20px; }
 .path-end .toti { width: 70px; height: 84px; }
 
+/* Klad listů */
+.index-btn { position: fixed; right: max(14px, calc(50% - 266px)); bottom: calc(var(--sb) + 84px); z-index: 6; display: flex; align-items: center; gap: 6px;
+  border: 0; border-radius: 99px; padding: 10px 14px; background: var(--petrol); color: #fff; box-shadow: var(--shadow); font: 600 14px var(--head); }
+.index-btn svg { width: 20px; height: 20px; }
+.index-sheet { max-height: 80vh; display: flex; flex-direction: column; }
+.idx-list { overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.idx-list h4 { margin: 10px 0 2px; font: 600 12px var(--head); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.idx { display: flex; align-items: center; gap: 10px; border: 0; background: var(--bg); border-radius: 12px; padding: 10px 12px; text-align: left; box-shadow: inset 4px 0 0 var(--c); }
+.idx .no { font: 700 13px var(--head); color: var(--c); }
+.idx .pr { font: 600 12.5px var(--head); color: var(--muted); }
+
 /* Spodní navigace */
 nav.tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 6; padding: 6px 10px calc(var(--sb) + 6px);
   background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); }

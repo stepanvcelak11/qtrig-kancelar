@@ -102,8 +102,8 @@ export function completeLesson(lessonId, { mistakes, practice = false }) {
   return { xp, streakUp, newAchievements };
 }
 
-const vsIds = () => UNITS.filter((u) => u.level === 'VŠ').flatMap((u) => u.lessons.map((l) => l.id));
-const unitDone = (st, level) => UNITS.some((u) => (u.level ?? 'SŠ') === level && u.lessons.every((l) => st.done[l.id]));
+const vsIds = () => UNITS.filter((u) => (u.level ?? 'SŠ') !== 'SŠ').flatMap((u) => u.lessons.map((l) => l.id));
+const unitDone = (st) => UNITS.some((u) => u.lessons.every((l) => st.done[l.id]));
 
 export const ACHIEVEMENTS = [
   { id: 'first', icon: '🎉', title: 'První krok', desc: 'Dokonči první lekci', test: (s) => s.stats.lessons >= 1 },
@@ -113,7 +113,7 @@ export const ACHIEVEMENTS = [
   { id: 'calc50', icon: '🧮', title: 'Počtář', desc: '50 správných výpočtů', test: (s) => s.stats.calc >= 50 },
   { id: 'rod20', icon: '📏', title: 'Oko figuranta', desc: '20× správně odečtená lať', test: (s) => s.stats.rod >= 20 },
   { id: 'field20', icon: '🦺', title: 'Praktik', desc: '20 vyřešených terénních úloh', test: (s) => s.stats.field >= 20 },
-  { id: 'sheet', icon: '🗺️', title: 'Mapový list', desc: 'Dokonči celou kapitolu', test: (s) => unitDone(s, 'SŠ') || unitDone(s, 'VŠ') },
+  { id: 'sheet', icon: '🗺️', title: 'Mapový list', desc: 'Dokonči celou kapitolu', test: (s) => unitDone(s) },
   { id: 'xp500', icon: '⭐', title: 'Pětistovka', desc: 'Získej 500 XP', test: (s) => s.xp >= 500 },
   { id: 'vs1', icon: '🎓', title: 'Na univerzitě', desc: 'Dokonči první vysokoškolskou lekci', test: (s) => vsIds().some((id) => s.done[id]) },
   { id: 'half', icon: '🧭', title: 'Půlka osnovy', desc: `Dokonči ${Math.ceil(LESSONS.length / 2)} různých lekcí`, test: (s) => Object.keys(s.done).length >= Math.ceil(LESSONS.length / 2) },
