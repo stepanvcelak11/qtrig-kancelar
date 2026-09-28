@@ -252,12 +252,119 @@ export const GEN = {
     return { q: `GNSS vektor v ECEF: ΔX = ${fmt(d[0], 3)} m, ΔY = ${fmt(d[1], 3)} m, ΔZ = ${fmt(d[2], 3)} m. Jaká je délka základny?`, a, tol: 0.0011, dec: 3, unit: 'm',
       e: `s = √(ΔX² + ΔY² + ΔZ²) = ${fmt(a, 3)} m.` };
   },
+  // --- Výpočty podle osnov VUT FAST (Bc. a Ing.) ---
+  polygonClosure() {
+    const n = rint(4, 8), sum = (n - 2) * 200, err = rint(-60, 60) / 10000;
+    const meas = round(sum + err, 4);
+    const a = (meas - sum) * 10000;
+    return { q: `Uzavřený polygonový pořad s ${n} vrcholy: součet naměřených vnitřních úhlů je ${fmt(meas, 4)} gon. Jaký je úhlový uzávěr v cc (setinách miligonu)?`, a, tol: 0.6, dec: 0, unit: 'cc',
+      e: `u = Σω − (n − 2)·200 = ${fmt(meas, 4)} − ${sum} = ${fmt(meas - sum, 4)} gon = ${fmt(a, 0)} cc.` };
+  },
+  helmertY() { return helmert('Y'); },
+  helmertX() { return helmert('X'); },
+  lengthReduction() {
+    const d = round(rnd(100, 1500), 3), Hm = rint(200, 900), m = round(rnd(0.9999, 1.00005), 6), R = 6380000;
+    const d0 = d * (1 - Hm / R), a = d0 * m;
+    return { q: `Vodorovná délka d = ${fmt(d, 3)} m v průměrné nadmořské výšce ${Hm} m. Měřítko zobrazení v místě je ${String(m).replace('.', ',')}. Jaká je délka v rovině S-JTSK? (R = 6 380 km)`, a, tol: 0.0011, dec: 3, unit: 'm',
+      e: `Redukce do nulového horizontu d₀ = d·(1 − H/R) = ${fmt(d0, 4)} m; v zobrazení d_S = d₀·m = ${fmt(a, 3)} m.` };
+  },
+  trigHeightLong() {
+    const s = round(rnd(500, 2500), 3), z = round(rnd(97, 103), 4), R = 6381000, k = 0.13;
+    const d = s * Math.sin(z * GON), a = s * Math.cos(z * GON) + (1 - k) * d * d / (2 * R);
+    return { q: `Trigonometrické převýšení na velkou vzdálenost: s = ${fmt(s, 3)} m, z = ${fmt(z, 4)} gon. Zahrňte vliv zakřivení Země a refrakce (k = 0,13; R = 6 381 km), výšku přístroje i cíle zanedbejte.`, a, tol: 0.0025, dec: 3, unit: 'm',
+      e: `Δh = s·cos z + (1 − k)·d²/(2R), d = s·sin z = ${fmt(d, 3)} m → Δh = ${fmt(a, 3)} m.` };
+  },
+  errorEllipse() {
+    const sx = round(rnd(3, 12), 1), sy = round(rnd(3, 12), 1), r = round(rnd(-0.7, 0.7), 2), sxy = round(r * sx * sy, 1);
+    const m = (sx * sx + sy * sy) / 2, w = Math.sqrt(((sx * sx - sy * sy) / 2) ** 2 + sxy * sxy), a = Math.sqrt(m + w);
+    return { q: `Kovarianční matice bodu: σ_x = ${fmt(sx, 1)} mm, σ_y = ${fmt(sy, 1)} mm, σ_xy = ${fmt(sxy, 1)} mm². Jaká je velká poloosa střední chybové elipsy?`, a, tol: 0.011, dec: 2, unit: 'mm',
+      e: `a² = (σx² + σy²)/2 + √(((σx² − σy²)/2)² + σxy²) → a = ${fmt(a, 2)} mm.` };
+  },
+  cutVolume() {
+    const A1 = round(rnd(5, 60), 1), A2 = round(rnd(5, 60), 1), L = rint(10, 50);
+    const a = (A1 + A2) / 2 * L;
+    return { q: `Dva sousední příčné řezy výkopu mají plochy ${fmt(A1, 1)} m² a ${fmt(A2, 1)} m², vzdálenost řezů je ${L} m. Jaký je objem mezi nimi (metoda průměrných ploch)?`, a, tol: 0.6, dec: 0, unit: 'm³',
+      e: `V = (A₁ + A₂)/2 · L = ${fmt(A1 + A2, 1)}/2 · ${L} = ${fmt(a, 1)} m³.` };
+  },
+  cylDistortion() {
+    const phi = round(rnd(10, 70), 1), a = 1 / Math.cos(phi * Math.PI / 180);
+    return { q: `Válcové zobrazení s nezkreslenou délkou na rovníku (Mercator na kouli). Jaké je délkové zkreslení m na rovnoběžce φ = ${fmt(phi, 1)}°?`, a, tol: 0.0006, dec: 3, unit: '',
+      e: `m = 1 / cos φ = ${fmt(a, 4)}. Proto se Grónsko na Mercatorově mapě zdá obrovské.` };
+  },
+  orbitPeriod() {
+    const hkm = pick([550, 800, 1336, 19100, 20200, 23222, 35786]), GM = 3.986004418e14, R = 6378137;
+    const A = R + hkm * 1000, a = 2 * Math.PI * Math.sqrt(A ** 3 / GM) / 3600;
+    return { q: `Družice obíhá po kruhové dráze ve výšce ${fmt(hkm, 0)} km nad rovníkem. Jaká je její oběžná doba? (GM = 3,986 004 · 10¹⁴ m³/s², R = 6 378 km)`, a, tol: 0.011, dec: 2, unit: 'h',
+      e: `3. Keplerův zákon: T = 2π·√(a³/GM), a = R + h → T = ${fmt(a, 2)} h.` };
+  },
+  pseudorange() {
+    const ms = round(rnd(64, 89), 3), a = 299792458 * ms / 1000 / 1000;
+    return { q: `Signál GNSS letěl od družice k přijímači ${fmt(ms, 3)} ms. Jaká je (pseudo)vzdálenost v kilometrech? (c = 299 792 458 m/s)`, a, tol: 0.6, dec: 0, unit: 'km',
+      e: `ρ = c·Δt = 299 792,458 km/s · ${fmt(ms / 1000, 6)} s = ${fmt(a, 0)} km. Chyba hodin 1 µs by znamenala ≈ 300 m.` };
+  },
+  popDensity() {
+    const P = rint(800, 250000), A = round(rnd(5, 400), 2), a = P / A;
+    return { q: `Kartogram hustoty zalidnění: obec má ${fmt(P, 0)} obyvatel a rozlohu ${fmt(A, 2)} km². Jaká je hustota zalidnění?`, a, tol: 0.6, dec: 0, unit: 'obyv./km²',
+      e: `Hustota = počet / plocha = ${fmt(a, 1)} obyv./km². Kartogram zobrazuje relativní (poměrné) hodnoty vztažené k ploše.` };
+  },
+  stakeoutAccuracy() {
+    const d = rint(20, 150), md = pick([2, 3, 5]), mw = pick([3, 5, 10, 15]);
+    const a = Math.sqrt(md * md + (d * 1000 * mw / 10000 * GON) ** 2);
+    return { q: `Polární vytyčení bodu na vzdálenost ${d} m: střední chyba délky ${md} mm, střední chyba úhlu ${mw} cc. Jaká je střední polohová chyba vytyčeného bodu (bez chyby podkladu)?`, a, tol: 0.06, dec: 1, unit: 'mm',
+      e: `m_p = √(m_d² + (d·m_ω)²), m_ω v radiánech = ${mw} cc · π/2 000 000 → m_p = ${fmt(a, 1)} mm.` };
+  },
+  stereoDepth() {
+    const B = rint(20, 400), c = pick([35, 50, 100, 120, 153]), p = round(rnd(2, 40), 2);
+    const a = B * c / p;
+    return { q: `Normální případ stereofotogrammetrie: základna B = ${B} m, konstanta komory c = ${c} mm, horizontální paralaxa p = ${fmt(p, 2)} mm. Jaká je vzdálenost Z bodu od základny?`, a, tol: 0.6, dec: 0, unit: 'm',
+      e: `Z = B·c / p = ${B} · ${c} / ${fmt(p, 2)} = ${fmt(a, 1)} m.` };
+  },
+  intersectionY() { return intersection('Y'); },
+  intersectionX() { return intersection('X'); },
+  slopeDeg() {
+    const d = round(rnd(5, 100), 1), dh = round(rnd(0.5, 30), 2), a = Math.atan(dh / d) * 180 / Math.PI;
+    return { q: `V DMT je převýšení ${fmt(dh, 2)} m na vodorovné vzdálenosti ${fmt(d, 1)} m. Jaký je sklon svahu ve stupních?`, a, tol: 0.011, dec: 2, unit: '°',
+      e: `α = arctg(Δh / d) = arctg(${fmt(dh / d, 4)}) = ${fmt(a, 2)}°.` };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',
       e: `Správné čtení je ${fmt(a, 3)} m. Číslo na lati udává decimetry, dílky jsou centimetry a milimetry se odhadují.` };
   },
 };
+
+function helmert(axis) {
+  const x = round(rnd(-500, 500), 2), y = round(rnd(-500, 500), 2);
+  const w = round(rnd(0, 400), 4), q = round(rnd(0.9995, 1.0005), 6);
+  const ty = round(rnd(-750000, -700000), 2), tx = round(rnd(-1150000, -1000000), 2);
+  const c = Math.cos(w * GON), sn = Math.sin(w * GON);
+  const Y = ty + q * (y * c + x * sn), X = tx + q * (x * c - y * sn);
+  const q0 = `Podobnostní (Helmertova) transformace z místní soustavy do S-JTSK: posun Y₀ = ${fmt(ty, 2)} m, X₀ = ${fmt(tx, 2)} m, stočení ω = ${fmt(w, 4)} gon, měřítko q = ${String(q).replace('.', ',')}. Místní souřadnice bodu y = ${fmt(y, 2)} m, x = ${fmt(x, 2)} m.`;
+  return axis === 'Y'
+    ? { q: `${q0} Vypočtěte Y.`, a: Y, tol: 0.011, dec: 2, unit: 'm', e: `Y = Y₀ + q·(y·cos ω + x·sin ω) = ${fmt(Y, 2)} m.` }
+    : { q: `${q0} Vypočtěte X.`, a: X, tol: 0.011, dec: 2, unit: 'm', e: `X = X₀ + q·(x·cos ω − y·sin ω) = ${fmt(X, 2)} m.` };
+}
+
+function intersection(axis) {
+  // Protínání vpřed z úhlů: A vlevo, B vpravo (při pohledu od základny k bodu P).
+  for (;;) {
+    const A = point(), B = offsetPoint(A, 80, 300);
+    const P = offsetPoint({ y: (A.y + B.y) / 2, x: (A.x + B.x) / 2 }, 60, 250);
+    const sAB = bearingGon(B.y - A.y, B.x - A.x), sAP = bearingGon(P.y - A.y, P.x - A.x);
+    const sBA = bearingGon(A.y - B.y, A.x - B.x), sBP = bearingGon(P.y - B.y, P.x - B.x);
+    const alpha = round((sAB - sAP + 400) % 400, 4), beta = round((sBP - sBA + 400) % 400, 4);
+    if (alpha < 20 || beta < 20 || alpha + beta > 180) continue;
+    // Výpočet ze zaokrouhlených úhlů (jako to udělá student).
+    const dAB = Math.hypot(B.y - A.y, B.x - A.x);
+    const dAP = dAB * Math.sin(beta * GON) / Math.sin((alpha + beta) * GON);
+    const s = sAB - alpha;
+    const Y = A.y + dAP * Math.sin(s * GON), X = A.x + dAP * Math.cos(s * GON);
+    const q0 = `Protínání vpřed z úhlů: ${pt('A', A)}, ${pt('B', B)}. Na A naměřen úhel α = ${fmt(alpha, 4)} gon (po směru hod. od P k B), na B úhel β = ${fmt(beta, 4)} gon (po směru hod. od A k P). Bod P leží vlevo od spojnice A→B.`;
+    return axis === 'Y'
+      ? { q: `${q0} Vypočtěte Y_P.`, a: Y, tol: 0.011, dec: 2, unit: 'm', e: `d_AP = d_AB·sin β / sin(α + β) = ${fmt(dAP, 3)} m; σ_AP = σ_AB − α; Y_P = Y_A + d_AP·sin σ_AP = ${fmt(Y, 2)} m.` }
+      : { q: `${q0} Vypočtěte X_P.`, a: X, tol: 0.011, dec: 2, unit: 'm', e: `d_AP = d_AB·sin β / sin(α + β) = ${fmt(dAP, 3)} m; σ_AP = σ_AB − α; X_P = X_A + d_AP·cos σ_AP = ${fmt(X, 2)} m.` };
+  }
+}
 
 function polar(axis) {
   const A = point(), s = round(rnd(0, 399.9999), 4), d = round(rnd(15, 350), 3);

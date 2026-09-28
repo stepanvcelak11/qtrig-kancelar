@@ -3,7 +3,7 @@
 
 export default [
   {
-    id: 'u14', title: 'Fotogrammetrie a laserové skenování', color: '#ea580c', level: 'VŠ',
+    id: 'u14', title: 'Fotogrammetrie a laserové skenování', color: '#ea580c', level: 'Bc.', course: 'BEA019', sem: '3. ročník · ZS',
     desc: 'Měřítko snímku, orientace, stereofotogrammetrie, SfM zpracování a laserové skenování TLS/ALS.',
     lessons: [
       {
@@ -75,7 +75,7 @@ export default [
   },
 
   {
-    id: 'u15', title: 'Družicová geodézie', color: '#0d9488', level: 'VŠ',
+    id: 'u15', title: 'Družicová geodézie', color: '#0d9488', level: 'Ing.', course: 'NEA032', sem: '1. ročník · ZS',
     desc: 'Referenční rámce, GNSS signály a pozorování, zdroje chyb, metody měření, čas a oběžné dráhy.',
     lessons: [
       {
@@ -147,7 +147,7 @@ export default [
   },
 
   {
-    id: 'u16', title: 'Geodetické sítě a deformace', color: '#4d7c0f', level: 'VŠ',
+    id: 'u16', title: 'Geodetické sítě a deformace', color: '#4d7c0f', level: 'Bc.', course: 'BEA015', sem: '2. ročník · LS',
     desc: 'Návrh a optimalizace sítí, vytyčení staveb, měření posunů, inženýrské aplikace a monitoring.',
     lessons: [
       {

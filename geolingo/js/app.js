@@ -1,9 +1,10 @@
 // Geolingo – uživatelské rozhraní: mapa lekcí, cvičení, terénní praxe, profil.
 
-import { UNITS, LESSONS, lessonById, buildLesson, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
+import { UNITS, LESSONS, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
 import { fmt, generate } from './generators.js';
 import { W, H, checkField, solutionCells, turnScrew, SCREWS, FIELD_TYPES } from './field.js';
 import * as store from './store.js';
+import { backdrop } from './backdrop.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const app = $('#app');
@@ -190,6 +191,14 @@ function renderPath() {
             ${times ? `<span class="times">${times > 1 ? '×' + Math.min(times, 9) : '✓'}</span>` : ''}${hasField ? '<span class="fieldmark" title="Obsahuje terénní úlohu">🦺</span>' : ''}</button>
           <div class="node-label">${esc(l.title)}</div></div>`;
     }).join('');
+    // Zkouška listu na konci kapitoly.
+    const allDone = doneN === u.lessons.length, passed = !!store.S().unitTests?.[u.id];
+    const ep = { x: 0, y: u.lessons.length * ROW + 44 };
+    pts.push(ep);
+    const examOpen = allDone || store.S().unlockAll;
+    const exam = `<div class="node-wrap examwrap" style="top:${ep.y - 6}px;left:50%">
+      <button class="node exam ${passed ? 'passed' : examOpen ? '' : 'locked'}" data-exam="${ui}" aria-label="Zkouška listu"><span class="ic">${passed ? '🏆' : examOpen ? '🏁' : '🔒'}</span></button>
+      <div class="node-label">Zkouška listu${passed ? ' ✓' : ''}</div></div>`;
     // Spojnice bodů jako polygonový pořad: hotové úseky plnou čarou.
     const seg = pts.slice(1).map((p, i) => {
       const a = pts[i], solid = isDone(u.lessons[i].id);
@@ -197,19 +206,25 @@ function renderPath() {
     }).join('');
     return `${divider}<section class="unit" id="unit-${ui}" style="--c:${u.color}">
       <div class="sheet-head">
-        <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${isUni(lvl) ? 'vs' : ''}">${lvl}</span></div>
+        <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${isUni(lvl) ? 'vs' : ''}">${lvl}</span>${u.course ? `<span class="sheet-course">${u.course !== '—' ? u.course + ' · ' : ''}${u.sem ?? ''}</span>` : ''}</div>
         <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>
         <div class="sheet-prog"><i style="width:${(doneN / u.lessons.length) * 100}%"></i></div><small>${doneN} / ${u.lessons.length} lekcí</small>
         <svg class="contours" viewBox="0 0 120 80" aria-hidden="true"><path d="M10 70c20-30 40-10 60-35s35-20 45-30M0 78c25-25 45-5 68-28s32-18 52-26M25 80c15-15 30-5 45-20s30-12 50-18"/></svg>
         <svg class="north" viewBox="0 0 20 30" aria-hidden="true"><path d="M10 2 16 22 10 18 4 22Z"/><text x="10" y="30">S</text></svg>
       </div>
-      <div class="nodes" style="height:${u.lessons.length * ROW - 20}px"><svg class="traverse" width="1" height="${u.lessons.length * ROW}">${seg}</svg>${nodes}</div>
+      <div class="nodes" style="height:${(u.lessons.length + 1) * ROW + 30}px"><svg class="traverse" width="1" height="${(u.lessons.length + 1) * ROW}">${seg}</svg>${nodes}${exam}</div>
     </section>`;
   }).join('');
   app.innerHTML = topStats() + `<main class="path">${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>
     <button class="index-btn" id="index" aria-label="Klad mapových listů">${ICON.map}<span>Listy</span></button>` + tabs();
   app.querySelectorAll('[data-lesson]').forEach((b) => b.addEventListener('click', () => lessonSheet(b.dataset.lesson)));
   $('#index').addEventListener('click', indexSheet);
+  app.querySelectorAll('[data-exam]').forEach((b) => b.addEventListener('click', () => {
+    const u = UNITS[+b.dataset.exam];
+    if (!u.lessons.every((l) => isDone(l.id)) && !store.S().unlockAll) return toast('Zkouška se odemkne po dokončení všech lekcí listu');
+    scrollMemory = window.scrollY;
+    begin(buildUnitTest(u), { lessonId: null, unitTest: u.id, title: `Zkouška: ${u.title}`, practice: false, color: u.color });
+  }));
 }
 
 /** Klad mapových listů: rychlý skok na kapitolu. */
@@ -220,7 +235,7 @@ function indexSheet() {
     const head = lvl !== last ? `<h4>${lvl === 'SŠ' ? 'Střední škola' : LEVELS[lvl]?.title ?? lvl}</h4>` : '';
     last = lvl;
     const doneN = u.lessons.filter((l) => isDone(l.id)).length;
-    return `${head}<button class="idx" data-unit="${ui}" style="--c:${u.color}"><span class="no">${String(ui + 1).padStart(2, '0')}</span><span class="grow">${esc(u.title)}</span><span class="pr">${doneN}/${u.lessons.length}</span></button>`;
+    return `${head}<button class="idx" data-unit="${ui}" style="--c:${u.color}"><span class="no">${String(ui + 1).padStart(2, '0')}</span><span class="grow">${esc(u.title)}${u.course ? `<small>${u.course !== '—' ? u.course + ' · ' : ''}${u.sem ?? ''}</small>` : ''}</span><span class="pr">${doneN}/${u.lessons.length}</span></button>`;
   }).join('');
   const bg = document.createElement('div');
   bg.className = 'sheet-bg';
@@ -585,7 +600,7 @@ function next() {
 function finishRun() {
   const r = run;
   const total = r.correct + r.mistakes;
-  const result = store.completeLesson(r.meta.lessonId, { mistakes: r.mistakes, practice: r.meta.practice });
+  const result = store.completeLesson(r.meta.lessonId, { mistakes: r.mistakes, practice: r.meta.practice, unitTest: r.meta.unitTest });
   if (r.meta.practice) store.gainHeart();
   run = null;
   beep('done');
@@ -596,10 +611,10 @@ function finishRun() {
   app.innerHTML = `<div class="done-screen">
     <div class="stamp">${r.mistakes === 0 ? 'Bez chyby' : 'Zaměřeno'}</div>
     ${mascot('wow', 'big')}
-    <h1>${r.meta.practice ? 'Procvičení hotovo!' : 'Lekce dokončena!'}</h1>
+    <h1>${r.meta.practice ? 'Procvičení hotovo!' : r.meta.unitTest ? 'Zkouška listu složena!' : 'Lekce dokončena!'}</h1>
     <div class="cards">
-      <div class="card" style="--c:#e0a800"><b>XP</b><span>+${result.xp}</span></div>
-      <div class="card" style="--c:#16a37f"><b>Přesnost</b><span>${acc} %</span></div>
+      <div class="card" style="--c:#e0a800"><b>XP</b><span data-count="${result.xp}" data-pre="+">+0</span></div>
+      <div class="card" style="--c:#16a37f"><b>Přesnost</b><span data-count="${acc}" data-post=" %">0 %</span></div>
       <div class="card" style="--c:#2b8fd6"><b>Čas</b><span>${mins} min</span></div>
     </div>
     <div class="done-notes">
@@ -612,6 +627,16 @@ function finishRun() {
     <button class="btn primary wide" id="cont">Pokračovat</button>
   </div>`;
   confetti();
+  // Čísla „naběhnou“ jako na displeji přístroje.
+  app.querySelectorAll('[data-count]').forEach((el) => {
+    const to = +el.dataset.count, t0 = performance.now();
+    const tickNum = (t) => {
+      const k = Math.min(1, (t - t0) / 900), v = Math.round(to * (1 - (1 - k) ** 3));
+      el.textContent = `${el.dataset.pre ?? ''}${v}${el.dataset.post ?? ''}`;
+      if (k < 1) requestAnimationFrame(tickNum);
+    };
+    requestAnimationFrame(tickNum);
+  });
   $('#cont').addEventListener('click', () => show(r.meta.practice ? 'practice' : 'path'));
 }
 
@@ -807,6 +832,7 @@ function welcome() {
   }));
 }
 
+backdrop();
 store.tick();
 if (localStorage.getItem('geolingo.onboarded')) show('path'); else welcome();
 setInterval(() => { if (!run && !document.querySelector('.sheet-bg')) { const before = store.S().hearts; store.tick(); if (store.S().hearts !== before && tab !== 'profile') show(tab); } }, 60000);

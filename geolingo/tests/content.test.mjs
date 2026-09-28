@@ -96,6 +96,9 @@ const recompute = {
   polarY: (n) => n[0] + n[3] * Math.sin(n[2] * G),
   polarX: (n) => n[1] + n[3] * Math.cos(n[2] * G),
   slopePercent: (n) => n[0] / n[1] * 100,
+  cutVolume: (n) => (n[0] + n[1]) / 2 * n[2],
+  stereoDepth: (n) => n[0] * n[1] / n[2],
+  popDensity: (n) => n[0] / n[1],
 };
 for (const name of Object.keys(GEN)) {
   for (let k = 0; k < 300; k++) {
@@ -111,6 +114,25 @@ for (const name of Object.keys(GEN)) {
       ok(Math.abs(v - ex.a) <= ex.tol, `${name}: přepočet ${v} ≠ ${ex.a}\n${ex.q}`);
     }
   }
+}
+
+// --- Protínání vpřed: nezávislá kontrola přes průsečík dvou přímek ---
+for (let k = 0; k < 200; k++) {
+  const ey = generate('intersectionY'), n = nums(ey.q.replace(/[A-Za-z_]\w*/g, ' ')).filter(Number.isFinite);
+  const [Ay, Ax, By, Bx, al, be] = n;
+  const sAB = bearingGon(By - Ay, Bx - Ax), sBA = bearingGon(Ay - By, Ax - Bx);
+  const s1 = (sAB - al) * Math.PI / 200, s2 = (sBA + be) * Math.PI / 200;
+  // A + t·(sin s1, cos s1) = B + u·(sin s2, cos s2)
+  const det = Math.sin(s1) * -Math.cos(s2) + Math.sin(s2) * Math.cos(s1);
+  const t = ((By - Ay) * -Math.cos(s2) + Math.sin(s2) * (Bx - Ax)) / det;
+  ok(Math.abs(Ay + t * Math.sin(s1) - ey.a) < ey.tol, `protínání: Y ${Ay + t * Math.sin(s1)} ≠ ${ey.a}`);
+}
+
+// --- VŠ kapitoly: kód předmětu a semestr ---
+for (const u of UNITS.filter((x) => x.level && x.level !== 'SŠ')) {
+  ok(['Bc.', 'Ing.'].includes(u.level), `${u.id}: úroveň ${u.level}`);
+  ok(/^[A-Z]{3}\d{3}/.test(u.course ?? '') || u.course === '—', `${u.id}: kód předmětu`);
+  ok(/^\d\. ročník · (ZS|LS)$/.test(u.sem ?? ''), `${u.id}: semestr ${u.sem}`);
 }
 
 // --- Terénní praxe: každá vygenerovaná situace musí být řešitelná ---

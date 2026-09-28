@@ -5,10 +5,25 @@ import U2 from './content/u04-06.js';
 import U3 from './content/u07-10.js';
 import U4 from './content/u11-13.js';
 import U5 from './content/u14-16.js';
+import B1 from './content/vut-bc1.js';
+import B2 from './content/vut-bc2.js';
+import B3 from './content/vut-bc3.js';
+import I1 from './content/vut-ing1.js';
+import I2 from './content/vut-ing2.js';
+import I3 from './content/vut-ing3.js';
 import { generate, GEN } from './generators.js';
 import { checkField, FIELD_TYPES } from './field.js';
 
-export const UNITS = [...U1, ...U2, ...U3, ...U4, ...U5];
+// Pořadí: SŠ kapitoly podle osnovy, pak VŠ podle úrovně (Bc. → Ing.) a semestru (např. „2. ročník · LS“).
+const LEVEL_ORDER = { 'SŠ': 0, 'Bc.': 1, 'Ing.': 2 };
+export const semKey = (u) => {
+  const m = /(\d)\.\s*ročník\s*·\s*(ZS|LS)/.exec(u.sem ?? '');
+  return m ? Number(m[1]) * 2 - (m[2] === 'ZS' ? 1 : 0) : 99;
+};
+export const UNITS = [...U1, ...U2, ...U3, ...U4, ...U5, ...B1, ...B2, ...B3, ...I1, ...I2, ...I3]
+  .map((u, i) => ({ u, i }))
+  .sort((a, b) => (LEVEL_ORDER[a.u.level ?? 'SŠ'] ?? 1) - (LEVEL_ORDER[b.u.level ?? 'SŠ'] ?? 1) || semKey(a.u) - semKey(b.u) || a.i - b.i)
+  .map(({ u }) => u);
 export const LESSONS = UNITS.flatMap((u, ui) => u.lessons.map((l, li) => ({ ...l, unit: u, unitIndex: ui, lessonIndex: li })));
 export const lessonById = (id) => LESSONS.find((l) => l.id === id);
 
@@ -49,6 +64,16 @@ export function buildLesson(lesson, length = LESSON_LENGTH) {
   for (const g of field) list.push(prepare(generate(g)));
   const order = shuffle(calc);
   for (let k = 0; calc.length && list.length < length; k++) list.push(prepare(generate(order[k % order.length])));
+  return shuffle(list);
+}
+
+/** Zkouška listu: průřez všemi lekcemi kapitoly (otázky, výpočty i terénní úlohy). */
+export function buildUnitTest(unit, length = 12) {
+  const pool = unit.lessons.flatMap((l) => l.items.map((it, i) => ({ l, it, i })));
+  const gens = [...new Set(unit.lessons.flatMap((l) => l.gens ?? []))];
+  const nGen = Math.min(gens.length, 4);
+  const list = shuffle(pool).slice(0, length - nGen).map(({ l, it, i }) => prepare(it, { lesson: l.id, idx: i }));
+  for (const g of shuffle(gens).slice(0, nGen)) list.push(prepare(generate(g)));
   return shuffle(list);
 }
 

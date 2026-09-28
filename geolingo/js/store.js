@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss',
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {},
 });
 
 let state;
@@ -82,8 +82,9 @@ export function recordAnswer(ex, ok) {
 }
 
 /** Dokončení lekce: XP, série, úspěchy. Vrací { xp, streakUp, newAchievements }. */
-export function completeLesson(lessonId, { mistakes, practice = false }) {
-  const xp = practice ? 5 : 10 + (mistakes === 0 ? 5 : 0);
+export function completeLesson(lessonId, { mistakes, practice = false, unitTest = null }) {
+  const xp = practice ? 5 : unitTest ? 20 + (mistakes === 0 ? 10 : 0) : 10 + (mistakes === 0 ? 5 : 0);
+  if (unitTest) state.unitTests = { ...state.unitTests, [unitTest]: true };
   state.xp += xp;
   state.xpToday += xp;
   let streakUp = false;
