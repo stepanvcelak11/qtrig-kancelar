@@ -234,7 +234,9 @@ function renderPath() {
       const a = pts[i], solid = isDone(u.lessons[i].id);
       return `<line x1="${a.x}" y1="${a.y + 36}" x2="${p.x}" y2="${p.y + 36}" class="${solid ? 'solid' : ''}"/>`;
     }).join('');
-    return `${divider}<section class="unit" id="unit-${ui}" style="--c:${u.color}">
+    const firstIdx = LESSONS.findIndex((l) => l.unit === u);
+    const fog = !store.S().unlockAll && firstIdx > cur + 10 && !u.lessons.some((l) => isDone(l.id));
+    return `${divider}<section class="unit ${fog ? 'fog' : ''}" id="unit-${ui}" style="--c:${u.color}">
       <div class="sheet-head">
         <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${isUni(lvl) ? 'vs' : ''}">${lvl}</span>${u.course ? `<span class="sheet-course">${u.course !== '—' ? u.course + ' · ' : ''}${u.sem ?? ''}</span>` : ''}</div>
         <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>${TIPS[u.id] ? `<button class="tips-btn" data-tips="${u.id}">📒 Tahák</button>` : ''}
@@ -286,8 +288,15 @@ function indexSheet() {
   }).join('');
   const bg = document.createElement('div');
   bg.className = 'sheet-bg';
-  bg.innerHTML = `<div class="sheet index-sheet" style="--c:var(--petrol)"><h3>Klad mapových listů</h3><div class="idx-list">${rows}</div></div>`;
+  bg.innerHTML = `<div class="sheet index-sheet" style="--c:var(--petrol)"><h3>Klad mapových listů</h3>
+    <input class="idx-search" id="idxq" type="search" placeholder="Hledat kapitolu nebo kód předmětu…" autocomplete="off"><div class="idx-list">${rows}</div></div>`;
   document.body.append(bg);
+  const norm = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  $('#idxq', bg).addEventListener('input', (e) => {
+    const q = norm(e.target.value.trim());
+    bg.querySelectorAll('.idx').forEach((b) => { b.hidden = q && !norm(b.textContent).includes(q); });
+    bg.querySelectorAll('.idx-list h4').forEach((h) => { h.hidden = !!q; });
+  });
   bg.addEventListener('click', (e) => {
     if (e.target === bg) return bg.remove();
     const b = e.target.closest('[data-unit]');
@@ -361,7 +370,7 @@ function begin(items, meta) {
 
 const KIND = {
   c: 'Vyber správnou odpověď', tf: 'Pravda, nebo ne?', m: 'Spoj dvojice', o: 'Seřaď kroky', n: 'Vypočítej', rod: 'Odečti lať',
-  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', dirbook: 'Terén · směrová osnova', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
+  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', dirbook: 'Terén · směrová osnova', traverse: 'Terén · polygonový pořad', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
 };
 
 function renderExercise() {
@@ -436,6 +445,15 @@ function exerciseBody(ex) {
     case 'bubble':
       return `<p class="prompt">Urovnej krabicovou libelu stavěcími šrouby – dostaň bublinu do kroužku.</p>${bubbleSvg(ex)}
         <div class="screws">${SCREWS.map((_, i) => `<div class="screw"><small>Šroub ${i + 1}</small><button class="btn" data-screw="${i}" data-dir="1">▲ zvednout</button><button class="btn" data-screw="${i}" data-dir="-1">▼ snížit</button></div>`).join('')}</div>`;
+    case 'traverse':
+      return `<p class="prompt">Uzavřený polygonový pořad: vypočti úhlový uzávěr, opravu a opravené vnitřní úhly.</p>
+        <div class="book"><table><thead><tr><th>Vrchol</th><th>Měřený ω [gon]</th><th>Opravený ω</th></tr></thead><tbody>
+        ${ex.meas.map((m, i) => `<tr><td>${i + 1}</td><td>${fmt(m, 4)}</td><td><input class="cell" data-cell="${i}" inputmode="decimal" autocomplete="off"></td></tr>`).join('')}
+        </tbody><tfoot>
+        <tr><td colspan="2">Σω = ${fmt(ex.meas.reduce((a, b) => a + b, 0), 4)} · teorie ${(ex.n - 2) * 200} gon → uzávěr u [cc] =</td><td><input class="cell" data-cell="${ex.n}" inputmode="decimal" autocomplete="off"></td></tr>
+        <tr><td colspan="2">Oprava na každý úhel v [cc] =</td><td><input class="cell" data-cell="${ex.n + 1}" inputmode="decimal" autocomplete="off"></td></tr>
+        </tfoot></table></div>
+        <div class="hint">1 cc = 0,0001 gon. Uzávěr se rozděluje rovnoměrně s opačným znaménkem.</div>`;
     case 'dirbook':
       return `<p class="prompt">Dopočítej směrovou osnovu měřenou ve dvou polohách dalekohledu.</p>
         <div class="book"><table><thead><tr><th>Cíl</th><th>I. poloha</th><th>II. poloha</th><th>Průměr [gon]</th></tr></thead><tbody>
@@ -719,7 +737,7 @@ function wireExercise(ex) {
     }));
   }
 
-  if (ex.t === 'fieldbook' || ex.t === 'dirbook') {
+  if (ex.t === 'fieldbook' || ex.t === 'dirbook' || ex.t === 'traverse') {
     const cells = [...app.querySelectorAll('[data-cell]')];
     const upd = () => setAnswer(cells.every((c) => c.value.trim()) ? cells.map((c) => c.value) : null);
     cells.forEach((c, i) => {
@@ -735,11 +753,11 @@ function check() {
   if (isField(ex.t)) {
     const detail = checkField(ex, run.answer);
     run.locked = true;
-    if (ex.t === 'fieldbook' || ex.t === 'dirbook') {
+    if (ex.t === 'fieldbook' || ex.t === 'dirbook' || ex.t === 'traverse') {
       app.querySelectorAll('[data-cell]').forEach((c, i) => {
         c.disabled = true;
         c.classList.add(detail.cells[i] ? 'good' : 'bad');
-        if (!detail.cells[i]) c.value = fmt(ex.a[i], ex.t === 'dirbook' ? 4 : 3);
+        if (!detail.cells[i]) c.value = fmt(ex.a[i], ex.t === 'dirbook' || (ex.t === 'traverse' && i < ex.n) ? 4 : ex.t === 'traverse' ? 0 : 3);
       });
     } else if (ex.t === 'contour') {
       const p = run.answer, Q = ex.Q, O = ex.other;
@@ -763,7 +781,7 @@ const PRAISE = ['Výborně!', 'Přesně na milimetr!', 'Paráda!', 'Správně!',
 
 function finishExercise(ok, ex, reason = '') {
   run.locked = true;
-  store.recordAnswer(ex, ok);
+  store.recordAnswer(ex, ok, run.meta.unitId ?? (ex.ref ? lessonById(ex.ref.lesson)?.unit.id : null));
   if (ok) { run.correct++; run.combo++; } else {
     run.mistakes++; run.combo = 0;
     if (!run.meta.practice) store.loseHeart();
@@ -954,6 +972,7 @@ function renderPractice() {
       ${fieldCard('f-azimuth', 'Směrník a kvadranty', 'Natoč ručičku podle ΔY a ΔX', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><path d="M30 20 40 9" class="a3"/><path d="M30 4v32M14 20h32" class="a6"/></svg>')}
       ${fieldCard('f-circle', 'Čtení kruhu', 'Vodorovný i svislý kruh v mikroskopu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
       ${fieldCard('f-dirbook', 'Směrová osnova', 'Dvě polohy dalekohledu, průměry a úhel', '<svg viewBox="0 0 60 40"><rect x="10" y="5" width="40" height="30" rx="2" class="a9"/><path d="M14 13h32M14 19h32M14 25h32M24 7v26M36 7v26" class="a6"/></svg>')}
+      ${fieldCard('f-traverse', 'Polygonový pořad', 'Úhlový uzávěr a opravené úhly', '<svg viewBox="0 0 60 40"><path d="M10 30 22 8 48 10 52 32Z" class="a3"/><circle cx="10" cy="30" r="2.5" class="a2"/><circle cx="22" cy="8" r="2.5" class="a2"/><circle cx="48" cy="10" r="2.5" class="a2"/><circle cx="52" cy="32" r="2.5" class="a2"/></svg>')}
       ${fieldCard('f-contour', 'Vrstevnice', 'Interpolace mezi výškovými body', '<svg viewBox="0 0 60 40"><path d="M8 32 30 6 52 30Z" class="a6"/><path d="M14 25C24 20 34 22 47 24" class="a3"/><circle cx="8" cy="32" r="2" class="a2"/><circle cx="30" cy="6" r="2" class="a2"/><circle cx="52" cy="30" r="2" class="a2"/></svg>')}
       ${fieldCard('f-sky', 'Geometrie družic', 'Vyber 4 družice s nejnižším PDOP', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="17" class="a7"/><circle cx="30" cy="20" r="3" class="a2"/><circle cx="16" cy="14" r="3" class="a2"/><circle cx="44" cy="12" r="3" class="a2"/><circle cx="36" cy="33" r="3" class="a2"/></svg>')}
       ${fieldCard('f-rod', 'Čtení latě', 'Trénink oka na milimetry', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><rect x="25" y="4" width="10" height="32" class="a9"/><path d="M14 20h32M30 4v32" class="a6"/></svg>')}
@@ -1017,6 +1036,7 @@ function renderProfile() {
       <div class="statbox"><span class="emo">🦺</span><b>${s.stats.field}</b><small>terénních úloh</small></div>
       <div class="statbox"><span class="emo">🧮</span><b>${s.stats.calc}</b><small>správných výpočtů</small></div>
     </div>
+    <h3 class="sec">Mapa znalostí</h3>${knowledgeMap()}
     <h3 class="sec">Deník v terénu</h3>${heatmap(s.history ?? {})}
     <div class="row goalrow">${ring}<div class="grow"><b>Denní cíl</b><div class="hint">Dnes ${s.xpToday} z ${s.dailyGoal} XP</div></div></div>
     <div class="goal">${[10, 20, 30, 50].map((g) => `<button class="btn ${s.dailyGoal === g ? 'blue' : ''}" data-goal="${g}">${g} XP</button>`).join('')}</div>
@@ -1027,6 +1047,7 @@ function renderProfile() {
     <div class="seg"><span>Vzhled</span>${[['auto', 'Auto'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([v, t]) => `<button data-theme-set="${v}" class="${(s.theme ?? 'auto') === v ? 'on' : ''}">${t}</button>`).join('')}</div>
     <label class="toggle">Zvuky <input type="checkbox" id="snd" ${s.sound ? 'checked' : ''}></label>
     <label class="toggle">Odemknout všechny lekce <input type="checkbox" id="unl" ${s.unlockAll ? 'checked' : ''}></label>
+    <button class="btn wide" id="share">📤 Sdílet pokrok</button>
     <p class="hint">Pokrok se ukládá jen v tomto zařízení.</p>
     <button class="btn red wide" id="reset">Smazat pokrok</button>
   </div>` + tabs();
@@ -1039,9 +1060,43 @@ function renderProfile() {
     store.save(); beep('tick'); renderProfile();
   }));
   app.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => { s.theme = b.dataset.themeSet; store.save(); applyTheme(); renderProfile(); }));
+  app.querySelectorAll('[data-km]').forEach((b) => b.addEventListener('click', () => {
+    const u = UNITS[+b.dataset.km];
+    scrollMemory = null; show('path');
+    setTimeout(() => document.getElementById(`unit-${b.dataset.km}`)?.scrollIntoView({ block: 'start' }), 50);
+  }));
+  app.querySelectorAll('[data-weak]').forEach((b) => b.addEventListener('click', () => {
+    const u = UNITS.find((x) => x.id === b.dataset.weak);
+    begin(buildUnitTest(u, 10), { lessonId: null, unitId: u.id, title: `Procvičení: ${u.title}`, practice: true, color: u.color });
+  }));
+  $('#share').addEventListener('click', async () => {
+    const text = `Učím se geodézii v Geolingu 🧭 ${rk.title} · ${s.xp} XP · 🔥 ${s.streak} dní v terénu · ${doneCount}/${LESSONS.length} lekcí`;
+    try {
+      if (navigator.share) await navigator.share({ title: 'Geolingo', text, url: location.href.split('#')[0] });
+      else { await navigator.clipboard.writeText(`${text} ${location.href.split('#')[0]}`); toast('Zkopírováno do schránky'); }
+    } catch { /* zrušeno */ }
+  });
   $('#snd').addEventListener('change', (e) => { s.sound = e.target.checked; store.save(); });
   $('#unl').addEventListener('change', (e) => { s.unlockAll = e.target.checked; store.save(); });
   $('#reset').addEventListener('click', () => { if (confirm('Opravdu smazat veškerý pokrok?')) { store.reset(); toast('Pokrok smazán'); renderProfile(); } });
+}
+
+/** Mapa znalostí: klad všech listů obarvený podle postupu + nejslabší kapitoly podle úspěšnosti. */
+function knowledgeMap() {
+  const s = store.S(), by = s.stats.byUnit ?? {};
+  const tiles = UNITS.map((u, ui) => {
+    const done = u.lessons.filter((l) => isDone(l.id)).length / u.lessons.length;
+    const st = by[u.id], acc = st && st.a ? st.c / st.a : null;
+    return `<button class="km-tile" data-km="${ui}" style="--c:${u.color};--f:${done}" title="${esc(u.title)}${acc != null ? ` · úspěšnost ${Math.round(acc * 100)} %` : ''}">
+      <span>${ui + 1}</span>${store.S().unitTests?.[u.id] ? '<i>🏆</i>' : ''}</button>`;
+  }).join('');
+  const weak = UNITS.map((u) => ({ u, st: by[u.id] })).filter((x) => x.st && x.st.a >= 6)
+    .map((x) => ({ ...x, acc: x.st.c / x.st.a })).sort((a, b) => a.acc - b.acc).slice(0, 3);
+  return `<div class="km"><div class="km-grid">${tiles}</div>
+    <div class="km-legend"><span>Sytost = dokončené lekce kapitoly · 🏆 = zkouška listu</span></div>
+    ${weak.length ? `<div class="km-weak"><b>Kde to ještě drhne</b>${weak.map((w) => `<div class="kw"><span class="grow">${esc(w.u.title)}<div class="qbar"><i style="width:${w.acc * 100}%;background:${w.acc < 0.6 ? 'var(--red)' : w.acc < 0.8 ? 'var(--gold)' : 'var(--green)'}"></i><em>${Math.round(w.acc * 100)} % správně</em></div></span><button class="btn" data-weak="${w.u.id}">Procvičit</button></div>`).join('')}</div>`
+      : '<p class="hint">Až odpovíš na víc otázek, ukážu ti kapitoly, které ti jdou nejhůř.</p>'}
+  </div>`;
 }
 
 /** Kalendář aktivity: posledních 16 týdnů, sytost podle získaných XP. */

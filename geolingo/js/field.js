@@ -338,7 +338,41 @@ export function checkDirbook(ex, values) {
   return { ok: cells.every(Boolean), cells, reason: cells.every(Boolean) ? '' : 'Některé hodnoty nesedí – správné jsou doplněny.' };
 }
 
-export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky, dirbook };
+// --- 10) Uzavřený polygonový pořad: úhlový uzávěr a jeho rozdělení --------------------------
+
+const sgn = (x) => (x < 0 ? '−' : '+') + Math.abs(x);
+
+function traverse() {
+  for (;;) {
+    const n = rint(4, 5), sum = (n - 2) * 2000000;              // v cc
+    const w = Array.from({ length: n }, () => rnd(0.6, 1.4));
+    const ws = w.reduce((a, b) => a + b, 0);
+    const trueA = w.map((x) => Math.round(x / ws * sum));
+    trueA[n - 1] += sum - trueA.reduce((a, b) => a + b, 0);
+    if (trueA.some((x) => x < 400000 || x > 3000000)) continue;
+    const v = rint(-12, 12);                                    // oprava na vrchol v cc
+    if (v === 0) continue;
+    const u = -v * n;                                           // uzávěr dělitelný počtem vrcholů
+    const err = Array.from({ length: n }, () => rint(-20, 20));
+    err[n - 1] += u - err.reduce((a, b) => a + b, 0);
+    const meas = trueA.map((x, i) => x + err[i]);
+    const corr = meas.map((x) => x + v);
+    return { t: 'traverse', meas: meas.map((x) => x / 10000), a: [...corr.map((x) => x / 10000), u, v], n,
+      e: `u = Σω − (n − 2)·200 = ${sgn(u)} cc. Uzávěr se rozdělí rovnoměrně s opačným znaménkem: v = −u / n = ${sgn(v)} cc na každý úhel. Kontrola: součet opravených úhlů = ${(n - 2) * 200} gon.` };
+  }
+}
+
+export function checkTraverse(ex, values) {
+  const parse = (t) => Number(String(t ?? '').trim().replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.'));
+  const cells = ex.a.map((v, i) => {
+    const x = parse(values?.[i]);
+    const tol = i < ex.n ? 0.00006 : 0.5;
+    return String(values?.[i] ?? '').trim() !== '' && Number.isFinite(x) && Math.abs(x - v) <= tol;
+  });
+  return { ok: cells.every(Boolean), cells, reason: cells.every(Boolean) ? '' : 'Některé hodnoty nesedí – správné jsou doplněny.' };
+}
+
+export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky, dirbook, traverse };
 
 /** Jednotné hodnocení praktických úloh. */
 export function checkField(ex, answer) {
@@ -352,6 +386,7 @@ export function checkField(ex, answer) {
     case 'contour': return checkContour(ex, answer);
     case 'sky': return checkSky(ex, answer);
     case 'dirbook': return checkDirbook(ex, answer);
+    case 'traverse': return checkTraverse(ex, answer);
     default: return { ok: false };
   }
 }

@@ -205,6 +205,15 @@ for (let k = 0; k < 300; k++) {
   ok(checkField(d, d.a.map((v) => v.toFixed(4).replace('.', ','))).ok, 'osnova: správné hodnoty');
   ok(!checkField(d, d.a.map((v) => (v + 0.001).toFixed(4))).ok, 'osnova: chyba 1 mgon se pozná');
 }
+// Polygonový pořad: opravené úhly dávají přesně (n − 2)·200 gon, uzávěr = Σ měřených − teorie.
+for (let k = 0; k < 300; k++) {
+  const t = generate('traverse'), n = t.n;
+  const sumCorr = t.a.slice(0, n).reduce((a, b) => a + b, 0), sumMeas = t.meas.reduce((a, b) => a + b, 0);
+  ok(Math.abs(sumCorr - (n - 2) * 200) < 1e-6, 'pořad: součet opravených úhlů');
+  ok(Math.abs((sumMeas - (n - 2) * 200) * 10000 - t.a[n]) < 1e-4, 'pořad: uzávěr');
+  ok(checkField(t, t.a.map((v, i) => (i < n ? v.toFixed(4) : String(v)))).ok, 'pořad: správné hodnoty');
+  ok(!checkField(t, t.a.map((v, i) => (i < n ? v.toFixed(4) : String(-v)))).ok || t.a[n] === 0, 'pořad: opačné znaménko je chyba');
+}
 console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 
 console.log(`Geolingo: ${checks} kontrol OK (${LESSONS.length} lekcí, ${LESSONS.reduce((s, l) => s + l.items.length, 0)} otázek, ${Object.keys(GEN).length} generátorů)`);

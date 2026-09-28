@@ -110,9 +110,14 @@ export function gainHeart() {
   save();
 }
 
-export function recordAnswer(ex, ok) {
+export function recordAnswer(ex, ok, unitId = null) {
   state.stats.answered++;
   const d = daily();
+  if (unitId) {
+    const b = state.stats.byUnit ?? (state.stats.byUnit = {});
+    const u = b[unitId] ?? (b[unitId] = { a: 0, c: 0 });
+    u.a++; if (ok) u.c++;
+  }
   if (ok) {
     state.stats.correct++;
     d.correct++;

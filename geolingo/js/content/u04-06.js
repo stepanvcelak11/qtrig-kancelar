@@ -97,7 +97,7 @@ export default [
         ],
       },
       {
-        id: 'u5l4', title: 'Polygonový pořad', icon: '〰️', gens: ['polygonAngleSum'],
+        id: 'u5l4', title: 'Polygonový pořad', icon: '〰️', gens: ['polygonAngleSum', 'traverse'],
         items: [
           { t: 'c', q: 'Oboustranně připojený a orientovaný pořad má na obou koncích…', a: 'známý bod i orientační směr', w: ['jen známý bod', 'jen orientaci', 'nic'], e: 'Umožňuje kontrolu úhlů i souřadnic.' },
           { t: 'c', q: 'Úhlový uzávěr pořadu se rozdělí…', a: 'rovnoměrně na měřené úhly', w: ['jen na první úhel', 'úměrně délkám', 'nerozděluje se'], e: 'Všechny úhly jsou měřeny stejně přesně.' },

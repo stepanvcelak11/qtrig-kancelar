@@ -311,7 +311,7 @@ export default [
         ],
       },
       {
-        id: 'vyukal2', title: 'Polygon a protínání', icon: '🔺', gens: ['polygonClosure', 'station'],
+        id: 'vyukal2', title: 'Polygon a protínání', icon: '🔺', gens: ['polygonClosure', 'station', 'traverse'],
         items: [
           { t: 'o', q: 'Seřaďte měření osnovy směrů na vrcholu polygonu ve skupině', s: ['I. poloha: záměra na zadní bod', 'I. poloha: záměra na přední bod', 'Proložit dalekohled do II. polohy', 'II. poloha: záměra na přední bod', 'II. poloha: záměra na zadní bod'], e: 'Ve II. poloze se postupuje v opačném pořadí; průměr obou poloh eliminuje osové chyby.' },
           { t: 'c', q: 'Úhlový uzávěr polygonu překročil mezní odchylku. Co uděláš?', a: 'Najdeš chybný vrchol a úhel přeměříš', w: ['Rozdělíš uzávěr rovnoměrně', 'Zvětšíš mezní odchylku', 'Změníš souřadnice koncového bodu'], e: 'Chybný vrchol pomůže najít výpočet pořadu z obou konců – na chybném vrcholu vyjdou z obou výpočtů téměř stejné souřadnice.' },
