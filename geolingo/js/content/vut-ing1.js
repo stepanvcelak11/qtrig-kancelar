@@ -17,7 +17,7 @@ export default [
           { t: 'c', q: 'Mezní odchylka se ze směrodatné odchylky obvykle získá násobením koeficientem…', a: '2', w: ['0,5', '1', '10'], e: 'Interval ±2σ pokrývá při normálním rozdělení asi 95 % případů; pro vyšší spolehlivost se volí 2,5 nebo 3.' },
           { t: 'n', q: 'Polární vytyčení na vzdálenost 100 m, střední chyba úhlu 10 cc. Jaká je příčná chyba vytyčeného bodu?', a: 1.57, tol: 0.01, dec: 2, unit: 'mm', e: 'q = d · m_ω(rad) = 100 000 mm · 10 · π / 2 000 000 ≈ 1,57 mm.' },
           { t: 'tf', q: 'Příčná chyba polárně vytyčeného bodu roste lineárně s délkou záměry.', a: true, e: 'q = d · m_ω – proto se dlouhé záměry při přesném vytyčení omezují.' },
-          { t: 'm', q: 'Spojte pojem s významem', p: [['Apriorní rozbor', 'Před měřením – návrh'], ['Aposteriorní rozbor', 'Po měření – z výsledků'], ['Relativní přesnost', 'Vzájemná poloha bodů'], ['Celková přesnost', 'Poloha vůči síti']] },
+          { t: 'm', q: 'Spojte pojem s významem', p: [['Apriorní rozbor', 'Před měřením – návrh'], ['Aposteriorní rozbor', 'Po měření – z výsledků'], ['Relativní přesnost', 'Vzájemná poloha bodů'], ['Celková přesnost', 'Poloha vůči síti']], e: 'Apriorní rozbor přesnosti slouží k volbě metody a přístrojů ještě před měřením, aposteriorní ověřuje dosaženou přesnost z výsledků vyrovnání.' },
         ],
       },
       {
@@ -43,7 +43,7 @@ export default [
           { t: 'tf', q: 'Vytyčovací síť se často vyrovnává jako volná nebo s minimem podmínek, aby ji nedeformovaly chyby připojovacích bodů.', a: true, e: 'Pro stavbu je rozhodující vnitřní (relativní) přesnost sítě, ne soulad se státní sítí.' },
           { t: 'c', q: 'Stabilita bodů sítě se během stavby ověřuje…', a: 'opakovaným měřením a porovnáním', w: ['jednorázově před stavbou', 'jen vizuální prohlídkou', 'podle stáří stabilizace'], e: 'Posunutý bod sítě by přenesl chybu do všech bodů od něj vytyčených.' },
           { t: 'c', q: 'Síť pro rozsáhlou liniovou stavbu se dnes obvykle zakládá…', a: 'kombinací GNSS a terestrie', w: ['jen pásmem a úhloměrem', 'jen z leteckých snímků', 'z katastrální mapy'], e: 'GNSS dává rámec na velké vzdálenosti, terestrie zhušťuje a zajistí vysokou lokální přesnost.' },
-          { t: 'm', q: 'Spojte typ sítě s jeho využitím', p: [['Stavební síť', 'Průmyslový areál s pravoúhlou zástavbou'], ['Polygonová síť', 'Pořady podél liniové stavby'], ['Síť GNSS', 'Rozsáhlé území bez přímé viditelnosti'], ['Trilaterační síť', 'Síť určená jen měřením délek']] },
+          { t: 'm', q: 'Spojte typ sítě s jeho využitím', p: [['Stavební síť', 'Průmyslový areál s pravoúhlou zástavbou'], ['Polygonová síť', 'Pořady podél liniové stavby'], ['Síť GNSS', 'Rozsáhlé území bez přímé viditelnosti'], ['Trilaterační síť', 'Síť určená jen měřením délek']], e: 'Typ sítě se volí podle tvaru území a podmínek: GNSS nevyžaduje vzájemnou viditelnost bodů, potřebuje však otevřený horizont nad anténou.' },
         ],
       },
       {
@@ -71,7 +71,7 @@ export default [
           { t: 'c', q: 'Laserový tracker typicky měří na odražeč typu…', a: 'SMR (kulový reflektor)', w: ['kruhový hranol 360°', 'odrazná fólie', 'nivelační lať'], e: 'Střed kulového reflektoru je vždy ve stejné vzdálenosti od dosedací plochy – měří se tak body na povrchu.' },
           { t: 'c', q: 'Metoda záměrné přímky slouží k určení…', a: 'příčných odchylek od přímky', w: ['nadmořských výšek bodů', 'délky dané přímky', 'azimutu dané přímky'], e: 'Používá se např. pro přímost jeřábových drah nebo osy strojů.' },
           { t: 'tf', q: 'Norma ČSN 73 0420-2 obsahuje mezní vytyčovací odchylky pro různé druhy staveb.', a: true, e: 'Část 1 stanoví základní požadavky a postup, část 2 vytyčovací odchylky.' },
-          { t: 'm', q: 'Spojte normu s jejím obsahem', p: [['ČSN 73 0420-1', 'Přesnost vytyčování – základní požadavky'], ['ČSN 73 0420-2', 'Vytyčovací odchylky'], ['ČSN 73 0405', 'Měření posunů stavebních objektů'], ['ČSN ISO 4463', 'Měřicí metody ve výstavbě']] },
+          { t: 'm', q: 'Spojte normu s jejím obsahem', p: [['ČSN 73 0420-1', 'Přesnost vytyčování – základní požadavky'], ['ČSN 73 0420-2', 'Vytyčovací odchylky'], ['ČSN 73 0405', 'Měření posunů stavebních objektů'], ['ČSN ISO 4463', 'Měřicí metody ve výstavbě']], e: 'ČSN 73 0420 má dvě části – část 1 stanoví základní požadavky na přesnost, část 2 mezní vytyčovací odchylky; sledování posunů řeší ČSN 73 0405.' },
         ],
       },
     ],
@@ -87,7 +87,7 @@ export default [
           { t: 'c', q: 'Důlní měřictví se zabývá…', a: 'měřením a dokumentací v dolech', w: ['výhradně měřením tíže', 'evidencí pozemků', 'tvorbou turistických map'], e: 'Zahrnuje orientaci a připojení podzemí, vedení ražeb, důlní mapy i sledování vlivů na povrch.' },
           { t: 'c', q: 'Body v důlních chodbách se často stabilizují…', a: 've stropě jako stropní značky', w: ['v počvě dřevěnými kolíky', 'přímo na kolejích', 'jen křídou na ostění'], e: 'Počva je poškozována dopravou; na stropní bod se přístroj centruje olovnicí.' },
           { t: 'c', q: 'Počva je v hornické terminologii…', a: 'spodní plocha důlního díla', w: ['horní plocha důlního díla', 'boční stěna chodby', 'svislé důlní dílo'], e: 'Horní plocha je strop, boční plochy jsou boky.' },
-          { t: 'm', q: 'Spojte hornický pojem s významem', p: [['Jáma', 'Svislé dílo z povrchu'], ['Štola', 'Vodorovné dílo s ústím na povrch'], ['Počva', 'Spodní plocha díla'], ['Strop', 'Horní plocha díla']] },
+          { t: 'm', q: 'Spojte hornický pojem s významem', p: [['Jáma', 'Svislé dílo z povrchu'], ['Štola', 'Vodorovné dílo s ústím na povrch'], ['Počva', 'Spodní plocha díla'], ['Strop', 'Horní plocha díla']], e: 'Jáma je svislé a štola vodorovné důlní dílo ústící na povrch; počva a strop jsou spodní a horní omezující plochy každého důlního díla.' },
           { t: 'tf', q: 'V dolech s nebezpečím výbuchu metanu se smějí používat jen přístroje v nevýbušném provedení.', a: true, e: 'Běžná elektronika by mohla jiskrou zapálit výbušnou atmosféru.' },
           { t: 'c', q: 'Polygonové pořady v podzemí bývají obvykle…', a: 'vybíhavé s krátkými stranami', w: ['uzavřené s dlouhými stranami', 'nahrazené měřením GNSS', 'bez nutnosti orientace'], e: 'Pořad postupuje s ražbou; chyby se kumulují, a proto se kontroluje opakováním a gyroskopickou orientací.' },
           { t: 'c', q: 'Proč nelze v podzemí použít GNSS?', a: 'Signál družic neprojde horninou', w: ['Přijímače nesnesou vlhkost', 'Chybí tam S-JTSK', 'Je tam příliš velká tíže'], e: 'Poloha se proto do podzemí převádí terestricky – jámami, štolami a gyroteodolitem.' },
@@ -130,7 +130,7 @@ export default [
           { t: 'tf', q: 'Pokles povrchu nad vydobytými slojemi může dosáhnout i několika metrů.', a: true, e: 'Např. na Karvinsku vznikly velké poklesy a zatopené poklesové kotliny.' },
           { t: 'c', q: 'Poklesy nad poddolovaným územím se dnes sledují…', a: 'nivelací, GNSS a také InSAR', w: ['jen pohledem z letadla', 'jen katastrální mapou', 'jen měřením tíže'], e: 'Opakovaná nivelace pozorovacích stanic je přesná, InSAR pokryje plošně velké území.' },
           { t: 'c', q: 'Stavby na poddolovaném území kromě poklesu nejvíce poškozují…', a: 'vodorovná přetvoření a náklon', w: ['změny teploty vzduchu', 'magnetické bouře', 'kolísání tíže'], e: 'Tahy a tlaky v terénu trhají základy, náklon ohrožuje vysoké stavby.' },
-          { t: 'm', q: 'Spojte deformační veličinu s popisem', p: [['Pokles', 'Svislý posun bodu'], ['Náklon', 'Rozdíl poklesů na jednotku délky'], ['Poměrné přetvoření', 'Protažení či zkrácení na jednotku délky'], ['Zakřivení', 'Ohyb povrchu v kotlině']] },
+          { t: 'm', q: 'Spojte deformační veličinu s popisem', p: [['Pokles', 'Svislý posun bodu'], ['Náklon', 'Rozdíl poklesů na jednotku délky'], ['Poměrné přetvoření', 'Protažení či zkrácení na jednotku délky'], ['Zakřivení', 'Ohyb povrchu v kotlině']], e: 'Náklon je první derivace poklesu podle délky, poměrné přetvoření první derivace vodorovného posunu a zakřivení druhá derivace poklesu.' },
         ],
       },
       {
@@ -164,7 +164,7 @@ export default [
           { t: 'c', q: 'Zkratka SGI znamená…', a: 'soubor geodetických informací', w: ['soubor geografických informací', 'státní geodetický index', 'systém grafické identifikace'], e: 'SGI obsahuje katastrální mapu a souřadnice; SPI (soubor popisných informací) údaje o vlastnících a parcelách.' },
           { t: 'tf', q: 'Ověřený GP lze jako podklad pro zápis do KN použít i bez potvrzení katastrálním úřadem.', a: false, e: 'GP musí být ověřen ÚOZI i potvrzen katastrálním úřadem.' },
           { t: 'c', q: 'Výměra nově vytvořené parcely se v GP počítá z…', a: 'souřadnic lomových bodů', w: ['odměření na papírové mapě', 'odhadu podle ortofota', 'výměry v listu vlastnictví'], e: 'Z měřených souřadnic se určí výměra Gaussovým (L’Huilierovým) vzorcem.' },
-          { t: 'm', q: 'Spojte kód kvality podrobného bodu se střední souřadnicovou chybou', p: [['KK 3', '0,14 m'], ['KK 4', '0,26 m'], ['KK 5', '0,50 m']] },
+          { t: 'm', q: 'Spojte kód kvality podrobného bodu se střední souřadnicovou chybou', p: [['KK 3', '0,14 m'], ['KK 4', '0,26 m'], ['KK 5', '0,50 m']], e: 'Čím vyšší kód kvality, tím nižší přesnost; nově zaměřené podrobné body se v katastru běžně určují s kódem kvality 3.' },
         ],
       },
       {
@@ -190,7 +190,7 @@ export default [
           { t: 'c', q: 'Výměnný formát dat katastru se označuje…', a: 'VFK', w: ['DXF', 'SHP', 'LAS'], e: 'Textový formát s popisnými i geometrickými daty KN pro další zpracování.' },
           { t: 'c', q: 'Který základní registr je těsně propojen s katastrem?', a: 'RÚIAN', w: ['CZEPOS', 'ZABAGED', 'DMR 5G'], e: 'Registr územní identifikace, adres a nemovitostí přebírá údaje o parcelách a budovách z ISKN.' },
           { t: 'c', q: 'Výřez mapy a seznam souřadnic pro zaměření se poskytují jako…', a: 'podklady pro zeměměřické činnosti', w: ['výpis z listu vlastnictví', 'snímek pozemkové knihy', 'informace o ceně pozemku'], e: 'Poskytují se ověřovatelům a zhotovitelům výsledků zeměměřických činností.' },
-          { t: 'm', q: 'Spojte část listu vlastnictví s obsahem', p: [['Část A', 'Vlastník a jiný oprávněný'], ['Část B', 'Nemovitosti'], ['Část C', 'Omezení vlastnického práva'], ['Část E', 'Nabývací tituly']] },
+          { t: 'm', q: 'Spojte část listu vlastnictví s obsahem', p: [['Část A', 'Vlastník a jiný oprávněný'], ['Část B', 'Nemovitosti'], ['Část C', 'Omezení vlastnického práva'], ['Část E', 'Nabývací tituly']], e: 'List vlastnictví má části A až F; vynechaná část D obsahuje poznámky a další obdobné údaje a část F vztah BPEJ k parcelám.' },
         ],
       },
       {
@@ -203,7 +203,7 @@ export default [
           { t: 'c', q: 'Obnova katastrálního operátu může proběhnout…', a: 'novým mapováním nebo přepracováním', w: ['jen revizí listů vlastnictví', 'jen na žádost vlastníka', 'pouze leteckým snímkováním'], e: 'Třetí možností je obnova na podkladě výsledků pozemkových úprav.' },
           { t: 'c', q: 'Hlavním přínosem nahrazení starší mapy KM-D mapou DKM nebo KMD je…', a: 'jednotná vektorová mapa v S-JTSK', w: ['zrušení listů vlastnictví', 'změna vlastnických práv', 'nahrazení katastru ortofotem'], e: 'Mapa se převede do jednotného vektorového tvaru s kódy kvality bodů.' },
           { t: 'tf', q: 'Při převodu do KMD se evidovaná výměra parcely automaticky nepřepočítává z nové mapy.', a: true, e: 'Výměra se mění až např. na podkladě GP nebo opravy chyby z přesnějšího měření.' },
-          { t: 'm', q: 'Spojte typ katastrální mapy s popisem', p: [['DKM', 'Z přesného měření'], ['KMD', 'Z přepracování analogové mapy'], ['KM-D', 'Starší digitalizace k nahrazení'], ['Analogová mapa', 'Na fólii nebo papíře']] },
+          { t: 'm', q: 'Spojte typ katastrální mapy s popisem', p: [['DKM', 'Z přesného měření'], ['KMD', 'Z přepracování analogové mapy'], ['KM-D', 'Starší digitalizace k nahrazení'], ['Analogová mapa', 'Na fólii nebo papíře']], e: 'DKM a KMD jsou cílové digitální formy katastrální mapy; KM-D vznikla dřívější digitalizací analogových map a postupně se nahrazuje.' },
         ],
       },
       {
@@ -237,7 +237,7 @@ export default [
           { t: 'tf', q: 'Tiráž mapy obsahuje údaje o autorovi, vydavateli, zdrojích dat a datu vydání.', a: true, e: 'Umožňuje posoudit aktuálnost a věrohodnost mapy.' },
           { t: 'c', q: 'Při zmenšení měřítka se sídla z ploch obvykle převedou na…', a: 'bodové znaky', w: ['izolinie', 'liniové znaky', 'kartodiagramy'], e: 'Jde o změnu dimenze objektu – typickou generalizační operaci.' },
           { t: 'c', q: 'Kartografická generalizace je…', a: 'výběr a zjednodušení obsahu mapy', w: ['změna kartografického zobrazení', 'převod mapy do rastru', 'tisk mapy ve více barvách'], e: 'Odvíjí se od měřítka, účelu mapy a charakteru zobrazovaného jevu.' },
-          { t: 'm', q: 'Spojte generalizační operaci s popisem', p: [['Výběr', 'Vypuštění méně významných objektů'], ['Zjednodušení', 'Odstranění drobných zákrutů'], ['Zveličení', 'Zvětšení malého důležitého objektu'], ['Odsun', 'Posunutí kvůli čitelnosti'], ['Sloučení', 'Spojení blízkých objektů']] },
+          { t: 'm', q: 'Spojte generalizační operaci s popisem', p: [['Výběr', 'Vypuštění méně významných objektů'], ['Zjednodušení', 'Odstranění drobných zákrutů'], ['Zveličení', 'Zvětšení malého důležitého objektu'], ['Odsun', 'Posunutí kvůli čitelnosti'], ['Sloučení', 'Spojení blízkých objektů']], e: 'Generalizace přizpůsobuje obsah menšímu měřítku: výběr a sloučení snižují počet objektů, zjednodušení a zveličení mění jejich tvar a odsun řeší jejich překryty.' },
         ],
       },
       {
@@ -250,7 +250,7 @@ export default [
           { t: 'c', q: 'Bodové znaky (signatury) mohou být…', a: 'geometrické, symbolické a obrázkové', w: ['jen kruhové', 'jen písmenné zkratky', 'jen trojrozměrné'], e: 'Geometrické se nejlépe porovnávají velikostí, obrázkové jsou nejsrozumitelnější.' },
           { t: 'c', q: 'Liniové znaky se v tematické mapě používají hlavně pro…', a: 'toky, hranice a komunikace', w: ['hustotu zalidnění', 'rozlohu lesů', 'nadmořské výšky vrcholů'], e: 'Tloušťka čáry může vyjadřovat i kvantitu (např. intenzitu dopravy).' },
           { t: 'c', q: 'Znakový klíč mapy je…', a: 'soubor znaků a jejich významů', w: ['heslo k mapovému serveru', 'měřítko mapy', 'rastr pro tisk'], e: 'V mapě se prezentuje legendou; musí být jednoznačný a srozumitelný.' },
-          { t: 'm', q: 'Spojte úroveň měření dat s příkladem', p: [['Nominální', 'Druh půdy'], ['Ordinální', 'Stupeň ohrožení'], ['Intervalová', 'Teplota ve °C'], ['Poměrová', 'Počet obyvatel']] },
+          { t: 'm', q: 'Spojte úroveň měření dat s příkladem', p: [['Nominální', 'Druh půdy'], ['Ordinální', 'Stupeň ohrožení'], ['Intervalová', 'Teplota ve °C'], ['Poměrová', 'Počet obyvatel']], e: 'Každá vyšší úroveň přidává vlastnost: pořadí (ordinální), smysluplné rozdíly (intervalová) a absolutní nulu umožňující podíly hodnot (poměrová).' },
         ],
       },
       {
@@ -263,7 +263,7 @@ export default [
           { t: 'c', q: 'Izolinie jsou vhodné pro jevy…', a: 'spojité, jako teplota či srážky', w: ['nespojité, jako počet škol', 'kvalitativní, jako druh půdy', 'liniové, jako silnice'], e: 'Izolinie spojují místa se stejnou hodnotou – izotermy, izohyety, vrstevnice.' },
           { t: 'c', q: 'Dasymetrická metoda zpřesňuje kartogram tím, že…', a: 'vyloučí neobydlené plochy', w: ['zvětší všechny jednotky', 'nahradí barvy tečkami', 'zruší hranice jednotek'], e: 'Hodnoty se vztáhnou jen k obydleným částem (bez lesů, vod), takže lépe odpovídají skutečnosti.' },
           { t: 'c', q: 'Anamorfóza (kartogram s deformací) mění…', a: 'velikost území podle hodnoty', w: ['barvu podle nadmořské výšky', 'měřítko podle šířky', 'hranice podle katastru'], e: 'Např. státy zvětšené úměrně počtu obyvatel.' },
-          { t: 'm', q: 'Spojte metodu s vhodným tématem', p: [['Kartogram', 'Hustota zalidnění'], ['Kartodiagram', 'Počet obyvatel okresů'], ['Izolinie', 'Průměrná roční teplota'], ['Metoda areálů', 'Výskyt chráněného druhu'], ['Bodová metoda', 'Rozmístění obyvatel']] },
+          { t: 'm', q: 'Spojte metodu s vhodným tématem', p: [['Kartogram', 'Hustota zalidnění'], ['Kartodiagram', 'Počet obyvatel okresů'], ['Izolinie', 'Průměrná roční teplota'], ['Metoda areálů', 'Výskyt chráněného druhu'], ['Bodová metoda', 'Rozmístění obyvatel']], e: 'Kartogram vyjadřuje relativní hodnoty vztažené k ploše, kartodiagram absolutní hodnoty diagramem; izolinie se hodí pro spojitě se měnící jevy.' },
         ],
       },
       {
@@ -309,7 +309,7 @@ export default [
           { t: 'c', q: 'Rektascenze se měří od…', a: 'jarního bodu', w: ['místního poledníku', 'severního světového pólu', 'podzimního bodu'], e: 'Rektascenze a deklinace (2. rovníková soustava) nezávisí na rotaci Země.' },
           { t: 'c', q: 'Hodinový úhel t, místní hvězdný čas s a rektascenze α spojuje vztah…', a: 't = s − α', w: ['t = α − s', 't = s + α', 't = s · α'], e: 'Hvězdný čas je hodinový úhel jarního bodu; hvězda s α = s právě kulminuje (t = 0).' },
           { t: 'tf', q: 'Výška světového pólu nad obzorem je rovna astronomické šířce pozorovatele.', a: true, e: 'Proto šlo šířku přibližně určit z výšky Polárky.' },
-          { t: 'm', q: 'Spojte souřadnicovou soustavu se souřadnicemi', p: [['Obzorníková', 'A, h'], ['1. rovníková', 't, δ'], ['2. rovníková', 'α, δ'], ['Ekliptikální', 'λ, β']] },
+          { t: 'm', q: 'Spojte souřadnicovou soustavu se souřadnicemi', p: [['Obzorníková', 'A, h'], ['1. rovníková', 't, δ'], ['2. rovníková', 'α, δ'], ['Ekliptikální', 'λ, β']], e: 'Hodinový úhel t v 1. rovníkové soustavě se mění s rotací Země, kdežto rektascenze α ve 2. rovníkové soustavě se počítá od jarního bodu a na rotaci nezávisí.' },
         ],
       },
       {
@@ -321,7 +321,7 @@ export default [
           { t: 'c', q: 'Přestupná sekunda se do UTC vkládá, aby…', a: '|UT1 − UTC| nepřekročilo 0,9 s', w: ['GPS a UTC byly shodné', 'TAI zůstal konstantní', 'hvězdný čas byl roven UTC'], e: 'UTC tak ubíhá atomovými sekundami, ale drží se rotace Země.' },
           { t: 'tf', q: 'Rotace Země je dokonale rovnoměrná, takže délka dne je konstantní.', a: false, e: 'Délka dne kolísá o milisekundy (atmosféra, oceány, slapy, jádro).' },
           { t: 'tf', q: 'Precese je způsobena působením Slunce a Měsíce na zploštělou Zemi.', a: true, e: 'Slapové síly se snaží „narovnat“ rovníkovou výduť do roviny ekliptiky – osa proto opisuje kužel.' },
-          { t: 'm', q: 'Spojte jev s jeho periodou', p: [['Precese', '≈ 25 800 let'], ['Hlavní člen nutace', '18,6 roku'], ['Chandlerův pohyb pólu', '≈ 433 dní'], ['Hvězdný den', '23 h 56 min 4 s']] },
+          { t: 'm', q: 'Spojte jev s jeho periodou', p: [['Precese', '≈ 25 800 let'], ['Hlavní člen nutace', '18,6 roku'], ['Chandlerův pohyb pólu', '≈ 433 dní'], ['Hvězdný den', '23 h 56 min 4 s']], e: 'Periodu hlavního členu nutace 18,6 roku určuje stáčení uzlů měsíční dráhy; Chandlerův pohyb je volný pohyb pólu vůči zemskému tělesu.' },
           { t: 'c', q: 'Parametry orientace Země (pohyb pólu, UT1 − UTC) publikuje…', a: 'IERS', w: ['IGS', 'EUREF', 'ČÚZK'], e: 'International Earth Rotation and Reference Systems Service kombinuje VLBI, SLR, GNSS a DORIS.' },
           { t: 'c', q: 'Okamžitý pól se od konvenčního pólu vzdaluje řádově o…', a: 'metry', w: ['desítky kilometrů', 'milimetry', 'stovky metrů'], e: 'Pohyb pólu činí desetiny úhlové vteřiny (1″ ≈ 31 m na povrchu Země), tedy nejvýše asi 15 m.' },
         ],
@@ -351,7 +351,7 @@ export default [
           { t: 'c', q: 'Družice LAGEOS jsou…', a: 'pasivní koule s koutovými odražeči', w: ['aktivní družice s radarem', 'navigační družice GNSS', 'geostacionární meteodružice'], e: 'Hustá kovová koule na vysoké dráze má stabilní, dobře modelovatelnou dráhu.' },
           { t: 'c', q: 'Systém DORIS je založen na…', a: 'Dopplerově posunu signálu pozemních majáků', w: ['laserovém měření z Měsíce', 'interferometrii kvasarů', 'měření tíže gradiometrem'], e: 'Pozemní majáky vysílají, přijímač je na družici (např. altimetrické mise).' },
           { t: 'tf', q: 'SLR je nejdůležitější technikou pro určení počátku (geocentra) ITRF.', a: true, e: 'Dráhy družic LAGEOS jsou citlivé na těžiště Země; VLBI geocentrum určit nedokáže.' },
-          { t: 'm', q: 'Spojte techniku s jejím principem', p: [['VLBI', 'Rádiové vlny z kvasarů'], ['SLR', 'Laserové pulzy k družici'], ['DORIS', 'Dopplerův posun z majáků'], ['GNSS', 'Kódová a fázová měření z družic']] },
+          { t: 'm', q: 'Spojte techniku s jejím principem', p: [['VLBI', 'Rádiové vlny z kvasarů'], ['SLR', 'Laserové pulzy k družici'], ['DORIS', 'Dopplerův posun z majáků'], ['GNSS', 'Kódová a fázová měření z družic']], e: 'VLBI jako jediná technika přímo váže pozemský rámec na nebeský (kvasary) a určuje UT1, SLR je klíčová pro určení geocentra, tedy počátku ITRF.' },
         ],
       },
       {

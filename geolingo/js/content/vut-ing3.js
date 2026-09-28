@@ -17,7 +17,7 @@ export default [
           { t: 'c', q: 'K čemu slouží prostorový index (např. R-strom, GiST)?', a: 'k rychlému výběru objektů podle polohy', w: ['ke zvýšení přesnosti souřadnic', 'k transformaci mezi systémy', 'ke kompresi rastrů'], e: 'Index porovná nejprve obalové obdélníky a přesnou geometrii testuje jen u kandidátů.' },
           { t: 'c', q: 'SQL funkce ST_Intersects(a, b) vrací…', a: 'pravdivostní hodnotu, zda se geometrie protínají', w: ['novou geometrii průniku', 'plochu průniku v m²', 'vzdálenost geometrií'], e: 'Predikát vrací true/false; geometrii průniku vrací ST_Intersection.' },
           { t: 'tf', q: 'Relační databáze umožňuje víceuživatelský přístup a řízení transakcí lépe než souborová úložiště typu shapefile.', a: true, e: 'Proto se víceuživatelská GIS data drží v SŘBD (PostgreSQL/PostGIS, Oracle, MS SQL).' },
-          { t: 'm', q: 'Spojte nástroj s jeho rolí', p: [['PostGIS', 'Prostorová databáze'], ['PyQGIS', 'Skriptování v QGIS'], ['ArcPy', 'Skriptování v ArcGIS'], ['GeoServer', 'Publikace webových služeb']] },
+          { t: 'm', q: 'Spojte nástroj s jeho rolí', p: [['PostGIS', 'Prostorová databáze'], ['PyQGIS', 'Skriptování v QGIS'], ['ArcPy', 'Skriptování v ArcGIS'], ['GeoServer', 'Publikace webových služeb']], e: 'PostGIS je prostorové rozšíření databáze PostgreSQL; GeoServer z něj může data přímo publikovat jako služby WMS nebo WFS.' },
         ],
       },
       {
@@ -30,7 +30,7 @@ export default [
           { t: 'c', q: 'Která nevýhoda je typická pro shapefile?', a: 'více souborů a názvy atributů max. 10 znaků', w: ['nepodporuje body', 'neumí atributy', 'je jen pro rastry'], e: 'Shapefile tvoří .shp, .shx, .dbf (+ .prj) a má limit 2 GB na soubor.' },
           { t: 'c', q: 'Který moderní způsob sběru dat dává hustá mračna bodů z jedoucího vozidla?', a: 'mobilní mapovací systém (MMS)', w: ['statická nivelace', 'ortogonální metoda', 'digitalizace rastru'], e: 'MMS kombinuje laserové skenery, kamery, GNSS a inerciální jednotku.' },
           { t: 'tf', q: 'Mračno bodů má blíže k vektorové než k rastrové reprezentaci, protože každý bod nese vlastní souřadnice.', a: true, e: 'Body mají souřadnice X, Y, Z a atributy (intenzita, třída); do rastru se převádí např. při tvorbě DMR.' },
-          { t: 'm', q: 'Spojte formát s typem dat', p: [['LAS', 'Mračno bodů'], ['GeoTIFF', 'Rastr'], ['GeoJSON', 'Vektor v textu'], ['CityGML', '3D model města']] },
+          { t: 'm', q: 'Spojte formát s typem dat', p: [['LAS', 'Mračno bodů'], ['GeoTIFF', 'Rastr'], ['GeoJSON', 'Vektor v textu'], ['CityGML', '3D model města']], e: 'LAS je binární formát ASPRS (komprimovaná varianta LAZ), GeoJSON podle RFC 7946 používá souřadnice WGS 84 a CityGML vychází z GML (XML).' },
         ],
       },
       {
@@ -43,7 +43,7 @@ export default [
           { t: 'c', q: 'Který prvek kvality podle ISO 19157 posuzuje, zda v datech nechybějí nebo nepřebývají objekty?', a: 'úplnost', w: ['polohová přesnost', 'časová kvalita', 'tematická přesnost'], e: 'Úplnost sleduje chybějící objekty (omise) a nadbytečné objekty (komise).' },
           { t: 'c', q: 'Překryvy sousedních parcel a „díry“ mezi polygony jsou chybou…', a: 'logické (topologické) konzistence', w: ['časové kvality', 'tematické přesnosti', 'použitelnosti'], e: 'Topologická pravidla odhalí překryvy, mezery a nenavazující linie.' },
           { t: 'tf', q: 'Vysoká přesnost souřadnic zaručuje, že data jsou úplná a aktuální.', a: false, e: 'Prvky kvality jsou nezávislé: přesná data mohou být neúplná nebo zastaralá.' },
-          { t: 'm', q: 'Spojte službu OGC s obsahem', p: [['WMS', 'Obrázek mapy'], ['WMTS', 'Předgenerované dlaždice'], ['WFS', 'Vektorové prvky'], ['WCS', 'Rastrová data (coverage)'], ['CSW', 'Katalog metadat']] },
+          { t: 'm', q: 'Spojte službu OGC s obsahem', p: [['WMS', 'Obrázek mapy'], ['WMTS', 'Předgenerované dlaždice'], ['WFS', 'Vektorové prvky'], ['WCS', 'Rastrová data (coverage)'], ['CSW', 'Katalog metadat']], e: 'WCS na rozdíl od WMS vrací skutečné hodnoty rastru (např. výšky), ne jen jejich vizualizaci; CSW slouží k vyhledávání dat podle metadat.' },
         ],
       },
       {
@@ -69,7 +69,7 @@ export default [
           { t: 'c', q: 'Který standard popisuje 3D modely měst v úrovních detailu LOD?', a: 'CityGML', w: ['GeoTIFF', 'KML 1.0', 'DXF'], e: 'CityGML (OGC) má sémantický model budov, terénu, vegetace a dalších objektů.' },
           { t: 'c', q: '4D prezentace doplňuje prostorový model o…', a: 'časovou složku', w: ['čtvrtou souřadnici výšky', 'atributovou tabulku', 'měřítko mapy'], e: 'Např. vývoj stavby, deformace svahu nebo změny zástavby v čase.' },
           { t: 'tf', q: 'Knihovny Leaflet a OpenLayers slouží k zobrazení map ve webovém prohlížeči.', a: true, e: 'Načítají dlaždice, WMS/WMTS, GeoJSON či vektorové dlaždice.' },
-          { t: 'm', q: 'Spojte analýzu s příkladem použití', p: [['Buffer', 'Ochranné pásmo vedení'], ['Intersect', 'Parcely v záplavovém území'], ['Reklasifikace', 'Třídy sklonu svahu'], ['Thiessenovy polygony', 'Oblasti vlivu srážkoměrů']] },
+          { t: 'm', q: 'Spojte analýzu s příkladem použití', p: [['Buffer', 'Ochranné pásmo vedení'], ['Intersect', 'Parcely v záplavovém území'], ['Reklasifikace', 'Třídy sklonu svahu'], ['Thiessenovy polygony', 'Oblasti vlivu srážkoměrů']], e: 'Buffer vytváří zónu v zadané vzdálenosti, intersect ponechá jen společnou část vrstev; Thiessenův polygon obsahuje místa bližší danému bodu než kterémukoli jinému.' },
         ],
       },
     ],
@@ -89,7 +89,7 @@ export default [
           { t: 'c', q: 'Součástí pozemku je podle obč. zák. také…', a: 'prostor nad povrchem i pod povrchem', w: ['movité věci na pozemku', 'sousední cesta', 'nerosty vyhrazené zákonem'], e: 'Pozemek zahrnuje i prostor nad a pod povrchem; vyhrazené nerosty jsou ve vlastnictví státu podle horního zákona.' },
           { t: 'tf', q: 'Nemovitou věcí může být i podzemní stavba se samostatným účelovým určením.', a: true, e: '§ 498 obč. zák.: nemovitými věcmi jsou pozemky a podzemní stavby se samostatným účelovým určením, práva k nim a práva, která za nemovité věci prohlásí zákon.' },
           { t: 'c', q: 'Vlastnické právo k nemovitosti evidované v katastru se nabývá smlouvou…', a: 'až vkladem do katastru nemovitostí', w: ['již podpisem smlouvy', 'zaplacením kupní ceny', 'předáním klíčů'], e: 'U zapisovaných práv je vklad konstitutivní; právní účinky nastávají k okamžiku podání návrhu na vklad.' },
-          { t: 'm', q: 'Spojte předpis s jeho obsahem', p: [['89/2012 Sb.', 'Občanský zákoník'], ['256/2013 Sb.', 'Katastrální zákon'], ['500/2004 Sb.', 'Správní řád'], ['151/1997 Sb.', 'Oceňování majetku']] },
+          { t: 'm', q: 'Spojte předpis s jeho obsahem', p: [['89/2012 Sb.', 'Občanský zákoník'], ['256/2013 Sb.', 'Katastrální zákon'], ['500/2004 Sb.', 'Správní řád'], ['151/1997 Sb.', 'Oceňování majetku']], e: 'Katastrální zákon č. 256/2013 Sb. navazuje na nový občanský zákoník č. 89/2012 Sb., oba jsou účinné od 1. 1. 2014.' },
         ],
       },
       {
@@ -102,7 +102,7 @@ export default [
           { t: 'c', q: 'Předkupní právo sjednané jako věcné právo a zapsané do KN…', a: 'působí i vůči dalším nabyvatelům', w: ['platí jen mezi smluvními stranami', 'zaniká prvním převodem', 'nelze zapsat do katastru'], e: 'Věcné předkupní právo zavazuje i právní nástupce povinného.' },
           { t: 'c', q: 'Vydržení vlastnického práva k nemovité věci při řádné držbě trvá…', a: '10 let', w: ['3 roky', '5 let', '30 let'], e: 'Řádné vydržení nemovitosti trvá 10 let, mimořádné vydržení 20 let.' },
           { t: 'tf', q: 'Nemá-li pozemek dostatečné spojení s veřejnou cestou, může soud povolit nezbytnou cestu přes sousední pozemek.', a: true, e: 'Nezbytná cesta se povoluje za úplatu a jen v nezbytném rozsahu.' },
-          { t: 'm', q: 'Spojte právo s jeho podstatou', p: [['Služebnost', 'Vlastník musí něco trpět'], ['Reálné břemeno', 'Vlastník musí něco konat'], ['Zástavní právo', 'Zajištění dluhu'], ['Předkupní právo', 'Přednost při koupi']] },
+          { t: 'm', q: 'Spojte právo s jeho podstatou', p: [['Služebnost', 'Vlastník musí něco trpět'], ['Reálné břemeno', 'Vlastník musí něco konat'], ['Zástavní právo', 'Zajištění dluhu'], ['Předkupní právo', 'Přednost při koupi']], e: 'Služebnost i reálné břemeno jsou věcná břemena; služebnost zavazuje vlastníka něco trpět nebo se něčeho zdržet, reálné břemeno něco dávat nebo konat.' },
         ],
       },
       {
@@ -128,7 +128,7 @@ export default [
           { t: 'c', q: 'Nový stavební zákon č. 283/2021 Sb. nahradil dřívější územní a stavební řízení…', a: 'jedním řízením o povolení záměru', w: ['ohlášením na obecním úřadě', 'vkladem do katastru', 'znaleckým posudkem'], e: 'Povolení záměru spojuje posouzení umístění i provedení stavby.' },
           { t: 'c', q: 'Proč se vytyčení prostorové polohy stavby svěřuje odborně způsobilému zeměměřiči?', a: 'poloha stavby musí odpovídat povolení', w: ['nahrazuje kolaudaci', 'určuje výši daně', 'nahrazuje projekt'], e: 'Chybně umístěná stavba může zasáhnout cizí pozemek nebo porušit odstupy.' },
           { t: 'tf', q: 'Účastníkem řízení o povolení stavby mohou být i vlastníci sousedních pozemků, jejichž práva mohou být dotčena.', a: true, e: 'Sousedé mohou uplatnit námitky, např. proti odstupu či zastínění.' },
-          { t: 'm', q: 'Spojte pojem s předpisem, který ho upravuje', p: [['Superficies solo cedit', 'Občanský zákoník'], ['Povolení záměru', 'Stavební zákon'], ['Odvolání', 'Správní řád'], ['Vklad práva', 'Katastrální zákon']] },
+          { t: 'm', q: 'Spojte pojem s předpisem, který ho upravuje', p: [['Superficies solo cedit', 'Občanský zákoník'], ['Povolení záměru', 'Stavební zákon'], ['Odvolání', 'Správní řád'], ['Vklad práva', 'Katastrální zákon']], e: 'Podle občanského zákoníku je stavba zpravidla součástí pozemku (superficies solo cedit); o vkladu práva do katastru rozhoduje katastrální úřad.' },
         ],
       },
       {
@@ -141,7 +141,7 @@ export default [
           { t: 'n', q: 'Čistý roční výnos z nájmu je 240 000 Kč, míra kapitalizace 6 %. Jaká je výnosová hodnota (věčná renta)?', a: 4000000, tol: 1, dec: 0, unit: 'Kč', e: 'C = V / i = 240 000 / 0,06 = 4 000 000 Kč.' },
           { t: 'n', q: 'Reprodukční cena stavby je 5 000 000 Kč, opotřebení 30 %. Jaká je věcná (nákladová) hodnota?', a: 3500000, tol: 1, dec: 0, unit: 'Kč', e: '5 000 000 · (1 − 0,30) = 3 500 000 Kč.' },
           { t: 'tf', q: 'Seznam znalců vede a o zápisu do něj rozhoduje Ministerstvo spravedlnosti.', a: true, e: 'Podle zákona č. 254/2019 Sb. o znalcích, znaleckých kancelářích a znaleckých ústavech; posudek musí obsahovat znaleckou doložku.' },
-          { t: 'm', q: 'Spojte metodu oceňování s jejím základem', p: [['Nákladová', 'Reprodukční cena − opotřebení'], ['Výnosová', 'Kapitalizace výnosů'], ['Porovnávací', 'Srovnatelné prodeje']] },
+          { t: 'm', q: 'Spojte metodu oceňování s jejím základem', p: [['Nákladová', 'Reprodukční cena − opotřebení'], ['Výnosová', 'Kapitalizace výnosů'], ['Porovnávací', 'Srovnatelné prodeje']], e: 'Výnosová metoda se uplatní hlavně u pronajímaných nemovitostí, porovnávací tam, kde je dost prodejů srovnatelných nemovitostí.' },
         ],
       },
     ],
@@ -174,7 +174,7 @@ export default [
           { t: 'c', q: 'Kontrolní body (check points) se při zpracování fotogrammetrie…', a: 'nepoužijí k výpočtu, jen k ověření přesnosti', w: ['použijí stejně jako vlícovací body', 'smažou před výpočtem', 'měří jen ručním GNSS'], e: 'Nezávislé body dávají poctivý odhad přesnosti výsledného modelu.' },
           { t: 'c', q: 'Jak rozmístit vlícovací body v bloku snímků z dronu?', a: 'po obvodu i uvnitř bloku, rovnoměrně', w: ['všechny do jednoho rohu', 'jen do středu bloku', 'na jednu přímku'], e: 'Rovnoměrné rozložení (i výškové) brání deformaci bloku, zejména jeho „prohnutí“.' },
           { t: 'tf', q: 'Kulové terče jsou vhodné pro spojování mračen z laserového skenování, protože vypadají stejně ze všech směrů.', a: true, e: 'Střed koule se spolehlivě určí fitováním z libovolného stanoviska.' },
-          { t: 'm', q: 'Spojte značku s použitím', p: [['Pilíř s nucenou centrací', 'Monitoring posunů'], ['Měřický hřeb', 'Polygon ve městě'], ['Šachovnicový terč', 'Vlícovací bod UAV'], ['Kulový terč', 'Registrace skenů']] },
+          { t: 'm', q: 'Spojte značku s použitím', p: [['Pilíř s nucenou centrací', 'Monitoring posunů'], ['Měřický hřeb', 'Polygon ve městě'], ['Šachovnicový terč', 'Vlícovací bod UAV'], ['Kulový terč', 'Registrace skenů']], e: 'Nucená centrace odstraňuje chybu centrace při opakovaných etapách; kulový terč vypadá ze všech směrů stejně, proto jeho střed lze určit z více stanovisek.' },
         ],
       },
       {
@@ -187,7 +187,7 @@ export default [
           { t: 'c', q: 'Proč se při TLS skenuje z více stanovisek s překryvem?', a: 'kvůli zákrytům a spojení mračen', w: ['aby byl sken barevnější', 'aby se šetřila baterie', 'kvůli ochraně osobních údajů'], e: 'Jedno stanovisko nevidí za objekty; překryv nebo terče umožní registraci.' },
           { t: 'c', q: 'Při náletu UAV pro fotogrammetrii se obvykle volí podélný a příčný překryt snímků…', a: 'kolem 80 % a 60–70 %', w: ['kolem 10 % a 5 %', 'přesně 50 % a 50 %', 'žádný, snímky se nepřekrývají'], e: 'Velký překryt zajistí dostatek spojovacích bodů pro výpočet SfM.' },
           { t: 'tf', q: 'Kontrolní měření na známý bod na začátku a na konci měření RTK odhalí chybné nastavení souřadnicového systému.', a: true, e: 'Kontrola na známém bodě je základní ověření správnosti korekcí i transformace.' },
-          { t: 'm', q: 'Spojte úlohu s vhodnou technologií', p: [['Síť bodů s mm přesností', 'Statická GNSS'], ['Podrobné body na volném terénu', 'RTK GNSS'], ['Fasáda historické budovy', 'Laserové skenování'], ['Ortofoto staveniště', 'UAV fotogrammetrie']] },
+          { t: 'm', q: 'Spojte úlohu s vhodnou technologií', p: [['Síť bodů s mm přesností', 'Statická GNSS'], ['Podrobné body na volném terénu', 'RTK GNSS'], ['Fasáda historické budovy', 'Laserové skenování'], ['Ortofoto staveniště', 'UAV fotogrammetrie']], e: 'Statická GNSS s dlouhou observací a postprocesingem dosahuje až milimetrové přesnosti, RTK poskytuje v reálném čase centimetrovou přesnost pro podrobné body.' },
         ],
       },
       {
