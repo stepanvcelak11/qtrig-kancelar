@@ -180,7 +180,7 @@ export default [
     desc: 'Tachymetrie, vrstevnice, vytyčování staveb, měření posunů a trasy s oblouky.',
     lessons: [
       {
-        id: 'u10l1', title: 'Tachymetrie', icon: '🗺️', gens: ['hdFromSd', 'station'],
+        id: 'u10l1', title: 'Tachymetrie', icon: '🗺️', gens: ['hdFromSd', 'station', 'mapSymbol'],
         items: [
           { t: 'c', q: 'Tachymetrie určuje současně…', a: 'polohu i výšku bodů', w: ['jen výšky', 'jen vlastníky', 'jen úhly'], e: 'Z jednoho postavení se změří směr, délka a zenitový úhel.' },
           { t: 'c', q: 'Polohopis mapy zobrazuje…', a: 'předměty měření v půdorysu', w: ['tvar terénu', 'vlastníky', 'počasí'], e: 'Budovy, komunikace, hranice…' },

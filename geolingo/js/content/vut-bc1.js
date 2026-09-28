@@ -34,7 +34,7 @@ export default [
         ],
       },
       {
-        id: 'bea003l3', title: 'Vodorovné směry', icon: '📐', gens: ['angleDiff'],
+        id: 'bea003l3', title: 'Vodorovné směry', icon: '📐', gens: ['angleDiff', 'dirbook'],
         items: [
           { t: 'c', q: 'Vodorovný úhel se určí jako rozdíl čtení na cíle…', a: 'vpravo minus vlevo', w: ['vlevo minus vpravo', 'I. poloha minus II. poloha', 'na cíl minus na zenit'], e: 'ω = čtení vpravo − čtení vlevo (+ 400 gon, vyjde-li záporné).' },
           { t: 'c', q: 'Měření ve dvou polohách dalekohledu vyloučí…', a: 'kolimační a úklonnou chybu', w: ['chybu ze sklonu svislé osy', 'chybu z centrace přístroje', 'chybu z cílení na signál'], e: 'Tyto chyby mění v II. poloze znaménko, průměr je tedy odstraní.' },

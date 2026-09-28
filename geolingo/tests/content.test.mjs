@@ -103,6 +103,7 @@ const recompute = {
 for (const name of Object.keys(GEN)) {
   for (let k = 0; k < 300; k++) {
     const ex = generate(name);
+    if (ex.t === 'c') { ok(!ex.w.includes(ex.a) && ex.w.length === 3 && /^<svg/.test(ex.img), `${name}: výběr se značkou`); continue; }
     ok(Number.isFinite(ex.a) && ex.tol > 0 && Number.isInteger(ex.dec), `${name}: konečná odpověď`);
     ok(ex.t === 'rod' || ex.t === 'circle' || (typeof ex.q === 'string' && ex.q.length > 10), `${name}: zadání`);
     ok(typeof ex.e === 'string', `${name}: vysvětlení`);
@@ -195,6 +196,13 @@ ok(pdop([{ az: 0, el: 40 }, { az: 10, el: 45 }, { az: 20, el: 42 }, { az: 5, el:
 for (let k = 0; k < 60; k++) {
   const s = generate('sky');
   ok(checkField(s, s.bestSet).ok && !checkField(s, [0, 1, 2]).ok, 'nebe: hodnocení');
+}
+// Směrová osnova: průměr musí ležet mezi I a II∓200 a úhel odpovídat rozdílu.
+for (let k = 0; k < 300; k++) {
+  const d = generate('dirbook');
+  d.rows.forEach((r, i) => { let II = r.II - 200; if (II < 0) II += 400; const diff = Math.abs(((r.I - II) % 400 + 600) % 400 - 200); ok(diff < 0.02, 'osnova: poloha II'); ok(Math.abs(((d.a[i] - r.I) % 400 + 600) % 400 - 200) <= diff / 2 + 1e-9, 'osnova: průměr'); });
+  ok(checkField(d, d.a.map((v) => v.toFixed(4).replace('.', ','))).ok, 'osnova: správné hodnoty');
+  ok(!checkField(d, d.a.map((v) => (v + 0.001).toFixed(4))).ok, 'osnova: chyba 1 mgon se pozná');
 }
 console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 

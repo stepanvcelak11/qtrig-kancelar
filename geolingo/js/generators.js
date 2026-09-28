@@ -336,6 +336,11 @@ export const GEN = {
     return { t: 'circle', label: 'V', a, tol: 0.0015, dec: 3, unit: 'gon',
       e: `Zenitový úhel = číslo ryšky (${Math.floor(a)} gon) + poloha na stupnici ${fmt(a - Math.floor(a), 3)} gon = ${fmt(a, 3)} gon. Vodorovná záměra má z = 100 gon.` };
   },
+  mapSymbol() {
+    const S = MAP_SYMBOLS, k = Math.floor(Math.random() * S.length);
+    const wrong = S.filter((_, i) => i !== k).sort(() => Math.random() - 0.5).slice(0, 3).map((x) => x.name);
+    return { t: 'c', q: 'Co znamená tato mapová značka?', img: S[k].svg, a: S[k].name, w: wrong, e: S[k].e };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',
@@ -385,6 +390,21 @@ function polar(axis) {
     : { q: `Polární metoda: ${pt('A', A)}, směrník σ = ${fmt(s, 4)} gon, délka d = ${fmt(d, 3)} m. Vypočtěte souřadnici X bodu P.`, a: X, tol: 0.011, dec: 2, unit: 'm',
       e: `X_P = X_A + d · cos σ = ${fmt(X, 2)} m.` };
 }
+
+// Mapové značky (obecné kartografické konvence topografických map).
+const sym = (inner) => `<svg viewBox="0 0 80 50" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="50" rx="6" fill="#fbf8ef"/>${inner}</svg>`;
+export const MAP_SYMBOLS = [
+  { name: 'trigonometrický bod', svg: sym('<path d="M40 10 54 36H26Z" fill="none" stroke="#111" stroke-width="2.4" stroke-linejoin="round"/><circle cx="40" cy="28" r="2.6" fill="#111"/>'), e: 'Rovnostranný trojúhelník s tečkou uprostřed = trigonometrický bod (bod základního polohového bodového pole).' },
+  { name: 'výšková kóta', svg: sym('<circle cx="30" cy="27" r="2.6" fill="#111"/><text x="36" y="31" font-size="12" font-family="sans-serif" fill="#111">412,6</text>'), e: 'Tečka s číslem = výšková kóta – nadmořská výška bodu v metrech (Bpv).' },
+  { name: 'vrstevnice', svg: sym('<path d="M4 34C20 20 34 38 50 26S70 18 78 22M4 44C22 30 36 46 54 34S72 30 78 32" fill="none" stroke="#a0522d" stroke-width="1.6"/><path d="M4 22C18 10 34 26 50 14S70 8 78 12" fill="none" stroke="#a0522d" stroke-width="2.8"/>'), e: 'Hnědé plynulé čáry = vrstevnice; silnější je zdůrazněná (každá pátá).' },
+  { name: 'vodní tok', svg: sym('<path d="M4 30C16 22 26 36 40 28S62 20 76 26" fill="none" stroke="#2b7bd6" stroke-width="3"/>'), e: 'Modrá linie = vodní tok (potok, řeka). Vodstvo se na mapách kreslí modře.' },
+  { name: 'železniční trať', svg: sym('<rect x="6" y="23" width="68" height="5" fill="#111"/><path d="M10 25.5h8M26 25.5h8M42 25.5h8M58 25.5h8" stroke="#fff" stroke-width="2.6"/>'), e: 'Střídavě černobílá linie = železniční trať.' },
+  { name: 'silnice', svg: sym('<path d="M4 20H76M4 31H76" stroke="#111" stroke-width="1.6"/><rect x="4" y="21" width="72" height="9" fill="#f2a33a"/>'), e: 'Dvojitá linie s barevnou výplní = silnice; barva a šířka rozlišují třídu komunikace.' },
+  { name: 'listnatý les', svg: sym('<g fill="none" stroke="#2f7d32" stroke-width="1.8"><circle cx="20" cy="18" r="4.5"/><circle cx="40" cy="30" r="4.5"/><circle cx="60" cy="18" r="4.5"/><circle cx="30" cy="40" r="3.5"/></g><rect width="80" height="50" rx="6" fill="rgba(90,170,80,.18)"/>'), e: 'Zelená plocha s kroužky = listnatý les.' },
+  { name: 'jehličnatý les', svg: sym('<rect width="80" height="50" rx="6" fill="rgba(90,170,80,.18)"/><g stroke="#2f7d32" stroke-width="1.8" fill="none"><path d="M16 22 20 12 24 22M20 22v5"/><path d="M36 34 40 24 44 34M40 34v5"/><path d="M56 22 60 12 64 22M60 22v5"/></g>'), e: 'Zelená plocha se značkami jehličnanů = jehličnatý les.' },
+  { name: 'správní hranice', svg: sym('<path d="M4 26H76" stroke="#8b3fa8" stroke-width="2.4" stroke-dasharray="10 4 2 4"/>'), e: 'Čerchovaná linie (čárka–tečka) = správní hranice (obce, kraje, státu).' },
+  { name: 'budova', svg: sym('<rect x="28" y="14" width="24" height="20" fill="#111"/>'), e: 'Černý obrys nebo plocha = budova; v mapách velkých měřítek v půdorysu.' },
+];
 
 /** Plocha n-úhelníku (konvexního) L'Huilierovým vzorcem. */
 export function polygonArea(pts) {

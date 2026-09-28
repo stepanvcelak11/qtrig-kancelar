@@ -137,6 +137,9 @@ app.addEventListener('click', (e) => {
 // Mapa lekcí: kapitoly jako mapové listy, lekce jako měřické body spojené pořadem
 
 const isDone = (id) => (store.S().done[id] ?? 0) > 0;
+const RUSTY_DAYS = 14;
+/** Lekce, kterou je potřeba „oprášit“ – hotová, ale dlouho neopakovaná. */
+const isRusty = (id) => isDone(id) && store.S().lastDone?.[id] && Date.now() - store.S().lastDone[id] > RUSTY_DAYS * 864e5;
 const levelOf = (l) => l.unit.level ?? 'SŠ';
 const isUni = (lvl) => lvl !== 'SŠ';
 const firstVs = () => LESSONS.findIndex((l) => isUni(levelOf(l)));
@@ -181,14 +184,14 @@ function renderPath() {
     const nodes = u.lessons.map((l, li) => {
       const index = k++;
       const done = isDone(l.id), unlocked = isUnlocked(index);
-      const cls = done ? 'done' : !unlocked ? 'locked' : index === cur ? 'current' : 'open';
+      const cls = (done ? 'done' : !unlocked ? 'locked' : index === cur ? 'current' : 'open') + (isRusty(l.id) ? ' rusty' : '');
       const times = store.S().done[l.id] ?? 0;
       const hasField = (l.gens ?? []).some(isField);
       const p = pts[li];
       return `<div class="node-wrap" style="top:${p.y}px;left:calc(50% + ${p.x}px)">
           ${index === cur ? `<div class="toti-here" style="${p.x > 0 ? 'right:128px' : 'left:128px'}">${mascot('happy')}<span class="start-tip">${done ? 'Opakovat' : 'Start'}</span></div>` : ''}
           <button class="node ${cls}" data-lesson="${l.id}" aria-label="${esc(l.title)}"><span class="ic">${unlocked ? l.icon : '🔒'}</span>
-            ${times ? `<span class="times">${times > 1 ? '×' + Math.min(times, 9) : '✓'}</span>` : ''}${hasField ? '<span class="fieldmark" title="Obsahuje terénní úlohu">🦺</span>' : ''}</button>
+            ${times ? `<span class="times">${times > 1 ? '×' + Math.min(times, 9) : '✓'}</span>` : ''}${hasField ? '<span class="fieldmark" title="Obsahuje terénní úlohu">🦺</span>' : ''}${isRusty(l.id) ? '<span class="rustmark" title="Oprášit – dlouho neopakováno">🧹</span>' : ''}</button>
           <div class="node-label">${esc(l.title)}</div></div>`;
     }).join('');
     // Mapové značky podél cesty (stromy, trigonometrické body, nivelační značky, domy) – pevné pro danou kapitolu.
@@ -327,9 +330,9 @@ function startLesson(id) {
   begin(buildLesson(l), { lessonId: id, unitId: l.unit.id, title: l.title, practice: false, color: l.unit.color });
 }
 
-function startPractice(items, title) {
+function startPractice(items, title, refresh = null) {
   if (!items.length) { toast('Zatím tu nic není'); return; }
-  begin(items, { lessonId: null, title, practice: true, color: '#2b8fd6' });
+  begin(items, { lessonId: null, title, practice: true, color: '#2b8fd6', refresh });
 }
 
 function begin(items, meta) {
@@ -339,7 +342,7 @@ function begin(items, meta) {
 
 const KIND = {
   c: 'Vyber správnou odpověď', tf: 'Pravda, nebo ne?', m: 'Spoj dvojice', o: 'Seřaď kroky', n: 'Vypočítej', rod: 'Odečti lať',
-  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
+  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', dirbook: 'Terén · směrová osnova', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
 };
 
 function renderExercise() {
@@ -364,6 +367,7 @@ function exerciseBody(ex) {
   switch (ex.t) {
     case 'c':
       return `<div class="mascot-row">${mascot()}<div class="bubble">${esc(ex.q)}</div></div>
+        ${ex.img ? `<div class="symbol">${ex.img}</div>` : ''}
         <div class="opts">${ex.options.map((o, i) => `<button class="opt" data-i="${i}"><span class="key">${'ABCDE'[i]}</span>${esc(o)}</button>`).join('')}</div>`;
     case 'tf':
       return `<div class="mascot-row">${mascot()}<div class="bubble">${esc(ex.q)}</div></div>
@@ -413,6 +417,12 @@ function exerciseBody(ex) {
     case 'bubble':
       return `<p class="prompt">Urovnej krabicovou libelu stavěcími šrouby – dostaň bublinu do kroužku.</p>${bubbleSvg(ex)}
         <div class="screws">${SCREWS.map((_, i) => `<div class="screw"><small>Šroub ${i + 1}</small><button class="btn" data-screw="${i}" data-dir="1">▲ zvednout</button><button class="btn" data-screw="${i}" data-dir="-1">▼ snížit</button></div>`).join('')}</div>`;
+    case 'dirbook':
+      return `<p class="prompt">Dopočítej směrovou osnovu měřenou ve dvou polohách dalekohledu.</p>
+        <div class="book"><table><thead><tr><th>Cíl</th><th>I. poloha</th><th>II. poloha</th><th>Průměr [gon]</th></tr></thead><tbody>
+        ${ex.rows.map((r, i) => `<tr><td>${r.n}</td><td>${fmt(r.I, 4)}</td><td>${fmt(r.II, 4)}</td><td><input class="cell" data-cell="${i}" inputmode="decimal" autocomplete="off"></td></tr>`).join('')}
+        </tbody><tfoot><tr><td colspan="3">Úhel ω mezi cíli 1 → 3 =</td><td><input class="cell" data-cell="${ex.rows.length}" inputmode="decimal" autocomplete="off"></td></tr></tfoot></table></div>
+        <div class="hint">Na 4 desetinná místa (0,1 mgon = 1 cc). Průměr vztáhni k I. poloze.</div>`;
     case 'fieldbook':
       return `<p class="prompt">Dopočítej nivelační zápisník.</p>
         <div class="book"><table><thead><tr><th>Stan.</th><th>Vzad</th><th>Vpřed</th><th>Δh [m]</th></tr></thead><tbody>
@@ -690,7 +700,7 @@ function wireExercise(ex) {
     }));
   }
 
-  if (ex.t === 'fieldbook') {
+  if (ex.t === 'fieldbook' || ex.t === 'dirbook') {
     const cells = [...app.querySelectorAll('[data-cell]')];
     const upd = () => setAnswer(cells.every((c) => c.value.trim()) ? cells.map((c) => c.value) : null);
     cells.forEach((c, i) => {
@@ -706,11 +716,11 @@ function check() {
   if (isField(ex.t)) {
     const detail = checkField(ex, run.answer);
     run.locked = true;
-    if (ex.t === 'fieldbook') {
+    if (ex.t === 'fieldbook' || ex.t === 'dirbook') {
       app.querySelectorAll('[data-cell]').forEach((c, i) => {
         c.disabled = true;
         c.classList.add(detail.cells[i] ? 'good' : 'bad');
-        if (!detail.cells[i]) c.value = fmt(ex.a[i], 3);
+        if (!detail.cells[i]) c.value = fmt(ex.a[i], ex.t === 'dirbook' ? 4 : 3);
       });
     } else if (ex.t === 'contour') {
       const p = run.answer, Q = ex.Q, O = ex.other;
@@ -780,6 +790,7 @@ function finishRun() {
   const total = r.correct + r.mistakes;
   const result = store.completeLesson(r.meta.lessonId, { mistakes: r.mistakes, practice: r.meta.practice, unitTest: r.meta.unitTest });
   if (r.meta.practice) store.gainHeart();
+  if (r.meta.refresh) store.refreshLessons(r.meta.refresh);
   run = null;
   beep('done');
   const acc = total ? Math.round((r.correct / total) * 100) : 100;
@@ -908,6 +919,7 @@ const CALC_SETS = {
 function renderPractice() {
   const s = store.S();
   const doneIds = Object.keys(s.done);
+  const rusty = doneIds.filter(isRusty);
   const card = (id, ic, title, desc, disabled = false) =>
     `<button class="tile-card" data-p="${id}" ${disabled ? 'disabled' : ''}><span class="ic">${ic}</span><span class="grow"><b>${title}</b><small>${desc}</small></span><span class="go">›</span></button>`;
   const fieldCard = (id, title, desc, art) =>
@@ -922,6 +934,7 @@ function renderPractice() {
       ${fieldCard('f-fieldbook', 'Nivelační zápisník', 'Dopočítej převýšení a výšku', '<svg viewBox="0 0 60 40"><rect x="12" y="5" width="36" height="30" rx="2" class="a9"/><path d="M16 13h28M16 19h28M16 25h28M28 7v26" class="a6"/></svg>')}
       ${fieldCard('f-azimuth', 'Směrník a kvadranty', 'Natoč ručičku podle ΔY a ΔX', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><path d="M30 20 40 9" class="a3"/><path d="M30 4v32M14 20h32" class="a6"/></svg>')}
       ${fieldCard('f-circle', 'Čtení kruhu', 'Vodorovný i svislý kruh v mikroskopu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
+      ${fieldCard('f-dirbook', 'Směrová osnova', 'Dvě polohy dalekohledu, průměry a úhel', '<svg viewBox="0 0 60 40"><rect x="10" y="5" width="40" height="30" rx="2" class="a9"/><path d="M14 13h32M14 19h32M14 25h32M24 7v26M36 7v26" class="a6"/></svg>')}
       ${fieldCard('f-contour', 'Vrstevnice', 'Interpolace mezi výškovými body', '<svg viewBox="0 0 60 40"><path d="M8 32 30 6 52 30Z" class="a6"/><path d="M14 25C24 20 34 22 47 24" class="a3"/><circle cx="8" cy="32" r="2" class="a2"/><circle cx="30" cy="6" r="2" class="a2"/><circle cx="52" cy="30" r="2" class="a2"/></svg>')}
       ${fieldCard('f-sky', 'Geometrie družic', 'Vyber 4 družice s nejnižším PDOP', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="17" class="a7"/><circle cx="30" cy="20" r="3" class="a2"/><circle cx="16" cy="14" r="3" class="a2"/><circle cx="44" cy="12" r="3" class="a2"/><circle cx="36" cy="33" r="3" class="a2"/></svg>')}
       ${fieldCard('f-rod', 'Čtení latě', 'Trénink oka na milimetry', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><rect x="25" y="4" width="10" height="32" class="a9"/><path d="M14 20h32M30 4v32" class="a6"/></svg>')}
@@ -935,12 +948,14 @@ function renderPractice() {
     ${card('vs', '🎓', 'Vysokoškolské výpočty', 'Poloměry křivosti, exces, MNČ, výšky, fotogrammetrie')}
     <h3 class="sec">Opakování</h3>
     ${card('mistakes', '🔁', 'Opakovat chyby', s.mistakes.length ? `${s.mistakes.length} otázek, které ti nešly` : 'Zatím žádné chyby 🎉', !s.mistakes.length)}
+    ${card('rusty', '🧹', 'Oprášit staré lekce', rusty.length ? `${rusty.length} lekcí neopakovaných déle než ${RUSTY_DAYS} dní` : 'Všechno máš čerstvě procvičené', !rusty.length)}
     ${card('mix', '🎲', 'Mix z probraného', doneIds.length ? `Náhodné otázky z ${doneIds.length} dokončených lekcí` : 'Nejdřív dokonči nějakou lekci', !doneIds.length)}
   </div>` + tabs();
   app.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => {
     const p = b.dataset.p;
     if (p === 'mistakes') startPractice(buildMistakes(s.mistakes), 'Opakování chyb');
     else if (p === 'mix') startPractice(buildMix(doneIds), 'Mix');
+    else if (p === 'rusty') startPractice(buildMix(rusty), 'Oprášení', rusty);
     else if (p === 'calc') startPractice(buildCalcPractice(10), 'Výpočty');
     else if (p === 'f-rod') startPractice(buildCalcPractice(6, ['rod']), 'Lať');
     else if (p === 'f-circle') startPractice(buildCalcPractice(6, ['hzCircle', 'vCircle']), 'Čtení kruhů');
@@ -984,6 +999,7 @@ function renderProfile() {
     <div class="ach-grid">${store.ACHIEVEMENTS.map((a) => `<div class="ach ${s.achievements.includes(a.id) ? '' : 'locked'}"><span class="ic">${a.icon}</span><b>${esc(a.title)}</b><small>${esc(a.desc)}</small></div>`).join('')}</div>
     <h3 class="sec">Nastavení</h3>
     <div class="seg"><span>Studuji</span><button data-track="ss" class="${s.track !== 'vs' ? 'on' : ''}">Střední školu</button><button data-track="vs" class="${s.track === 'vs' ? 'on' : ''}">Vysokou školu</button></div>
+    <div class="seg"><span>Vzhled</span>${[['auto', 'Auto'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([v, t]) => `<button data-theme-set="${v}" class="${(s.theme ?? 'auto') === v ? 'on' : ''}">${t}</button>`).join('')}</div>
     <label class="toggle">Zvuky <input type="checkbox" id="snd" ${s.sound ? 'checked' : ''}></label>
     <label class="toggle">Odemknout všechny lekce <input type="checkbox" id="unl" ${s.unlockAll ? 'checked' : ''}></label>
     <p class="hint">Pokrok se ukládá jen v tomto zařízení.</p>
@@ -991,6 +1007,7 @@ function renderProfile() {
   </div>` + tabs();
   app.querySelectorAll('[data-goal]').forEach((b) => b.addEventListener('click', () => { s.dailyGoal = +b.dataset.goal; store.save(); renderProfile(); }));
   app.querySelectorAll('[data-track]').forEach((b) => b.addEventListener('click', () => { s.track = b.dataset.track; store.save(); renderProfile(); }));
+  app.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => { s.theme = b.dataset.themeSet; store.save(); applyTheme(); renderProfile(); }));
   $('#snd').addEventListener('change', (e) => { s.sound = e.target.checked; store.save(); });
   $('#unl').addEventListener('change', (e) => { s.unlockAll = e.target.checked; store.save(); });
   $('#reset').addEventListener('click', () => { if (confirm('Opravdu smazat veškerý pokrok?')) { store.reset(); toast('Pokrok smazán'); renderProfile(); } });
@@ -1031,11 +1048,32 @@ function welcome() {
   </div>`;
   app.querySelectorAll('[data-track]').forEach((b) => b.addEventListener('click', () => {
     store.S().track = b.dataset.track; store.save();
+    welcomeGoal();
+  }));
+}
+
+function welcomeGoal() {
+  const goals = [[10, 'Pohodově', '≈ 1 lekce denně'], [20, 'Pravidelně', '≈ 2 lekce denně'], [30, 'Vážně', 'na zkoušky'], [50, 'Intenzivně', 'jako v terénu']];
+  app.innerHTML = `<div class="done-screen welcome">
+    ${mascot('wow', 'big')}
+    <h1>Kolik času denně?</h1>
+    <p>Nastav si denní cíl. Změnit ho můžeš kdykoli v profilu.</p>
+    <div class="goal-pick">${goals.map(([xp, t, d]) => `<button class="choice" data-goal="${xp}"><b>${t}</b><small>${xp} XP · ${d}</small></button>`).join('')}</div>
+  </div>`;
+  app.querySelectorAll('[data-goal]').forEach((b) => b.addEventListener('click', () => {
+    store.S().dailyGoal = +b.dataset.goal; store.save();
     localStorage.setItem('geolingo.onboarded', '1');
     show('path');
   }));
 }
 
+function applyTheme() {
+  const t = store.S().theme ?? 'auto';
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0c1d22' : '#0f4c5c');
+}
+applyTheme();
 backdrop();
 store.tick();
 if (localStorage.getItem('geolingo.onboarded')) show('path'); else welcome();

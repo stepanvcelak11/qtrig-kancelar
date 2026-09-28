@@ -107,7 +107,7 @@ export default [
         ],
       },
       {
-        id: 'kart1l3', title: 'Kartografický jazyk', icon: '🔣', gens: ['popDensity'],
+        id: 'kart1l3', title: 'Kartografický jazyk', icon: '🔣', gens: ['popDensity', 'mapSymbol'],
         items: [
           { t: 'c', q: 'Studnu nebo kótu na mapě vyjádříme znakem…', a: 'bodovým', w: ['liniovým', 'plošným', 'písmovým'], e: 'Bodové znaky zobrazují objekty, jejichž rozměr v měřítku mapy nelze vyjádřit.' },
           { t: 'c', q: 'Vodní tok v malém měřítku vyjádříme znakem…', a: 'liniovým', w: ['bodovým', 'plošným', 'diagramovým'], e: 'Liniový znak vyjadřuje délkový objekt; jeho šířka v mapě nebývá v měřítku.' },

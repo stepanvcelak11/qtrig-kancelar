@@ -9,7 +9,7 @@ export default [
     desc: 'Státní mapová díla, výškopis a vrstevnice, měřický náčrt, podrobné měření, korekce, třídy přesnosti a digitální technická mapa.',
     lessons: [
       {
-        id: 'bea011l1', title: 'Mapová díla a bodová pole', icon: '🗺️',
+        id: 'bea011l1', title: 'Mapová díla a bodová pole', icon: '🗺️', gens: ['mapSymbol'],
         items: [
           { t: 'c', q: 'Který předpis stanoví závazné geodetické referenční systémy a státní mapová díla?', a: 'Nařízení vlády č. 430/2006 Sb.', w: ['Vyhláška č. 357/2013 Sb.', 'Zákon č. 139/2002 Sb.', 'Zákon č. 183/2006 Sb.'], e: 'Nařízení vlády 430/2006 Sb. určuje mj. S-JTSK, ETRS89, Bpv a výčet státních mapových děl.' },
           { t: 'c', q: 'Které dílo patří mezi státní mapová díla?', a: 'Státní mapa 1 : 5 000', w: ['Turistická mapa KČT', 'Silniční autoatlas ČR', 'Plán města od vydavatele'], e: 'Státní mapová díla vydává stát (ČÚZK, ZÚ) – např. katastrální mapa, SM5, Základní mapa ČR.' },

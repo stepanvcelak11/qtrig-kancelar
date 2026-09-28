@@ -17,7 +17,7 @@ export default [
         ],
       },
       {
-        id: 'u4l2', title: 'Vodorovné úhly', icon: '↔️', gens: ['angleDiff', 'hzCircle'],
+        id: 'u4l2', title: 'Vodorovné úhly', icon: '↔️', gens: ['angleDiff', 'hzCircle', 'dirbook'],
         items: [
           { t: 'c', q: 'Vodorovný úhel je…', a: 'průmět úhlu do vodorovné roviny', w: ['úhel od svislice', 'sklon terénu', 'rozdíl výšek'], e: 'Nezávisí na sklonu záměr.' },
           { t: 'c', q: 'Měření ve skupinách znamená měřit osnovu směrů…', a: 'v obou polohách dalekohledu', w: ['jen v I. poloze', 'jen na jeden cíl', 'bez orientace'], e: 'Jedna skupina = I. a II. poloha.' },

@@ -312,7 +312,33 @@ function sky() {
   }
 }
 
-export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky };
+// --- 9) Směrová osnova ve dvou polohách dalekohledu ---------------------------------------
+
+function dirbook() {
+  const n = 3;
+  // Čtení v cc (celá čísla), aby průměry vycházely přesně na 0,0001 gon.
+  const start = rint(0, 399) * 10000 + rint(0, 9999);
+  const c2 = rint(-40, 40) * 2;                                   // dvojnásobek kolimační chyby v cc
+  const rows = [];
+  let dir = start;
+  for (let i = 0; i < n; i++) {
+    if (i) dir = (dir + rint(400000, 1400000)) % 4000000;
+    const I = dir + rint(-6, 6) * 2, II = (I + 2000000 + c2 + rint(-3, 3) * 2) % 4000000;
+    rows.push({ n: String(i + 1), I: I / 10000, II: II / 10000 });
+  }
+  const mean = rows.map((r) => { let d = r.II - 200; if (d < 0) d += 400; let m = (r.I + d) / 2; if (Math.abs(r.I - d) > 200) m = (m + 200) % 400; return m; });
+  let angle = mean[2] - mean[0]; if (angle < 0) angle += 400;
+  return { t: 'dirbook', rows, a: [...mean, angle],
+    e: 'Průměr ze dvou poloh: (I + (II ∓ 200)) / 2 – tím se vyloučí kolimační a úklonná chyba. Úhel mezi cíli = rozdíl průměrných směrů (pravý − levý, případně + 400 gon).' };
+}
+
+export function checkDirbook(ex, values) {
+  const parse = (t) => Number(String(t ?? '').trim().replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.'));
+  const cells = ex.a.map((v, i) => { const x = parse(values?.[i]); const d = Math.abs(((x - v) % 400 + 600) % 400 - 200); return String(values?.[i] ?? '').trim() !== '' && Number.isFinite(x) && d <= 0.00006; });
+  return { ok: cells.every(Boolean), cells, reason: cells.every(Boolean) ? '' : 'Některé hodnoty nesedí – správné jsou doplněny.' };
+}
+
+export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky, dirbook };
 
 /** Jednotné hodnocení praktických úloh. */
 export function checkField(ex, answer) {
@@ -325,6 +351,7 @@ export function checkField(ex, answer) {
     case 'azimuth': return checkAzimuth(ex, answer);
     case 'contour': return checkContour(ex, answer);
     case 'sky': return checkSky(ex, answer);
+    case 'dirbook': return checkDirbook(ex, answer);
     default: return { ok: false };
   }
 }

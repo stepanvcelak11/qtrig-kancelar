@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null,
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null, lastDone: {}, theme: 'auto',
 });
 
 let state;
@@ -71,6 +71,13 @@ export function claimDaily() {
   return DAILY_BONUS;
 }
 export const dailyClaimed = () => daily().claimed;
+
+/** Po oprášení se lekce znovu počítají jako čerstvé. */
+export function refreshLessons(ids) {
+  const now = Date.now();
+  state.lastDone = { ...state.lastDone, ...Object.fromEntries(ids.map((id) => [id, now])) };
+  save();
+}
 
 export function tick() {
   const now = Date.now();
@@ -139,6 +146,7 @@ export function completeLesson(lessonId, { mistakes, practice = false, unitTest 
   if ((lessonId || unitTest) && !practice) { daily().lessons++; if (mistakes === 0) daily().perfect++; }
   if (lessonId) {
     state.done[lessonId] = (state.done[lessonId] ?? 0) + 1;
+    state.lastDone = { ...state.lastDone, [lessonId]: Date.now() };
     if (mistakes === 0) state.perfect[lessonId] = true;
     state.stats.lessons++;
   }
