@@ -143,7 +143,7 @@ export default [
         ],
       },
       {
-        id: 'u9l3', title: 'Geometrický plán', icon: '📄',
+        id: 'u9l3', title: 'Geometrický plán', icon: '📄', gens: ['parcelSplit'],
         items: [
           { t: 'c', q: 'Geometrický plán se vyhotovuje např. pro…', a: 'rozdělení pozemku', w: ['výpočet daně', 'stavbu plotu po hranici', 'kalibraci přístroje'], e: 'Také pro vyznačení budovy, věcného břemene aj.' },
           { t: 'c', q: 'Geometrický plán ověřuje…', a: 'úředně oprávněný zeměměřický inženýr', w: ['stavební úřad', 'notář', 'kterýkoli geodet'], e: 'Ověřením potvrzuje správnost a přesnost.' },

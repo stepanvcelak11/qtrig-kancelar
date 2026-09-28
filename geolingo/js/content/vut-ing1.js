@@ -168,7 +168,7 @@ export default [
         ],
       },
       {
-        id: 'nea034l2', title: 'Druhy GP a složité GP', icon: '📄',
+        id: 'nea034l2', title: 'Druhy GP a složité GP', icon: '📄', gens: ['parcelSplit'],
         items: [
           { t: 'c', q: 'Který GP se zpracovává pro novou budovu na pozemku?', a: 'GP pro vyznačení budovy', w: ['GP pro rozdělení pozemku', 'GP pro opravu geometrického určení', 'GP pro doplnění parcel'], e: 'Budova se do KN zapisuje na podkladě GP a listiny (např. kolaudace, souhlas).' },
           { t: 'c', q: 'GP pro vymezení rozsahu věcného břemene k části pozemku…', a: 'nevytváří novou parcelu', w: ['vždy vytvoří novou parcelu', 'mění výměru pozemku', 'ruší původní parcelu'], e: 'Vymezí se jen dotčená část pozemku, parcela zůstává beze změny.' },

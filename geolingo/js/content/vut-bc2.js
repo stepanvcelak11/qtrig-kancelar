@@ -217,7 +217,7 @@ export default [
     desc: 'Druhy geometrických plánů, zjednodušená evidence, zápisy do ISKN, opravy chyb, vytyčení hranic, znalectví a právní předpisy.',
     lessons: [
       {
-        id: 'bea022l1', title: 'Druhy geometrických plánů', icon: '📐', gens: ['areaTriangle', 'areaQuad'],
+        id: 'bea022l1', title: 'Druhy geometrických plánů', icon: '📐', gens: ['areaTriangle', 'areaQuad', 'parcelSplit'],
         items: [
           { t: 'c', q: 'Pro zápis nové budovy do katastru se vyhotovuje GP pro…', a: 'vyznačení budovy', w: ['vymezení rozsahu věcného břemene', 'rozdělení pozemku', 'opravu geometrického určení'], e: 'GP pro vyznačení budovy (nebo změny jejího vnějšího obvodu).' },
           { t: 'c', q: 'Kabel má vést jen přes část cizího pozemku. Pro zápis služebnosti se vyhotoví GP pro…', a: 'vymezení rozsahu věcného břemene k části pozemku', w: ['rozdělení pozemku', 'změnu hranice pozemku', 'doplnění parcely ZE'], e: 'Pozemek se nedělí, jen se vymezí plocha, které se břemeno týká.' },
