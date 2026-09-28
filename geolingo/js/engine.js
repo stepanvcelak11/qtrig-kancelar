@@ -92,7 +92,7 @@ export function buildFieldPractice(length = 6, only = null) {
 
 /** Procvičování: náhodné výpočty ze všech generátorů. */
 export function buildCalcPractice(length = 10, only = null) {
-  const names = only ?? Object.keys(GEN).filter((n) => n !== 'rod' && n !== 'hzCircle');
+  const names = only ?? Object.keys(GEN).filter((n) => !['rod', 'hzCircle', 'vCircle'].includes(n));
   return Array.from({ length }, () => prepare(generate(names[Math.floor(Math.random() * names.length)])));
 }
 

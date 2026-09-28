@@ -2,7 +2,7 @@
 
 import { UNITS, LESSONS, TIPS, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
 import { fmt, generate } from './generators.js';
-import { W, H, checkField, solutionCells, turnScrew, SCREWS, FIELD_TYPES } from './field.js';
+import { W, H, checkField, solutionCells, turnScrew, SCREWS, FIELD_TYPES, pdop } from './field.js';
 import * as store from './store.js';
 import { backdrop } from './backdrop.js';
 
@@ -191,6 +191,14 @@ function renderPath() {
             ${times ? `<span class="times">${times > 1 ? '×' + Math.min(times, 9) : '✓'}</span>` : ''}${hasField ? '<span class="fieldmark" title="Obsahuje terénní úlohu">🦺</span>' : ''}</button>
           <div class="node-label">${esc(l.title)}</div></div>`;
     }).join('');
+    // Mapové značky podél cesty (stromy, trigonometrické body, nivelační značky, domy) – pevné pro danou kapitolu.
+    let seed = ui * 7919 + 17;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    const deco = pts.map((p, i) => {
+      const side = p.x > 0 ? -1 : p.x < 0 ? 1 : (rnd() < 0.5 ? -1 : 1);
+      const kind = ['tree', 'conifer', 'trig', 'bench', 'house', 'tree'][Math.floor(rnd() * 6)];
+      return `<span class="deco ${kind}" style="top:${p.y + 10 + rnd() * 40}px;left:calc(50% + ${side * (120 + rnd() * 40)}px)"></span>`;
+    }).join('');
     // Zkouška listu na konci kapitoly.
     const allDone = doneN === u.lessons.length, passed = !!store.S().unitTests?.[u.id];
     const ep = { x: 0, y: u.lessons.length * ROW + 44 };
@@ -212,12 +220,16 @@ function renderPath() {
         <svg class="contours" viewBox="0 0 120 80" aria-hidden="true"><path d="M10 70c20-30 40-10 60-35s35-20 45-30M0 78c25-25 45-5 68-28s32-18 52-26M25 80c15-15 30-5 45-20s30-12 50-18"/></svg>
         <svg class="north" viewBox="0 0 20 30" aria-hidden="true"><path d="M10 2 16 22 10 18 4 22Z"/><text x="10" y="30">S</text></svg>
       </div>
-      <div class="nodes" style="height:${(u.lessons.length + 1) * ROW + 30}px"><svg class="traverse" width="1" height="${(u.lessons.length + 1) * ROW}">${seg}</svg>${nodes}${exam}</div>
+      <div class="nodes" style="height:${(u.lessons.length + 1) * ROW + 30}px"><svg class="traverse" width="1" height="${(u.lessons.length + 1) * ROW}">${seg}</svg>${deco}${nodes}${exam}</div>
     </section>`;
   }).join('');
-  app.innerHTML = topStats() + `<main class="path">${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>
+  app.innerHTML = topStats() + `<main class="path">${dailyCard()}${html}<div class="path-end">${mascot('wow')}<p>Konec mapy – jsi připraven do terénu!</p></div></main>
     <button class="index-btn" id="index" aria-label="Klad mapových listů">${ICON.map}<span>Listy</span></button>` + tabs();
   app.querySelectorAll('[data-lesson]').forEach((b) => b.addEventListener('click', () => lessonSheet(b.dataset.lesson)));
+  $('#chest')?.addEventListener('click', () => {
+    const xp = store.claimDaily();
+    if (xp) { beep('done'); confetti(); toast(`Truhla otevřena: +${xp} XP`); setTimeout(() => show('path'), 900); }
+  });
   $('#index').addEventListener('click', indexSheet);
   app.querySelectorAll('[data-tips]').forEach((b) => b.addEventListener('click', () => tipsSheet(b.dataset.tips)));
   app.querySelectorAll('[data-exam]').forEach((b) => b.addEventListener('click', () => {
@@ -226,6 +238,18 @@ function renderPath() {
     scrollMemory = window.scrollY;
     begin(buildUnitTest(u), { lessonId: null, unitTest: u.id, unitId: u.id, title: `Zkouška: ${u.title}`, practice: false, color: u.color });
   }));
+}
+
+/** Úkoly dne s bonusovou truhlou. */
+function dailyCard() {
+  const qs = store.dailyQuests(), allDone = qs.every((q) => q.done), claimed = store.dailyClaimed();
+  const chest = `<svg viewBox="0 0 40 34" class="chest ${allDone && !claimed ? 'ready' : ''}"><rect x="3" y="14" width="34" height="18" rx="3" class="cb"/><path d="M3 16c0-8 6-13 17-13s17 5 17 13z" class="${claimed ? 'co' : 'ct'}"/><rect x="17" y="13" width="6" height="8" rx="1.5" class="cl"/></svg>`;
+  return `<section class="daily">
+    <div class="daily-head"><b>Úkoly dne</b><small>${claimed ? 'Truhla otevřena ✓' : allDone ? 'Hotovo – otevři truhlu!' : `Bonus +${store.DAILY_BONUS} XP za všechny tři`}</small></div>
+    <div class="daily-body"><div class="quests">${qs.map((q) => `<div class="quest ${q.done ? 'done' : ''}"><span class="qt">${q.done ? '✓ ' : ''}${esc(q.title)}</span>
+      <div class="qbar"><i style="width:${(q.value / q.target) * 100}%"></i><em>${q.value} / ${q.target}</em></div></div>`).join('')}</div>
+      <button class="chest-btn" id="chest" ${allDone && !claimed ? '' : 'disabled'} aria-label="Otevřít truhlu">${chest}</button></div>
+  </section>`;
 }
 
 /** Klad mapových listů: rychlý skok na kapitolu. */
@@ -279,6 +303,7 @@ function lessonSheet(id) {
   bg.innerHTML = `<div class="sheet" style="--c:${l.unit.color}">
     <div class="sheet-top"><span class="ic">${l.icon}</span><div><small>${esc(l.unit.title)} · ${levelOf(l)}</small><h3>${esc(l.title)}</h3></div></div>
     <div class="tags">${tags.map((t) => `<span>${t}</span>`).join('')}</div>
+    ${l.lessonIndex === 0 && TIPS[l.unit.id]?.intro ? `<div class="intro-card">${mascot()}<p><b>Kapitola v kostce:</b> ${esc(TIPS[l.unit.id].intro)}</p></div>` : ''}
     ${TIPS[l.unit.id] ? `<button class="linkbtn" id="tipsLink">📒 Tahák ke kapitole</button>` : ''}
     ${times ? `<p class="hint">Dokončeno ${times}× ${store.S().perfect[id] ? '· bez chyby 💯' : ''}</p>` : ''}
     ${unlocked ? `<button class="btn primary wide" id="go">${times ? 'Opakovat lekci · +10 XP' : 'Začít lekci · +10 XP'}</button>`
@@ -314,7 +339,7 @@ function begin(items, meta) {
 
 const KIND = {
   c: 'Vyber správnou odpověď', tf: 'Pravda, nebo ne?', m: 'Spoj dvojice', o: 'Seřaď kroky', n: 'Vypočítej', rod: 'Odečti lať',
-  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', azimuth: 'Směrník · kvadranty', circle: 'Odečti vodorovný kruh',
+  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', azimuth: 'Směrník · kvadranty', circle: 'Odečti kruh v mikroskopu', contour: 'Terén · vrstevnice', sky: 'GNSS · geometrie družic',
 };
 
 function renderExercise() {
@@ -353,8 +378,15 @@ function exerciseBody(ex) {
       return `<div class="calc-card"><p class="prompt">${esc(ex.q)}</p></div>
         <div class="numrow"><input class="num" id="num" inputmode="decimal" autocomplete="off" placeholder="Výsledek"><span class="unit-label">${esc(ex.unit ?? '')}</span></div>
         <div class="hint">Zaokrouhli na ${ex.dec} ${ex.dec === 1 ? 'desetinné místo' : ex.dec >= 2 && ex.dec <= 4 ? 'desetinná místa' : 'desetinných míst'}${ex.dec === 0 ? ' (celé číslo)' : ''}. Čárka i tečka jsou v pořádku.</div>`;
+    case 'contour':
+      return `<p class="prompt">Kudy prochází vrstevnice ${ex.L} m na hraně ${ex.pts[0].n}–${ex.pts[1].n}?</p>
+        <div class="hint">Výšky bodů jsou v metrech, terén mezi body je rovinný (TIN). Klepni na místo průsečíku.</div>${mapSvg(ex)}`;
+    case 'sky':
+      return `<p class="prompt">Vyber 4 družice, které dají nejlepší geometrii (nejnižší PDOP).</p>
+        ${skySvg(ex)}<div class="dial-read" id="skyRead">Vybráno 0 / 4</div>
+        <div class="hint">Střed = zenit, kružnice = elevace 60°, 30° a obzor. Sever nahoře.</div>`;
     case 'circle':
-      return `<p class="prompt">Jaké je čtení vodorovného kruhu ve stupnicovém mikroskopu?</p>
+      return `<p class="prompt">Jaké je čtení ${ex.label === 'V' ? 'svislého kruhu (zenitový úhel)' : 'vodorovného kruhu'} ve stupnicovém mikroskopu?</p>
         <canvas class="scope" id="circleCanvas" width="640" height="300"></canvas>
         <div class="numrow"><input class="num" id="num" inputmode="decimal" autocomplete="off" placeholder="např. 123,457"><span class="unit-label">gon</span></div>
         <div class="hint">Číslo ryšky = celé gony, stupnice 0–10 = desetiny gonu (100 dílků po 0,01 gon), tisíciny odhadni.</div>`;
@@ -403,6 +435,11 @@ function mapSvg(ex) {
   let items = '';
   if (ex.t === 'station') items = ex.targets.map((t) => `<g class="tgt"><circle cx="${t.x}" cy="${t.y}" r="1.5"/><text x="${t.x + 2.2}" y="${t.y - 1.6}">${t.n}</text></g>`).join('');
   if (ex.t === 'levelSetup') items = [ex.A, ex.B].map((t) => `<g class="rodmk"><rect x="${t.x - 0.9}" y="${t.y - 3.2}" width="1.8" height="6.4" rx=".3"/><rect x="${t.x - 0.9}" y="${t.y - 1.6}" width="1.8" height="1.6" class="red"/><rect x="${t.x - 0.9}" y="${t.y + 1.6}" width="1.8" height="1.6" class="red"/><text x="${t.x + 2}" y="${t.y - 2.4}">${t.n}</text></g>`).join('');
+  if (ex.t === 'contour') {
+    const [A, B, C] = ex.pts;
+    items = `<path class="tin" d="M${A.x} ${A.y}L${B.x} ${B.y}L${C.x} ${C.y}Z"/><line class="tin-edge" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>`
+      + ex.pts.map((q) => `<g class="spot"><circle cx="${q.x}" cy="${q.y}" r="1.1"/><text x="${q.x + 1.8}" y="${q.y - 1.6}">${q.n} ${q.h.toFixed(1).replace('.', ',')}</text></g>`).join('');
+  }
   if (ex.t === 'stakeout') {
     items = `<line x1="${ex.S.x}" y1="${ex.S.y}" x2="${ex.O.x}" y2="${ex.O.y}" class="orient"/>
       <g class="tgt o"><circle cx="${ex.O.x}" cy="${ex.O.y}" r="1.6"/><path d="M${ex.O.x - 2.4} ${ex.O.y}h4.8M${ex.O.x} ${ex.O.y - 2.4}v4.8"/><text x="${ex.O.x + 2.4}" y="${ex.O.y - 1.8}">O</text></g>
@@ -468,6 +505,17 @@ function setBubble(b) {
   el.classList.toggle('in', r <= run.items[run.i].okR);
 }
 
+// --- Sky plot pro výběr družic ----------------------------------------------------------
+
+function skySvg(ex) {
+  const pos = (s) => { const r = 92 * (1 - s.el / 90), a = s.az * Math.PI / 180; return [r * Math.sin(a), -r * Math.cos(a)]; };
+  const sats = ex.sats.map((s, i) => { const [x, y] = pos(s); return `<g class="sat" data-sat="${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="11"/><text y="4">${s.prn.slice(1)}</text></g>`; }).join('');
+  return `<svg class="skyplot" viewBox="-112 -112 224 224">
+    <circle r="92" class="ring0"/><circle r="61.3" class="ring"/><circle r="30.7" class="ring"/>
+    <path d="M0 -92V92M-92 0H92" class="ring"/><text y="-98" class="cardinal">S</text><text x="100" y="4" class="cardinal">V</text><text y="106" class="cardinal">J</text><text x="-100" y="4" class="cardinal">Z</text>
+    <text x="3" y="-63" class="elv">30°</text><text x="3" y="-32" class="elv">60°</text>${sats}</svg>`;
+}
+
 // --- Kružítko pro směrník ----------------------------------------------------------------
 
 function dialSvg() {
@@ -490,13 +538,13 @@ function dialSvg() {
 
 // --- Stupnicový mikroskop (vodorovný kruh) ------------------------------------------------
 
-function drawCircle(cv, reading) {
+function drawCircle(cv, reading, label = 'Hz') {
   const g = cv.getContext('2d'), Wc = cv.width, Hc = cv.height;
   g.fillStyle = '#1b2227'; g.fillRect(0, 0, Wc, Hc);
   const grad = g.createLinearGradient(0, 40, 0, Hc - 40);
   grad.addColorStop(0, '#f6ecc9'); grad.addColorStop(1, '#e8d9a6');
   g.fillStyle = grad; g.beginPath(); g.roundRect(30, 40, Wc - 60, Hc - 80, 18); g.fill();
-  g.fillStyle = '#5a4a1c'; g.font = '700 26px Lexend, sans-serif'; g.fillText('Hz', 48, 80);
+  g.fillStyle = '#5a4a1c'; g.font = '700 26px Lexend, sans-serif'; g.fillText(label, 48, 80);
   const x0 = 110, x1 = Wc - 90, yScale = 170;
   // Stupnice 0–10 (100 dílků po 0,01 gon).
   g.strokeStyle = '#2b2410'; g.fillStyle = '#2b2410';
@@ -543,7 +591,7 @@ function wireExercise(ex) {
     input.addEventListener('input', () => setAnswer(input.value.trim()));
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !checkBtn.disabled) check(); });
     if (ex.t === 'rod') drawRod($('#rodCanvas'), ex.a);
-    if (ex.t === 'circle') drawCircle($('#circleCanvas'), ex.a);
+    if (ex.t === 'circle') drawCircle($('#circleCanvas'), ex.a, ex.label ?? 'Hz');
     setTimeout(() => input.focus({ preventScroll: true }), 50);
   }
 
@@ -585,6 +633,19 @@ function wireExercise(ex) {
     }));
   }
 
+  if (ex.t === 'sky') {
+    const sel = [];
+    app.querySelectorAll('[data-sat]').forEach((g) => g.addEventListener('click', () => {
+      if (run.locked) return;
+      const i = +g.dataset.sat, k = sel.indexOf(i);
+      if (k >= 0) sel.splice(k, 1); else if (sel.length < 4) sel.push(i); else return toast('Už máš 4 družice – nejdřív jednu odeber');
+      g.classList.toggle('on', sel.includes(i));
+      $('#skyRead').innerHTML = `Vybráno <b>${sel.length} / 4</b>`;
+      beep('tick');
+      setAnswer(sel.length === 4 ? sel.slice() : null);
+    }));
+  }
+
   if (ex.t === 'azimuth') {
     const svg = $('#dial');
     let dragging = false;
@@ -601,13 +662,13 @@ function wireExercise(ex) {
     svg.addEventListener('pointerup', () => { dragging = false; });
   }
 
-  if (ex.t === 'station' || ex.t === 'levelSetup' || ex.t === 'stakeout') {
+  if (ex.t === 'station' || ex.t === 'levelSetup' || ex.t === 'stakeout' || ex.t === 'contour') {
     const svg = $('#map');
     svg.addEventListener('pointerdown', (e) => {
       if (run.locked) return;
       const p = svgPoint(svg, e);
       const q = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
-      $('#mk').innerHTML = ex.t === 'stakeout' ? prism(q.x, q.y, 'mine') : tripod(q.x, q.y, '', 'mine');
+      $('#mk').innerHTML = ex.t === 'stakeout' ? prism(q.x, q.y, 'mine') : ex.t === 'contour' ? `<circle class="cpick" cx="${q.x}" cy="${q.y}" r="1.3"/>` : tripod(q.x, q.y, '', 'mine');
       beep('tick');
       setAnswer(q);
     });
@@ -651,6 +712,13 @@ function check() {
         c.classList.add(detail.cells[i] ? 'good' : 'bad');
         if (!detail.cells[i]) c.value = fmt(ex.a[i], 3);
       });
+    } else if (ex.t === 'contour') {
+      const p = run.answer, Q = ex.Q, O = ex.other;
+      $('#ov').innerHTML = (O ? `<line class="cline" x1="${Q.x}" y1="${Q.y}" x2="${O.x}" y2="${O.y}"/>` : '') + `<circle class="tol" cx="${Q.x}" cy="${Q.y}" r="${ex.tolM}"/>`;
+      $('#mk').innerHTML = `<circle class="cpick ${detail.ok ? 'good' : 'bad'}" cx="${p.x}" cy="${p.y}" r="1.3"/><circle class="cpick good" cx="${Q.x}" cy="${Q.y}" r="1.1"/><text class="plabel" x="${Q.x + 2}" y="${Q.y + 4}">${ex.L}</text>`;
+    } else if (ex.t === 'sky') {
+      ex.bestSet.forEach((i) => $(`[data-sat="${i}"]`).classList.add('best'));
+      $('#skyRead').innerHTML = `Tvé PDOP <b>${detail.pdop.toFixed(1).replace('.', ',')}</b> · nejlepší ${ex.best.toFixed(1).replace('.', ',')}`;
     } else if (ex.t === 'azimuth') {
       $('#needleOk').setAttribute('transform', `rotate(${ex.a * 0.9})`);
       $('#needleOk').classList.remove('hidden');
@@ -853,7 +921,9 @@ function renderPractice() {
       ${fieldCard('f-bubble', 'Urovnání libely', 'Stavěcí šrouby a bublina', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="14" class="a7"/><circle cx="30" cy="20" r="5" class="a6"/><circle cx="35" cy="16" r="3.5" class="a8"/></svg>')}
       ${fieldCard('f-fieldbook', 'Nivelační zápisník', 'Dopočítej převýšení a výšku', '<svg viewBox="0 0 60 40"><rect x="12" y="5" width="36" height="30" rx="2" class="a9"/><path d="M16 13h28M16 19h28M16 25h28M28 7v26" class="a6"/></svg>')}
       ${fieldCard('f-azimuth', 'Směrník a kvadranty', 'Natoč ručičku podle ΔY a ΔX', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><path d="M30 20 40 9" class="a3"/><path d="M30 4v32M14 20h32" class="a6"/></svg>')}
-      ${fieldCard('f-circle', 'Čtení kruhu', 'Stupnicový mikroskop teodolitu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
+      ${fieldCard('f-circle', 'Čtení kruhu', 'Vodorovný i svislý kruh v mikroskopu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
+      ${fieldCard('f-contour', 'Vrstevnice', 'Interpolace mezi výškovými body', '<svg viewBox="0 0 60 40"><path d="M8 32 30 6 52 30Z" class="a6"/><path d="M14 25C24 20 34 22 47 24" class="a3"/><circle cx="8" cy="32" r="2" class="a2"/><circle cx="30" cy="6" r="2" class="a2"/><circle cx="52" cy="30" r="2" class="a2"/></svg>')}
+      ${fieldCard('f-sky', 'Geometrie družic', 'Vyber 4 družice s nejnižším PDOP', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="17" class="a7"/><circle cx="30" cy="20" r="3" class="a2"/><circle cx="16" cy="14" r="3" class="a2"/><circle cx="44" cy="12" r="3" class="a2"/><circle cx="36" cy="33" r="3" class="a2"/></svg>')}
       ${fieldCard('f-rod', 'Čtení latě', 'Trénink oka na milimetry', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><rect x="25" y="4" width="10" height="32" class="a9"/><path d="M14 20h32M30 4v32" class="a6"/></svg>')}
     </div>
     <button class="btn blue wide" data-p="f-all">Terénní směs · 6 úloh</button>
@@ -873,7 +943,7 @@ function renderPractice() {
     else if (p === 'mix') startPractice(buildMix(doneIds), 'Mix');
     else if (p === 'calc') startPractice(buildCalcPractice(10), 'Výpočty');
     else if (p === 'f-rod') startPractice(buildCalcPractice(6, ['rod']), 'Lať');
-    else if (p === 'f-circle') startPractice(buildCalcPractice(6, ['hzCircle']), 'Vodorovný kruh');
+    else if (p === 'f-circle') startPractice(buildCalcPractice(6, ['hzCircle', 'vCircle']), 'Čtení kruhů');
     else if (p === 'f-all') startPractice(shuffle([...buildFieldPractice(5), prepare(generate('rod'))]), 'Terén');
     else if (p.startsWith('f-')) startPractice(buildFieldPractice(4, [p.slice(2)]), b.querySelector('b').textContent);
     else startPractice(buildCalcPractice(10, CALC_SETS[p]), b.querySelector('b').textContent);

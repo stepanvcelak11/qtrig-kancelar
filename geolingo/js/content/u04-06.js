@@ -28,7 +28,7 @@ export default [
         ],
       },
       {
-        id: 'u4l3', title: 'Zenitové úhly', icon: '↕️',
+        id: 'u4l3', title: 'Zenitové úhly', icon: '↕️', gens: ['vCircle'],
         items: [
           { t: 'c', q: 'Zenitový úhel se měří od…', a: 'zenitu (svislice vzhůru)', w: ['vodorovné roviny', 'nadiru', 'osy X'], e: 'Zenit = 0 gon, horizont = 100 gon.' },
           { t: 'c', q: 'Vodorovná záměra má zenitový úhel…', a: '100 gon', w: ['0 gon', '200 gon', '400 gon'], e: 'Čtvrtina kruhu od zenitu.' },

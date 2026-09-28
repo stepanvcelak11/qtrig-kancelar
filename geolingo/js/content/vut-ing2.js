@@ -21,7 +21,7 @@ export default [
         ],
       },
       {
-        id: 'nea041l2', title: 'Reprezentace terénu', icon: '🔺',
+        id: 'nea041l2', title: 'Reprezentace terénu', icon: '🔺', gens: ['contour'],
         items: [
           { t: 'c', q: 'GRID reprezentuje terén jako…', a: 'pravidelnou mřížku výšek', w: ['síť nepravidelných trojúhelníků', 'soubor vrstevnic', 'seznam lomových linií'], e: 'Výška je v uzlech (nebo buňkách) matice s konstantním krokem.' },
           { t: 'c', q: 'Hlavní výhoda TIN proti GRID je, že…', a: 'hustota bodů odpovídá členitosti terénu', w: ['všechny trojúhelníky mají stejnou plochu', 'se ukládá jako obyčejná matice', 'nepotřebuje žádné vstupní body'], e: 'V rovině stačí velké trojúhelníky, v členitém terénu jsou menší. TIN navíc zachová měřené body.' },

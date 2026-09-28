@@ -224,6 +224,39 @@ main.path { flex: 1; padding: 14px 14px 120px; }
 .heat-legend .scale { display: flex; align-items: center; gap: 3px; }
 .heat-legend .scale i { width: 10px; }
 
+/* Úkoly dne */
+.daily { background: var(--card); border-radius: 20px; padding: 12px 14px; box-shadow: inset 0 0 0 2px var(--line), var(--shadow); margin: 4px 0 18px; }
+.daily-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.daily-head b { font: 700 16px var(--head); }
+.daily-head small { color: var(--muted); font-size: 12.5px; text-align: right; }
+.daily-body { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.quests { flex: 1; display: grid; gap: 8px; }
+.quest .qt { font-size: 14px; font-weight: 700; }
+.quest.done .qt { color: var(--green-d); }
+.qbar { position: relative; height: 16px; border-radius: 8px; background: var(--soft); overflow: hidden; margin-top: 3px; }
+.qbar i { display: block; height: 100%; background: var(--gold); border-radius: 8px; transition: width .4s; }
+.quest.done .qbar i { background: var(--green); }
+.qbar em { position: absolute; inset: 0; font: 600 10.5px/16px var(--head); text-align: center; font-style: normal; color: var(--text); }
+.chest-btn { border: 0; background: none; padding: 0; width: 64px; flex: none; }
+.chest-btn:disabled { cursor: default; }
+.chest { width: 64px; height: 54px; filter: grayscale(.6); opacity: .7; }
+.chest.ready { filter: none; opacity: 1; animation: wobble 1.2s ease-in-out infinite; }
+@keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+.chest .cb { fill: #b87a38; stroke: #7a4d1d; stroke-width: 1.5; } .chest .ct { fill: #d69a52; stroke: #7a4d1d; stroke-width: 1.5; }
+.chest .co { fill: #f2c230; stroke: #c9981c; stroke-width: 1.5; } .chest .cl { fill: #f2c230; stroke: #7a4d1d; stroke-width: 1; }
+
+/* Mapové značky podél cesty */
+.deco { position: absolute; width: 26px; height: 26px; margin-left: -13px; opacity: .55; pointer-events: none; background: no-repeat center / contain; }
+.deco.tree { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='11' r='8' fill='%235f9e48'/%3E%3Cpath d='M13 18v6' stroke='%237a4d1d' stroke-width='2'/%3E%3C/svg%3E"); }
+.deco.conifer { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath d='M13 2 21 18H5Z' fill='%233f7a30'/%3E%3Cpath d='M13 18v6' stroke='%237a4d1d' stroke-width='2'/%3E%3C/svg%3E"); }
+.deco.trig { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cpath d='M13 4 23 21H3Z' fill='none' stroke='%230f4c5c' stroke-width='2' stroke-linejoin='round'/%3E%3Ccircle cx='13' cy='15' r='2' fill='%230f4c5c'/%3E%3C/svg%3E"); }
+.deco.bench { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='8' fill='none' stroke='%230f4c5c' stroke-width='2'/%3E%3Cpath d='M13 5v16M5 13h16' stroke='%230f4c5c' stroke-width='1.5'/%3E%3C/svg%3E"); }
+.deco.house { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='5' y='8' width='16' height='13' fill='%23d8cfc0' stroke='%238d8173' stroke-width='1.5'/%3E%3Cpath d='M5 8l16 13M21 8 5 21' stroke='%23b3a796' stroke-width='1'/%3E%3C/svg%3E"); }
+
+.intro-card { display: flex; gap: 10px; align-items: center; margin: 0 0 12px; background: color-mix(in srgb, var(--c) 10%, var(--bg)); border-radius: 14px; padding: 10px 12px; }
+.intro-card .toti { width: 42px; height: 50px; flex: none; }
+.intro-card p { margin: 0; font-size: 14.5px; }
+
 /* Klad listů */
 .index-btn { position: fixed; right: max(14px, calc(50% - 266px)); bottom: calc(var(--sb) + 84px); z-index: 6; display: flex; align-items: center; gap: 6px;
   border: 0; border-radius: 99px; padding: 10px 14px; background: var(--petrol); color: #fff; box-shadow: var(--shadow); font: 600 14px var(--head); }
@@ -349,6 +382,21 @@ svg.map .northar path { fill: #17333b; }
 .lg-r { background: repeating-linear-gradient(#fff 0 3px, #e5484d 3px 6px); outline: 1px solid #333; }
 
 canvas.scope { width: 100%; max-width: 440px; align-self: center; border-radius: 22px; box-shadow: var(--shadow); }
+svg.map .tin { fill: rgba(242, 194, 48, .12); stroke: #8d8173; stroke-width: .35; stroke-dasharray: 1.2 .8; }
+svg.map .tin-edge { stroke: #0f4c5c; stroke-width: .6; }
+svg.map .spot circle { fill: #17333b; } svg.map .cpick { fill: #2b8fd6; stroke: #fff; stroke-width: .4; }
+svg.map .cpick.good { fill: #16a37f; } svg.map .cpick.bad { fill: #e5484d; }
+svg.map .cline { stroke: #b8742a; stroke-width: .8; }
+svg.skyplot { width: 100%; max-width: 320px; align-self: center; }
+.skyplot .ring0 { fill: #0f2a33; stroke: #0f4c5c; stroke-width: 2; }
+.skyplot .ring { fill: none; stroke: rgba(120, 200, 210, .35); stroke-width: .8; }
+.skyplot .cardinal { font: 700 10px var(--head); fill: var(--muted); text-anchor: middle; }
+.skyplot .elv { font: 600 7px var(--head); fill: rgba(120, 200, 210, .6); }
+.skyplot .sat { cursor: pointer; }
+.skyplot .sat circle { fill: #1e3a44; stroke: #7fe3ff; stroke-width: 1.4; transition: fill .15s; }
+.skyplot .sat text { font: 700 9px var(--head); fill: #cfeff7; text-anchor: middle; pointer-events: none; }
+.skyplot .sat.on circle { fill: #2b8fd6; stroke: #fff; }
+.skyplot .sat.best circle { stroke: #f2c230; stroke-width: 3; }
 svg.dial { width: 100%; max-width: 290px; align-self: center; touch-action: none; cursor: grab; }
 .dial .face { fill: var(--card); stroke: var(--line); stroke-width: 2; }
 .dial .rim { fill: none; stroke: var(--petrol); stroke-width: .8; opacity: .5; }

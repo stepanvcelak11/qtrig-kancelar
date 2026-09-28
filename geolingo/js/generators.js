@@ -331,6 +331,11 @@ export const GEN = {
     return { t: 'circle', a, tol: 0.0015, dec: 3, unit: 'gon',
       e: `Čtení = číslo ryšky kruhu (${Math.floor(a)} gon) + poloha ryšky na stupnici: ${fmt(a - Math.floor(a), 3)} gon. Stupnice má 100 dílků po 0,01 gon, tisíciny se odhadují.` };
   },
+  vCircle() {
+    const a = round(rnd(70, 130), 3);
+    return { t: 'circle', label: 'V', a, tol: 0.0015, dec: 3, unit: 'gon',
+      e: `Zenitový úhel = číslo ryšky (${Math.floor(a)} gon) + poloha na stupnici ${fmt(a - Math.floor(a), 3)} gon = ${fmt(a, 3)} gon. Vodorovná záměra má z = 100 gon.` };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',

@@ -16,7 +16,7 @@ export default [
         ],
       },
       {
-        id: 'u7l2', title: 'Chyby a DOP', icon: '📶',
+        id: 'u7l2', title: 'Chyby a DOP', icon: '📶', gens: ['sky'],
         items: [
           { t: 'c', q: 'PDOP vyjadřuje…', a: 'vliv geometrie družic na přesnost polohy', w: ['počet družic', 'stáří korekcí', 'sílu signálu'], e: 'Position Dilution Of Precision.' },
           { t: 'c', q: 'Menší hodnota PDOP znamená…', a: 'lepší geometrii a přesnost', w: ['horší přesnost', 'méně družic', 'slabší signál'], e: 'Družice jsou rozprostřené po obloze.' },
@@ -190,7 +190,7 @@ export default [
         ],
       },
       {
-        id: 'u10l2', title: 'Vrstevnice', icon: '〽️', gens: ['slopePercent'],
+        id: 'u10l2', title: 'Vrstevnice', icon: '〽️', gens: ['slopePercent', 'contour'],
         items: [
           { t: 'c', q: 'Vrstevnice spojuje body…', a: 'se stejnou nadmořskou výškou', w: ['se stejnou vzdáleností', 'stejného vlastníka', 'se stejným sklonem'], e: 'Čára stejné výšky.' },
           { t: 'c', q: 'Vrstevnice hustě u sebe znamenají…', a: 'strmý terén', w: ['rovinu', 'vždy údolí', 'vodní plochu'], e: 'Na krátké vzdálenosti velký výškový rozdíl.' },

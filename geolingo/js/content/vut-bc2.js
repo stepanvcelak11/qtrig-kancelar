@@ -22,7 +22,7 @@ export default [
         ],
       },
       {
-        id: 'bea011l2', title: 'Terénní tvary a vrstevnice', icon: '⛰️', gens: ['slopePercent'],
+        id: 'bea011l2', title: 'Terénní tvary a vrstevnice', icon: '⛰️', gens: ['slopePercent', 'contour'],
         items: [
           { t: 'c', q: 'Spádnice je čára, která…', a: 'protíná vrstevnice kolmo ve směru největšího spádu', w: ['spojuje body stejné výšky', 'vede vždy po hřbetu kopce', 'je rovnoběžná s vrstevnicemi'], e: 'Voda teče po spádnici; ta je v každém bodě kolmá k vrstevnici.' },
           { t: 'c', q: 'Terénní tvar mezi dvěma vrcholy na hřbetu, kde se hřbetnice snižuje, se nazývá…', a: 'sedlo', w: ['kotlina', 'úžlabí', 'kupa'], e: 'V sedle se stýkají dvě hřbetnice a dvě údolnice.' },

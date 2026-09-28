@@ -105,7 +105,7 @@ export default [
         ],
       },
       {
-        id: 'u15l3', title: 'Zdroje chyb', icon: '⚠️',
+        id: 'u15l3', title: 'Zdroje chyb', icon: '⚠️', gens: ['sky'],
         items: [
           { t: 'c', q: 'Ionosféra je pro signály GNSS prostředím…', a: 'disperzním – zpoždění závisí na frekvenci', w: ['nedisperzním – stejné pro všechny frekvence', 'zcela průhledným bez vlivu', 'odrážejícím všechny signály'], e: 'Vliv 1. řádu je úměrný 1/f², proto jej lze vyloučit dvoufrekvenčním měřením.' },
           { t: 'c', q: 'Ionosférou je kódové měření zpožděno a fázové…', a: 'urychleno o stejnou hodnotu', w: ['zpožděno dvojnásobně', 'nijak ovlivněno', 'zpožděno o polovinu'], e: 'Tzv. ionosférická divergence: grupové zpoždění kódu, fázové předběhnutí nosné.' },

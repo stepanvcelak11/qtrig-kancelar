@@ -228,7 +228,91 @@ function azimuth() {
     e: `ΔY ${dy >= 0 ? '> 0' : '< 0'} a ΔX ${dx >= 0 ? '> 0' : '< 0'} → ${q}. kvadrant. Pomocný úhel φ = arctg|ΔY/ΔX| = ${(Math.atan(Math.abs(dy / dx)) / GON).toFixed(2).replace('.', ',')} gon, směrník σ = ${a.toFixed(2).replace('.', ',')} gon (od +X po směru hodinových ručiček).` };
 }
 
-export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth };
+// --- 7) Interpolace vrstevnic v trojúhelníku TIN ------------------------------------------
+
+export function checkContour(ex, p) {
+  const d = dist(p, ex.Q);
+  return { ok: d <= ex.tolM, d, reason: d <= ex.tolM ? '' : `Vrstevnice protíná hranu jinde – jsi ${d.toFixed(1).replace('.', ',')} m vedle.` };
+}
+
+function contour() {
+  for (;;) {
+    const P = [{ x: rnd(10, 40), y: rnd(10, 54) }, { x: rnd(60, 90), y: rnd(8, 30) }, { x: rnd(55, 90), y: rnd(38, 56) }]
+      .map((q, i) => ({ x: round(q.x, 1), y: round(q.y, 1), n: 'ABC'[i], h: round(rnd(300, 340), 1) }));
+    const [A, B] = P;
+    if (dist(A, B) < 40 || Math.abs(A.h - B.h) < 6) continue;
+    const lo = Math.min(A.h, B.h), hi = Math.max(A.h, B.h);
+    const L = Math.ceil(lo + 1) + Math.floor(Math.random() * Math.max(1, Math.floor(hi - 1) - Math.ceil(lo + 1) + 1));
+    if (L <= lo + 0.5 || L >= hi - 0.5) continue;
+    const t = (L - A.h) / (B.h - A.h);
+    const Q = { x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) };
+    if (dist(Q, A) < 6 || dist(Q, B) < 6) continue;
+    // Druhý průsečík vrstevnice s trojúhelníkem (pro vykreslení po kontrole).
+    const C = P[2];
+    const other = [[A, C], [B, C]].map(([u, v]) => {
+      if ((u.h - L) * (v.h - L) >= 0) return null;
+      const k = (L - u.h) / (v.h - u.h);
+      return { x: u.x + k * (v.x - u.x), y: u.y + k * (v.y - u.y) };
+    }).find(Boolean) ?? null;
+    return { t: 'contour', pts: P, L, Q, other, tolM: 2.5,
+      e: `Lineární interpolace na hraně ${A.n}${B.n}: t = (${L} − ${fmt1(A.h)}) / (${fmt1(B.h)} − ${fmt1(A.h)}) = ${t.toFixed(3).replace('.', ',')}, tedy ${(t * 100).toFixed(0)} % délky hrany od bodu ${A.n}.` };
+  }
+}
+const fmt1 = (x) => x.toFixed(1).replace('.', ',');
+
+// --- 8) GNSS: výběr 4 družic s nejlepší geometrií (PDOP) ------------------------------------
+
+function inv4(M) {
+  const n = 4, a = M.map((r, i) => [...r, ...Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))]);
+  for (let c = 0; c < n; c++) {
+    let piv = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(a[r][c]) > Math.abs(a[piv][c])) piv = r;
+    if (Math.abs(a[piv][c]) < 1e-12) return null;
+    [a[c], a[piv]] = [a[piv], a[c]];
+    const d = a[c][c];
+    for (let j = 0; j < 2 * n; j++) a[c][j] /= d;
+    for (let r = 0; r < n; r++) if (r !== c) { const f = a[r][c]; for (let j = 0; j < 2 * n; j++) a[r][j] -= f * a[c][j]; }
+  }
+  return a.map((r) => r.slice(n));
+}
+
+/** PDOP pro vybrané družice (azimut a elevace ve stupních). */
+export function pdop(sats) {
+  const G = sats.map((s) => {
+    const az = s.az * Math.PI / 180, el = s.el * Math.PI / 180;
+    return [-Math.cos(el) * Math.sin(az), -Math.cos(el) * Math.cos(az), -Math.sin(el), 1];
+  });
+  const N = [0, 1, 2, 3].map((i) => [0, 1, 2, 3].map((j) => G.reduce((sum, g) => sum + g[i] * g[j], 0)));
+  const Q = inv4(N);
+  return Q ? Math.sqrt(Q[0][0] + Q[1][1] + Q[2][2]) : Infinity;
+}
+
+const combos4 = (n) => { const out = []; for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) for (let c = b + 1; c < n; c++) for (let d = c + 1; d < n; d++) out.push([a, b, c, d]); return out; };
+
+export function checkSky(ex, sel) {
+  if (!Array.isArray(sel) || sel.length !== 4) return { ok: false, reason: 'Vyber přesně 4 družice.' };
+  const v = pdop(sel.map((i) => ex.sats[i]));
+  const ok = v <= ex.best * 1.25;
+  return { ok, pdop: v, reason: ok ? '' : `Tvůj výběr má PDOP ${v.toFixed(1).replace('.', ',')}, nejlepší možný je ${ex.best.toFixed(1).replace('.', ',')}.` };
+}
+
+function sky() {
+  for (;;) {
+    const n = 7;
+    const sats = Array.from({ length: n }, () => ({ az: round(rnd(0, 360), 0), el: round(rnd(12, 82), 0), prn: `G${String(rint(1, 32)).padStart(2, '0')}` }));
+    if (new Set(sats.map((s) => s.prn)).size < n) continue;
+    // Na sky plotu se kolečka nesmí překrývat (průměr 22 jednotek při poloměru 92).
+    const xy = sats.map((q) => { const r = 92 * (1 - q.el / 90), a = q.az * Math.PI / 180; return [r * Math.sin(a), -r * Math.cos(a)]; });
+    if (xy.some((a, i) => xy.some((b, j) => j > i && Math.hypot(a[0] - b[0], a[1] - b[1]) < 26))) continue;
+    const all = combos4(n).map((c) => ({ c, v: pdop(c.map((i) => sats[i])) })).sort((a, b) => a.v - b.v);
+    // Úloha má smysl, jen když se dobré a špatné výběry výrazně liší.
+    if (!(all[0].v < 4 && all[all.length - 1].v > all[0].v * 3 && all[3].v > all[0].v * 1.25)) continue;
+    return { t: 'sky', sats, best: all[0].v, bestSet: all[0].c,
+      e: 'Nejlepší geometrie (nejnižší PDOP) vzniká, když jsou družice rozprostřené po celém obzoru a jedna je vysoko nad hlavou. Družice nahloučené v jednom směru dávají vysoké PDOP a horší přesnost.' };
+  }
+}
+
+export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth, contour, sky };
 
 /** Jednotné hodnocení praktických úloh. */
 export function checkField(ex, answer) {
@@ -239,6 +323,8 @@ export function checkField(ex, answer) {
     case 'bubble': return checkBubble(ex, answer);
     case 'fieldbook': return checkFieldbook(ex, answer);
     case 'azimuth': return checkAzimuth(ex, answer);
+    case 'contour': return checkContour(ex, answer);
+    case 'sky': return checkSky(ex, answer);
     default: return { ok: false };
   }
 }

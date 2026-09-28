@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {},
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {}, daily: null,
 });
 
 let state;
@@ -35,6 +35,43 @@ export function reset() {
 }
 
 /** Obnova životů v čase + přechod na nový den. */
+/** Denní počítadla pro úkoly dne (nulují se o půlnoci). */
+function daily() {
+  if (!state.daily || state.daily.day !== today()) state.daily = { day: today(), lessons: 0, field: 0, calc: 0, perfect: 0, correct: 0, reading: 0, claimed: false };
+  return state.daily;
+}
+
+const QUESTS = [
+  { id: 'xp', title: (n) => `Získej ${n} XP`, target: () => Math.max(20, state.dailyGoal), value: () => state.xpToday },
+  { id: 'lessons', title: (n) => `Dokonči ${n} lekce`, target: () => 2, value: (d) => d.lessons },
+  { id: 'field', title: (n) => `Vyřeš ${n} terénní úlohy`, target: () => 3, value: (d) => d.field },
+  { id: 'calc', title: (n) => `Spočítej správně ${n} příkladů`, target: () => 5, value: (d) => d.calc },
+  { id: 'perfect', title: () => 'Dokonči lekci bez chyby', target: () => 1, value: (d) => d.perfect },
+  { id: 'correct', title: (n) => `Odpověz správně ${n}×`, target: () => 25, value: (d) => d.correct },
+  { id: 'reading', title: (n) => `Odečti ${n}× lať nebo kruh`, target: () => 3, value: (d) => d.reading },
+];
+export const DAILY_BONUS = 20;
+
+/** Tři úkoly dne – výběr se mění každý den, ale během dne je stálý. */
+export function dailyQuests() {
+  const d = daily();
+  let h = 0; for (const ch of d.day) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const pool = QUESTS.slice(1), picked = [QUESTS[0]];
+  while (picked.length < 3) { h = (h * 1103515245 + 12345) >>> 0; const q = pool[h % pool.length]; if (!picked.includes(q)) picked.push(q); }
+  return picked.map((q) => { const target = q.target(), value = Math.min(target, q.value(d)); return { id: q.id, title: q.title(target), value, target, done: value >= target }; });
+}
+
+export function claimDaily() {
+  const d = daily();
+  if (d.claimed || !dailyQuests().every((q) => q.done)) return 0;
+  d.claimed = true;
+  state.xp += DAILY_BONUS; state.xpToday += DAILY_BONUS;
+  state.history = { ...state.history, [today()]: (state.history?.[today()] ?? 0) + DAILY_BONUS };
+  save();
+  return DAILY_BONUS;
+}
+export const dailyClaimed = () => daily().claimed;
+
 export function tick() {
   const now = Date.now();
   if (state.hearts < MAX_HEARTS) {
@@ -68,8 +105,13 @@ export function gainHeart() {
 
 export function recordAnswer(ex, ok) {
   state.stats.answered++;
+  const d = daily();
   if (ok) {
     state.stats.correct++;
+    d.correct++;
+    if (ex.t === 'n') d.calc++;
+    if (ex.t === 'rod' || ex.t === 'circle') d.reading++;
+    if (FIELD_TYPES.includes(ex.t)) d.field++;
     if (ex.t === 'n') state.stats.calc++;
     if (ex.t === 'rod') state.stats.rod++;
     if (FIELD_TYPES.includes(ex.t)) state.stats.field++;
@@ -94,6 +136,7 @@ export function completeLesson(lessonId, { mistakes, practice = false, unitTest 
     state.lastDay = today();
     streakUp = true;
   }
+  if ((lessonId || unitTest) && !practice) { daily().lessons++; if (mistakes === 0) daily().perfect++; }
   if (lessonId) {
     state.done[lessonId] = (state.done[lessonId] ?? 0) + 1;
     if (mistakes === 0) state.perfect[lessonId] = true;

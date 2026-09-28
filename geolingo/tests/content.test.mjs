@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { UNITS, LESSONS, TIPS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
 import { GEN, generate, fmt, bearingGon, polygonArea } from '../js/generators.js';
-import { FIELD, checkField, turnScrew, blocked } from '../js/field.js';
+import { FIELD, checkField, turnScrew, blocked, pdop } from '../js/field.js';
 
 let checks = 0;
 const ok = (cond, msg) => { assert.ok(cond, msg); checks++; };
@@ -180,6 +180,21 @@ for (let k = 0; k < 300; k++) {
   const quad = { I: [0, 100], II: [100, 200], III: [200, 300], IV: [300, 400] }[az.quadrant];
   ok(az.a >= quad[0] && az.a < quad[1], `směrník: kvadrant ${az.quadrant} ≠ ${az.a}`);
   ok(checkField(az, az.a + 4).ok && !checkField(az, az.a + 10).ok && checkField(az, (az.a + 398) % 400).ok, 'směrník: tolerance a přechod přes 0');
+}
+// Vrstevnice: bod leží na hraně AB a má interpolovanou výšku L.
+for (let k = 0; k < 300; k++) {
+  const c = generate('contour'), [A, B] = c.pts;
+  const t = Math.hypot(c.Q.x - A.x, c.Q.y - A.y) / Math.hypot(B.x - A.x, B.y - A.y);
+  ok(Math.abs(A.h + t * (B.h - A.h) - c.L) < 1e-9, 'vrstevnice: výška');
+  ok(checkField(c, c.Q).ok && !checkField(c, A).ok, 'vrstevnice: hodnocení');
+}
+// PDOP: 4 družice rovnoměrně (1 v zenitu, 3 po 120° u obzoru) mají známé PDOP ≈ 1,63 (el 0°).
+const ideal = [{ az: 0, el: 90 }, { az: 0, el: 0 }, { az: 120, el: 0 }, { az: 240, el: 0 }];
+ok(Math.abs(pdop(ideal) - 1.633) < 0.01, `PDOP ideální konfigurace ${pdop(ideal)}`);
+ok(pdop([{ az: 0, el: 40 }, { az: 10, el: 45 }, { az: 20, el: 42 }, { az: 5, el: 50 }]) > 10, 'PDOP nahloučených družic musí být vysoké');
+for (let k = 0; k < 60; k++) {
+  const s = generate('sky');
+  ok(checkField(s, s.bestSet).ok && !checkField(s, [0, 1, 2]).ok, 'nebe: hodnocení');
 }
 console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 
