@@ -9,26 +9,36 @@ const app = $('#app');
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ---------------------------------------------------------------------------------------
-// Maskot Toti (totální stanice na stativu: žluté tělo, displej s očima, dalekohled, laser)
+// Maskot Toti (totální stanice na stativu) – přesně podle předlohy.
 
 function mascot(mood = 'happy') {
-  const sad = mood === 'sad', wow = mood === 'wow';
-  const eyeY = sad ? 55 : 52, eyeH = wow ? 10 : sad ? 5 : 8;
-  const mouth = sad ? 'M45 68 Q50 64 55 68' : wow ? 'M47 66 Q50 71 53 66 Z' : 'M44 65 Q50 70 56 65';
-  return `<svg viewBox="0 0 100 100" aria-hidden="true">
-    <g stroke="#c77a2a" stroke-width="5" stroke-linecap="round"><line x1="50" y1="80" x2="24" y2="98"/><line x1="50" y1="80" x2="76" y2="98"/><line x1="50" y1="80" x2="50" y2="99"/></g>
-    <g fill="#8a5a2b"><circle cx="24" cy="98" r="2.5"/><circle cx="76" cy="98" r="2.5"/></g>
-    <rect x="30" y="76" width="40" height="7" rx="3" fill="#4a4a4a"/>
-    <rect x="36" y="71" width="28" height="7" rx="2" fill="#6b6b6b"/>
-    <path d="M28 30 v-8 a4 4 0 0 1 4 -4 M72 30 v-8 a4 4 0 0 0 -4 -4" fill="none" stroke="#3c3c3c" stroke-width="4" stroke-linecap="round"/>
-    <rect x="42" y="12" width="20" height="12" rx="4" fill="#3c3c3c"/><circle cx="62" cy="18" r="4" fill="#1cb0f6"/>
-    <line x1="66" y1="18" x2="96" y2="18" stroke="#ff4b4b" stroke-width="1.6" stroke-dasharray="3 2"/><circle cx="96" cy="18" r="2" fill="#ff4b4b"/>
-    <rect x="24" y="24" width="52" height="50" rx="10" fill="#ffc800" stroke="#e5a600" stroke-width="3"/>
-    <rect x="25.5" y="31" width="49" height="8" fill="#2fbf71"/>
-    <rect x="33" y="43" width="34" height="26" rx="6" fill="#1f2b33"/>
-    <rect x="${sad ? 39 : 40}" y="${eyeY - eyeH / 2}" width="6" height="${eyeH}" rx="2" fill="#7fe3ff"/>
-    <rect x="${sad ? 55 : 54}" y="${eyeY - eyeH / 2}" width="6" height="${eyeH}" rx="2" fill="#7fe3ff"/>
-    <path d="${mouth}" fill="${wow ? '#7fe3ff' : 'none'}" stroke="#7fe3ff" stroke-width="2.5" stroke-linecap="round"/>
+  // Oči na displeji: normální ovály, smutné = přivřené, překvapené = větší.
+  const eh = mood === 'sad' ? 26 : mood === 'wow' ? 66 : 55;
+  const ey = mood === 'sad' ? 482 : 480 - eh / 2;
+  return `<svg viewBox="60 90 720 870" aria-hidden="true">
+    <g stroke-linecap="round">
+      <line x1="355" y1="650" x2="118" y2="928" stroke="#b87a38" stroke-width="32"/>
+      <line x1="355" y1="650" x2="592" y2="928" stroke="#b87a38" stroke-width="32"/>
+      <line x1="355" y1="650" x2="355" y2="930" stroke="#a86a30" stroke-width="34"/>
+    </g>
+    <rect x="75" y="916" width="88" height="24" rx="12" fill="#6f7480"/>
+    <rect x="548" y="916" width="88" height="24" rx="12" fill="#6f7480"/>
+    <rect x="252" y="548" width="208" height="62" rx="14" fill="#3d4452"/>
+    <rect x="245" y="605" width="222" height="48" rx="18" fill="#6f7480"/>
+    <path d="M245 168 Q355 70 470 168" fill="none" stroke="#3d4452" stroke-width="22" stroke-linecap="round"/>
+    <rect x="178" y="395" width="355" height="160" rx="30" fill="#f2c230" stroke="#c9981c" stroke-width="5"/>
+    <rect x="175" y="165" width="90" height="272" rx="30" fill="#f2c230" stroke="#c9981c" stroke-width="5"/>
+    <rect x="447" y="165" width="93" height="272" rx="30" fill="#f2c230" stroke="#c9981c" stroke-width="5"/>
+    <rect x="245" y="428" width="220" height="102" rx="20" fill="#0f1c2a"/>
+    <rect x="290" y="${ey}" width="42" height="${eh}" rx="18" fill="#6ce5ff"/>
+    <rect x="378" y="${ey}" width="42" height="${eh}" rx="18" fill="#6ce5ff"/>
+    <rect x="190" y="262" width="52" height="64" rx="20" fill="#1e2430"/>
+    <path d="M232 262 Q232 240 262 239 L530 232 L530 342 L262 338 Q232 337 232 315 Z" fill="#2e9a6a" stroke="#237a53" stroke-width="5"/>
+    <circle cx="355" cy="288" r="35" fill="#f2c230" stroke="#c9981c" stroke-width="5"/>
+    <rect x="520" y="222" width="57" height="126" rx="26" fill="#1e2430"/>
+    <line x1="590" y1="283" x2="748" y2="277" stroke="#d9434e" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="748" cy="277" r="14" fill="#d9434e"/>
+    <circle cx="572" cy="283" r="26" fill="#93c5fd"/>
   </svg>`;
 }
 
