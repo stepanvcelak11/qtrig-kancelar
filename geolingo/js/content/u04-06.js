@@ -19,7 +19,7 @@ export default [
       {
         id: 'u4l2', title: 'Vodorovné úhly', icon: '↔️', gens: ['angleDiff', 'hzCircle', 'dirbook'],
         items: [
-          { t: 'c', q: 'Vodorovný úhel je…', a: 'průmět úhlu do vodorovné roviny', w: ['úhel od svislice', 'sklon terénu', 'rozdíl výšek'], e: 'Nezávisí na sklonu záměr.' },
+          { t: 'c', q: 'Vodorovný úhel je…', a: 'úhel mezi průměty záměr do vodorovné roviny', w: ['úhel mezi záměrou a svislicí', 'úhel mezi záměrou a vodorovnou rovinou', 'rozdíl výšek dvou cílů'], e: 'Nezávisí na sklonu záměr.' },
           { t: 'c', q: 'Měření ve skupinách znamená měřit osnovu směrů…', a: 'v obou polohách dalekohledu', w: ['jen v I. poloze', 'jen na jeden cíl', 'bez orientace'], e: 'Jedna skupina = I. a II. poloha.' },
           { t: 'c', q: 'Úhel mezi levým a pravým cílem vypočteme jako…', a: 'čtení na pravý − čtení na levý cíl', w: ['levý + pravý', 'levý − pravý', 'průměr obou čtení'], e: 'Je-li výsledek záporný, přičte se 400 gon.' },
           { t: 'c', q: 'Orientace osnovy směrů znamená…', a: 'určit směrník nulového směru limbu', w: ['urovnat libelu', 'změřit výšku přístroje', 'zacentrovat'], e: 'K tomu slouží orientační body se známými souřadnicemi.' },
@@ -42,7 +42,7 @@ export default [
         items: [
           { t: 'c', q: 'Elektronický dálkoměr určuje délku z…', a: 'doby šíření nebo fázového posunu elmag. vlny', w: ['rychlosti zvuku', 'tíhového zrychlení', 'magnetického pole'], e: 'Pulzní nebo fázové dálkoměry.' },
           { t: 'c', q: 'Přesnost dálkoměru se udává ve tvaru…', a: 'a mm + b ppm', w: ['a gon', 'a %', 'a m/km²'], e: 'Konstantní část + část úměrná délce.' },
-          { t: 'c', q: '1 ppm na délce 1 km odpovídá…', a: '1 mm', w: ['1 cm', '0,1 mm', '1 m'], e: 'ppm = milióntina: 1 000 000 mm × 10⁻⁶ = 1 mm.' },
+          { t: 'c', q: '1 ppm na délce 1 km odpovídá…', a: '1 mm', w: ['1 cm', '0,1 mm', '1 m'], e: 'ppm = miliontina: 1 000 000 mm × 10⁻⁶ = 1 mm.' },
           { t: 'c', q: 'Atmosférická (fyzikální) korekce délky závisí hlavně na…', a: 'teplotě a tlaku vzduchu', w: ['barvě hranolu', 'výšce přístroje', 'délce stativu'], e: 'Mění se rychlost šíření světla ve vzduchu.' },
           { t: 'c', q: 'Vodorovná délka ze šikmé délky s a zenitového úhlu z: d = …', a: 's · sin z', w: ['s · cos z', 's / sin z', 's · tg z'], e: 'Při z = 100 gon je d = s.' },
           { t: 'c', q: 'Součtová konstanta hranolu…', a: 'se nastaví v přístroji a opravuje měřenou délku', w: ['se zanedbává', 'mění měřený úhel', 'opravuje výšku'], e: 'U různých hranolů se liší (např. 0 nebo −30 mm).' },
@@ -140,14 +140,14 @@ export default [
           { t: 'c', q: 'Přestavový bod je bod, na kterém…', a: 'se lať čte vpřed a po přestavení přístroje vzad', w: ['stojí přístroj', 'pořad začíná', 'je nivelační značka'], e: 'Spojuje dvě sestavy.' },
           { t: 'c', q: 'Výškový uzávěr pořadu: u = …', a: 'Σ Δh − (H_K − H_Z)', w: ['H_K + H_Z', 'Σ Δh', 'Σ vzad + Σ vpřed'], e: 'Rozdíl naměřeného a daného převýšení.' },
           { t: 'c', q: 'Oprava z uzávěru se rozděluje…', a: 'úměrně délkám (počtu sestav)', w: ['jen na první sestavu', 'na body bez ohledu na délku', 'nerozděluje se'], e: 'Delší úsek má větší vliv chyb.' },
-          { t: 'tf', q: 'Pořad se měří tam i zpět, aby se odhalily hrubé chyby.', a: true, e: 'Rozdíl tam a zpět se porovná s mezní odchylkou.' },
+          { t: 'tf', q: 'Měřením pořadu tam i zpět lze odhalit hrubé chyby.', a: true, e: 'Rozdíl převýšení tam a zpět se porovná s mezní odchylkou.' },
           { t: 'o', q: 'Seřaďte jednu nivelační sestavu', s: ['Postavit přístroj mezi latě', 'Urovnat krabicovou libelu', 'Zamířit na lať vzad a přečíst', 'Zamířit na lať vpřed a přečíst', 'Vypočítat převýšení vzad − vpřed'], e: 'Tak to jde sestavu po sestavě.' },
         ],
       },
       {
         id: 'u6l3', title: 'Mezní odchylky', icon: '✅', gens: ['levelLimit'],
         items: [
-          { t: 'c', q: 'Mezní odchylka technické nivelace je…', a: '40 mm · √R', w: ['4 mm · √R', '40 mm · R', '0,4 mm · √R'], e: 'R je délka pořadu v kilometrech.' },
+          { t: 'c', q: 'Mezní odchylka uzávěru pořadu technické nivelace je…', a: '40 mm · √R', w: ['4 mm · √R', '40 mm · R', '0,4 mm · √R'], e: 'R je délka pořadu v kilometrech.' },
           { t: 'c', q: 'R ve vzorci mezní odchylky je…', a: 'délka pořadu v km', w: ['počet sestav', 'poloměr Země', 'čtení latě'], e: 'Chyba roste s odmocninou z délky.' },
           { t: 'c', q: 'Přesná nivelace se od technické liší…', a: 'vyšší přesností, invarovými latěmi a přísnějším postupem', w: ['nižší přesností', 'měřením GNSS', 'měřením bez latí'], e: 'Používá se pro výškové bodové pole.' },
           { t: 'tf', q: 'Překročí-li uzávěr mezní odchylku, měření se musí opakovat.', a: true, e: 'Výsledek nevyhovuje.' },

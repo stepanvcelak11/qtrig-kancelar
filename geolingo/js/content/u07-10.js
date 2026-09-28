@@ -111,7 +111,7 @@ export default [
           { t: 'c', q: 'Souřadnicová střední chyba: m_xy = …', a: '√((m_x² + m_y²) / 2)', w: ['m_x + m_y', 'm_x · m_y', '√(m_x² + m_y²)'], e: 'Průměr kvadrátů v obou osách.' },
           { t: 'tf', q: 'Mezní odchylka je hranice, jejíž překročení znamená, že měření nevyhovuje.', a: true, e: 'Předepisují ji normy a vyhlášky.' },
           { t: 'tf', q: 'Bod s kódem kvality 3 je přesnější než bod s kódem kvality 8.', a: true, e: 'Kód 3 = přesné měření (0,14 m), kód 8 = digitalizace mapy 1 : 2 880 (2,83 m).' },
-          { t: 'c', q: 'Mezní odchylka se obvykle stanoví jako…', a: 'dvojnásobek střední chyby', w: ['polovina střední chyby', 'střední chyba na druhou', 'desetinásobek střední chyby'], e: 'Mezní chyba ≈ 2 m (u přísnějších případů až 3 m).' },
+          { t: 'c', q: 'Mezní odchylka se obvykle stanoví jako…', a: 'dvojnásobek střední chyby', w: ['polovina střední chyby', 'střední chyba na druhou', 'desetinásobek střední chyby'], e: 'Mezní odchylka = 2 × střední chyba (někdy se používá 2,5 až 3násobek).' },
         ],
       },
     ],
@@ -139,7 +139,7 @@ export default [
           { t: 'c', q: 'List vlastnictví (LV) obsahuje…', a: 'vlastníky a jejich nemovitosti', w: ['souřadnice všech bodů', 'mapu obce', 'výsledky nivelace'], e: 'Veřejně dostupný výpis z katastru.' },
           { t: 'c', q: 'Katastrální mapa digitalizovaná (KMD) vznikla…', a: 'převodem analogové mapy do digitální podoby', w: ['novým GNSS měřením všech bodů', 'z laserového skenování', 'ze satelitních snímků'], e: 'Proto mají její body často horší kód kvality.' },
           { t: 'tf', q: 'Parcela je pozemek geometricky a polohově určený a zobrazený v katastrální mapě.', a: true, e: 'Má parcelní číslo.' },
-          { t: 'm', q: 'Spojte zkratku s významem', p: [['LV', 'Vlastníci a nemovitosti'], ['SGI', 'Katastrální mapa'], ['SPI', 'Popisné údaje'], ['KMD', 'Digitalizovaná mapa']] },
+          { t: 'm', q: 'Spojte zkratku s významem', p: [['LV', 'Vlastníci a nemovitosti'], ['SGI', 'Mapa a souřadnice bodů'], ['SPI', 'Popisné údaje'], ['KMD', 'Digitalizovaná mapa']] },
         ],
       },
       {

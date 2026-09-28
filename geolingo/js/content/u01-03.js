@@ -17,7 +17,7 @@ export default [
         items: [
           { t: 'c', q: 'Čím se zabývá geodézie?', a: 'Měřením a zobrazováním Země a jejích částí', w: ['Studiem hornin a nerostů', 'Předpovědí počasí', 'Projektováním silnic'], e: 'Geodézie (zeměměřictví) určuje tvar a rozměry Země a polohu bodů na jejím povrchu.' },
           { t: 'c', q: 'Který obor se zabývá tvarem a tíhovým polem celé Země?', a: 'Vyšší geodézie', w: ['Katastr nemovitostí', 'Inženýrská geodézie', 'Kartografie'], e: 'Vyšší geodézie řeší Zemi jako celek – její tvar, rozměry a tíhové pole.' },
-          { t: 'c', q: 'Který obor se zabývá tvorbou map?', a: 'Kartografie', w: ['Fotogrammetrie', 'Metrologie', 'Geologie'], e: 'Kartografie je nauka o mapách a jejich tvorbě.' },
+          { t: 'c', q: 'Nauka o mapách, jejich tvorbě a využití se nazývá…', a: 'Kartografie', w: ['Fotogrammetrie', 'Metrologie', 'Geologie'], e: 'Kartografie je nauka o mapách a jejich tvorbě.' },
           { t: 'c', q: 'Fotogrammetrie určuje tvar a polohu objektů z…', a: 'měřických snímků', w: ['tíhových měření', 'nivelačních pořadů', 'katastrálních map'], e: 'Foto-gram-metrie = měření z fotografií (pozemních, leteckých, z dronů).' },
           { t: 'c', q: 'Inženýrská geodézie se zabývá hlavně…', a: 'měřením pro stavby a průmysl', w: ['tvarem Země', 'správou katastru', 'tvorbou atlasů'], e: 'Vytyčování staveb, sledování posunů a přetvoření, měření pro strojírenství.' },
           { t: 'tf', q: 'Zeměměřictví je české označení pro geodézii.', a: true, e: 'Oba pojmy se používají souběžně, např. „zákon o zeměměřictví“.' },
@@ -53,8 +53,8 @@ export default [
       {
         id: 'u1l4', title: 'Tvar Země', icon: '🌐',
         items: [
-          { t: 'c', q: 'Plocha, která nejlépe odpovídá klidné střední hladině moří, se nazývá…', a: 'geoid', w: ['elipsoid', 'koule', 'kvazirovina'], e: 'Geoid je hladinová plocha tíhového pole – nepravidelná, fyzikálně definovaná.' },
-          { t: 'c', q: 'Matematicky jednoduchá plocha pro výpočty poloh je…', a: 'rotační elipsoid', w: ['geoid', 'hyperboloid', 'kvádr'], e: 'Elipsoid je dán dvěma parametry (poloosy, zploštění).' },
+          { t: 'c', q: 'Plocha, která nejlépe odpovídá klidné střední hladině moří, se nazývá…', a: 'geoid', w: ['elipsoid', 'koule', 'tečná rovina'], e: 'Geoid je hladinová plocha tíhového pole – nepravidelná, fyzikálně definovaná.' },
+          { t: 'c', q: 'Matematicky jednoduchá plocha pro výpočty poloh je…', a: 'rotační elipsoid', w: ['geoid', 'hyperboloid', 'kvádr'], e: 'Elipsoid je dán dvěma parametry, např. hlavní poloosou a zploštěním.' },
           { t: 'c', q: 'Na jakém elipsoidu je založen S-JTSK?', a: 'Besselově', w: ['GRS80', 'WGS84', 'Krasovského'], e: 'S-JTSK používá Besselův elipsoid z roku 1841.' },
           { t: 'c', q: 'Systém ETRS89 používá elipsoid…', a: 'GRS80', w: ['Besselův', 'Hayfordův', 'Clarkův'], e: 'GRS80 je prakticky shodný s WGS84.' },
           { t: 'c', q: 'Střední poloměr Země je přibližně…', a: '6 371 km', w: ['3 185 km', '12 742 km', '40 000 km'], e: '12 742 km je průměr, 40 000 km je obvod.' },
@@ -66,7 +66,7 @@ export default [
       {
         id: 'u1l5', title: 'Bodová pole', icon: '📍',
         items: [
-          { t: 'c', q: 'Body základního polohového bodového pole jsou hlavně…', a: 'trigonometrické body', w: ['nivelační body', 'tíhové body', 'lomové body hranic'], e: 'Trigonometrické a zhušťovací body tvoří polohové bodové pole.' },
+          { t: 'c', q: 'Body základního polohového bodového pole jsou hlavně…', a: 'trigonometrické body', w: ['nivelační body', 'tíhové body', 'lomové body hranic'], e: 'Jeho převážnou část tvoří trigonometrické a zhušťovací body České státní trigonometrické sítě.' },
           { t: 'c', q: 'Výšky jsou v terénu dány body…', a: 'výškového (nivelačního) bodového pole', w: ['trigonometrickými body', 'katastrálními body', 'GNSS anténami'], e: 'Nivelační body mají výšky v systému Bpv.' },
           { t: 'c', q: 'Síť permanentních stanic GNSS provozovaná ČÚZK se jmenuje…', a: 'CZEPOS', w: ['VRS Now', 'TopNET', 'Galileo'], e: 'VRS Now a TopNET jsou komerční sítě, Galileo je družicový systém.' },
           { t: 'c', q: 'Podrobné polohové bodové pole slouží hlavně…', a: 'jako podklad pro podrobné měření', w: ['k určení tvaru Země', 'k měření tíhy', 'k letecké navigaci'], e: 'Z bodů PBPP se měří např. změny v katastru.' },
@@ -153,7 +153,7 @@ export default [
           { t: 'm', q: 'Spojte označení osy s jejím názvem', p: [['V', 'Svislá (točná) osa'], ['H', 'Klopná osa'], ['Z', 'Záměrná přímka'], ['L', 'Osa alhidádové libely']] },
           { t: 'c', q: 'Otočná horní část přístroje, která nese dalekohled, se nazývá…', a: 'alhidáda', w: ['limbus', 'trojnožka', 'podložka'], e: 'Alhidáda se otáčí kolem svislé osy.' },
           { t: 'c', q: 'Vodorovný dělený kruh se nazývá…', a: 'limbus', w: ['alhidáda', 'kolimátor', 'okulár'], e: 'Z limbu se čte vodorovný směr.' },
-          { t: 'c', q: 'Která část slouží k hrubému zamíření na cíl?', a: 'kolimátor (hledáček)', w: ['ustanovka', 'stavěcí šroub', 'kompenzátor'], e: 'Kolimátor je na dalekohledu shora.' },
+          { t: 'c', q: 'Která část slouží k hrubému zamíření na cíl?', a: 'kolimátor (hledáček)', w: ['ustanovka', 'stavěcí šroub', 'kompenzátor'], e: 'Kolimátor je umístěn nahoře na dalekohledu.' },
           { t: 'c', q: 'Jemné natočení přístroje na cíl zajišťují…', a: 'ustanovky', w: ['stavěcí šrouby', 'svěrky stativu', 'kolimátor'], e: 'Vodorovná ustanovka otáčí alhidádou, svislá dalekohledem.' },
           { t: 'c', q: 'Totální stanice kombinuje…', a: 'elektronický teodolit a dálkoměr', w: ['nivelační přístroj a lať', 'GNSS a kompas', 'fotoaparát a laser'], e: 'Měří současně úhly i délky.' },
           { t: 'c', q: 'Tři šrouby trojnožky, kterými se přístroj horizontuje, jsou…', a: 'stavěcí šrouby', w: ['ustanovky', 'ostřicí šrouby', 'svěrky'], e: 'Pomocí nich se urovná libela.' },
