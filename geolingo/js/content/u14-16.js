@@ -1,0 +1,217 @@
+// Vysokoškolské kapitoly 14–16: Fotogrammetrie a laserové skenování, Družicová geodézie,
+// Geodetické sítě a deformace. Formát otázek viz js/content/u01-03.js.
+
+export default [
+  {
+    id: 'u14', title: 'Fotogrammetrie a laserové skenování', color: '#ea580c', level: 'VŠ',
+    desc: 'Měřítko snímku, orientace, stereofotogrammetrie, SfM zpracování a laserové skenování TLS/ALS.',
+    lessons: [
+      {
+        id: 'u14l1', title: 'Snímek a jeho měřítko', icon: '📷', gens: ['photoScale', 'gsd'],
+        items: [
+          { t: 'c', q: 'Měřítkové číslo svislého snímku rovinného terénu je dáno poměrem…', a: 'výšky letu a konstanty komory', w: ['konstanty komory a výšky letu', 'velikosti pixelu a výšky letu', 'základny a výšky letu'], e: 'm_s = h / c; např. h = 1 500 m, c = 150 mm → snímek 1 : 10 000.' },
+          { t: 'c', q: 'Konstanta komory c je…', a: 'vzdálenost projekčního centra od roviny snímku', w: ['průměr vstupní pupily objektivu', 'rozměr snímače v ose letu', 'vzdálenost dvou sousedních snímků'], e: 'U kamery zaostřené na nekonečno je c prakticky rovna ohniskové vzdálenosti.' },
+          { t: 'c', q: 'Co vyjadřuje GSD (Ground Sample Distance)?', a: 'Velikost pixelu promítnutou na terén', w: ['Přesnost vlícovacích bodů', 'Vzdálenost projekčních center', 'Rozměr snímače v milimetrech'], e: 'GSD = velikost pixelu · h / c. Menší GSD = podrobnější snímek.' },
+          { t: 'c', q: 'Jak se změní GSD, když dron poletí ve dvojnásobné výšce (stejná kamera)?', a: 'Zvětší se dvakrát', w: ['Zmenší se dvakrát', 'Zvětší se čtyřikrát', 'Nezmění se'], e: 'GSD je přímo úměrné výšce letu.' },
+          { t: 'tf', q: 'Měřítko svislého leteckého snímku členitého terénu je v celém snímku konstantní.', a: false, e: 'Snímek je středový průmět – měřítko se mění s výškou terénu. Konstantní měřítko má až ortofoto.' },
+          { t: 'c', q: 'Pozemní (blízká) fotogrammetrie se typicky používá pro…', a: 'dokumentaci fasád a památek', w: ['mapování celých krajů', 'tvorbu státních ortofot', 'určení tíhového pole'], e: 'Pozemní snímky mají osu záběru přibližně vodorovnou, vzdálenost objektu je malá.' },
+          { t: 'c', q: 'Hlavní výhoda UAV fotogrammetrie proti klasickému leteckému snímkování je…', a: 'pružnost a malé GSD pro menší lokality', w: ['pokrytí celého státu za den', 'nezávislost na počasí a větru', 'nulová potřeba vlícovacích bodů'], e: 'Drony létají nízko (desítky až stovky metrů) → GSD v jednotkách cm, ale pokryjí jen menší území.' },
+          { t: 'm', q: 'Spojte pojem s popisem', p: [['c', 'Konstanta komory'], ['m_s', 'Měřítkové číslo snímku'], ['GSD', 'Pixel na terénu'], ['h', 'Výška letu nad terénem']] },
+        ],
+      },
+      {
+        id: 'u14l2', title: 'Orientace snímků', icon: '🧭',
+        items: [
+          { t: 'c', q: 'Které prvky tvoří vnitřní orientaci snímku?', a: 'Konstanta komory, hlavní bod a distorze', w: ['X₀, Y₀, Z₀ a úhly ω, φ, κ', 'Základna, překryt a výška letu', 'Souřadnice vlícovacích bodů'], e: 'Vnitřní orientace popisuje geometrii kamery – obnovuje svazek paprsků uvnitř komory.' },
+          { t: 'c', q: 'Kolik prvků má vnější orientace jednoho snímku?', a: '6', w: ['3', '7', '9'], e: 'Poloha projekčního centra X₀, Y₀, Z₀ a tři úhly natočení ω, φ, κ.' },
+          { t: 'c', q: 'Hlavní bod snímku je…', a: 'pata kolmice z projekčního centra na snímek', w: ['střed rámu snímku', 'průsečík osy letu se snímkem', 'nejjasnější bod snímku'], e: 'Poloha hlavního bodu (x₀′, y₀′) se určuje kalibrací; od středu snímku se mírně liší.' },
+          { t: 'c', q: 'Rovnice kolinearity vyjadřují, že…', a: 'obrazový bod, centrum a předmětový bod leží na přímce', w: ['všechny snímky mají stejné měřítko', 'osy snímků jsou navzájem rovnoběžné', 'vlícovací body leží v jedné rovině'], e: 'Je to základní model středového promítání, na němž stojí protínání i vyrovnání svazků.' },
+          { t: 'c', q: 'Kolik vlícovacích bodů (X, Y, Z) teoreticky stačí pro prostorové protínání zpět jednoho snímku?', a: '3', w: ['2', '4', '6'], e: 'Každý bod dává 2 rovnice, neznámých je 6. V praxi se volí více bodů kvůli kontrole.' },
+          { t: 'tf', q: 'Kontrolní body se nepoužívají při výpočtu orientace, slouží k nezávislému ověření přesnosti.', a: true, e: 'Vlícovací body (GCP) vstupují do výpočtu, kontrolní body (checkpoints) jen do hodnocení.' },
+          { t: 'c', q: 'Radiální distorze objektivu způsobuje…', a: 'posun obrazu bodů od hlavního bodu nebo k němu', w: ['posun celého snímku ve směru letu', 'změnu barev na okrajích snímku', 'rozmazání pohybem letadla'], e: 'Roste se vzdáleností od středu snímku; modeluje se polynomem (koeficienty k₁, k₂, …).' },
+          { t: 'm', q: 'Přiřaďte úhel vnější orientace k ose rotace', p: [['ω', 'Rotace kolem osy X'], ['φ', 'Rotace kolem osy Y'], ['κ', 'Rotace kolem osy Z']] },
+        ],
+      },
+      {
+        id: 'u14l3', title: 'Stereo a letový plán', icon: '✈️', gens: ['photoBase'],
+        items: [
+          { t: 'c', q: 'Typický podélný překryt u klasického leteckého snímkování je…', a: '60 %', w: ['20 %', '40 %', '95 %'], e: 'Při 60 % je každý bod alespoň na dvou snímcích. U UAV se volí 70–80 %.' },
+          { t: 'c', q: 'Typický příčný překryt sousedních řad u klasického snímkování je…', a: '20–30 %', w: ['0–5 %', '60–80 %', '90–95 %'], e: 'U UAV a SfM se příčný překryt zvyšuje až na 60 % i více.' },
+          { t: 'c', q: 'Základna B ve fotogrammetrii je…', a: 'vzdálenost projekčních center dvou snímků', w: ['délka snímkové řady', 'šířka záběru jednoho snímku', 'výška letu nad terénem'], e: 'Pro podélný překryt p platí B = s · m_s · (1 − p), kde s je strana snímku.' },
+          { t: 'c', q: 'Z čeho se ve stereodvojici určuje výška bodu?', a: 'Z horizontální (x) paralaxy', w: ['Z vertikální (y) paralaxy', 'Z radiometrie pixelů', 'Z konstanty komory samotné'], e: 'Normální případ: Z = B · c / p_x. Větší paralaxa = bod blíž kameře.' },
+          { t: 'n', q: 'Normální případ: B = 600 m, c = 150 mm, x-paralaxa p = 90 mm. Vypočtěte vzdálenost Z bodu od základny.', a: 1000, tol: 0.5, dec: 0, unit: 'm', e: 'Z = B · c / p = 600 · 0,150 / 0,090 = 1 000 m.' },
+          { t: 'tf', q: 'Větší poměr základny k výšce (B/h) zlepšuje přesnost určení výšek.', a: true, e: 'Paprsky se protínají pod větším úhlem, takže chyba ve výšce je menší.' },
+          { t: 'c', q: 'Metoda vyrovnání svazků (bundle adjustment) vyrovnává…', a: 'všechny snímky a body současně', w: ['každý snímek zvlášť', 'jen souřadnice vlícovacích bodů', 'jen výšky letu'], e: 'Neznámé jsou orientace všech snímků, souřadnice bodů a případně kalibrace kamery.' },
+          { t: 'c', q: 'Aerotriangulace slouží hlavně k…', a: 'určení orientace snímků bloku s minimem vlícovacích bodů', w: ['kalibraci barev snímků', 'výpočtu obsahu parcel', 'plánování výšky letu'], e: 'Spojovací body propojí snímky v blok a vlícovací body jej umístí do souřadnicového systému.' },
+        ],
+      },
+      {
+        id: 'u14l4', title: 'SfM a výstupy', icon: '🧊',
+        items: [
+          { t: 'c', q: 'První krok zpracování metodou SfM je…', a: 'detekce klíčových bodů na snímcích', w: ['tvorba ortofota', 'výpočet hustého mračna', 'generování mesh modelu'], e: 'Algoritmy typu SIFT najdou výrazné body, které se pak párují mezi snímky.' },
+          { t: 'c', q: 'Řídké mračno bodů v SfM vzniká…', a: 'z napárovaných klíčových bodů při orientaci', w: ['přímým měřením laserem', 'interpolací z vrstevnic', 'z hustého mračna filtrací'], e: 'Je vedlejším produktem vyrovnání svazků; husté mračno se počítá až potom (MVS).' },
+          { t: 'c', q: 'Digitální model reliéfu (DMR) na rozdíl od DMP…', a: 'nezahrnuje budovy ani vegetaci', w: ['obsahuje střechy budov', 'popisuje jen vodní plochy', 'je vždy v rastru 1 m'], e: 'DMR = holý terén; DMP (povrch) zahrnuje i objekty na něm.' },
+          { t: 'c', q: 'Ortofoto je snímek, který…', a: 'je překreslen do ortogonálního průmětu', w: ['má jen černobílé barvy', 'byl pořízen šikmo', 'zobrazuje jen výškové údaje'], e: 'Diferenciální překreslení s využitím výškového modelu odstraní vliv reliéfu i sklonu snímku.' },
+          { t: 'tf', q: 'SfM dokáže odhadnout i parametry vnitřní orientace (samokalibrace).', a: true, e: 'Proto lze použít i běžné nekalibrované kamery – ovšem se správným rozložením GCP.' },
+          { t: 'c', q: 'Mesh (síť trojúhelníků) je vhodný hlavně pro…', a: 'texturované 3D modely objektů', w: ['výpočet GSD', 'určení vnitřní orientace', 'převod času GPS na UTC'], e: 'Mračno se trianguluje na povrch, na který lze promítnout texturu ze snímků.' },
+          { t: 'o', q: 'Seřaďte kroky zpracování UAV snímků metodou SfM', s: ['Detekce a párování klíčových bodů', 'Orientace snímků a řídké mračno', 'Georeferencování pomocí GCP', 'Výpočet hustého mračna', 'Tvorba DMP a ortofota'], e: 'Nejprve relativní geometrie, pak umístění do souřadnic a teprve potom husté výstupy.' },
+          { t: 'c', q: 'Proč bývá SfM na vodní hladině nebo sněhu nespolehlivé?', a: 'Chybí výrazná a stálá textura', w: ['Voda odráží GNSS signál', 'Snímky jsou příliš ostré', 'Dron nemůže nad vodou letět'], e: 'Bez textury nelze najít spolehlivé klíčové body a párování selže.' },
+        ],
+      },
+      {
+        id: 'u14l5', title: 'Laserové skenování', icon: '🔦', gens: ['station'],
+        items: [
+          { t: 'c', q: 'Pulzní (time-of-flight) skener určuje vzdálenost z…', a: 'doby letu impulsu tam a zpět', w: ['fázového posunu dvou snímků', 'intenzity odraženého signálu', 'změny frekvence nosné vlny'], e: 'd = c · t / 2 – dělí se dvěma, protože impuls letí k cíli a zpět.' },
+          { t: 'n', q: 'Laserový impuls se vrátil za 1 µs. Jaká je vzdálenost k cíli? (c ≈ 300 000 km/s)', a: 150, tol: 0.5, dec: 0, unit: 'm', e: 'd = c · t / 2 = 3·10⁸ · 10⁻⁶ / 2 = 150 m.' },
+          { t: 'c', q: 'Fázové skenery mají proti pulzním obvykle…', a: 'vyšší rychlost, ale kratší dosah', w: ['delší dosah, ale nižší rychlost', 'stejný dosah i rychlost', 'nižší přesnost na krátko'], e: 'Fázové měření je velmi rychlé a přesné, ale je omezeno jednoznačností fáze na kratší vzdálenosti.' },
+          { t: 'c', q: 'Co musí mít ALS (letecký LiDAR) navíc k laserovému dálkoměru?', a: 'GNSS přijímač a inerciální jednotku (IMU)', w: ['gyroteodolit a nivelační přístroj', 'pevné vlícovací terče na každém bodě', 'stereoskop a paralaktickou lištu'], e: 'Poloha a natočení skeneru se určují přímo za letu (přímá georeference).' },
+          { t: 'tf', q: 'Jeden laserový impuls ALS může dát více odrazů, např. od koruny stromu i od terénu.', a: true, e: 'Vícenásobné odrazy (first/last return) umožňují proniknout vegetací a vytvořit DMR.' },
+          { t: 'c', q: 'Algoritmus ICP (Iterative Closest Point) se používá k…', a: 'registraci překrývajících se mračen', w: ['klasifikaci budov', 'filtraci šumu podle intenzity', 'tvorbě ortofota'], e: 'Iterativně hledá nejbližší body a transformaci, která minimalizuje jejich vzdálenosti. Potřebuje dobré přiblížení.' },
+          { t: 'c', q: 'Klasifikace mračna ALS znamená…', a: 'přiřazení bodů do tříd (terén, vegetace, budovy)', w: ['seřazení bodů podle času měření', 'převod mračna do formátu JPG', 'výpočet přesnosti každého bodu'], e: 'Z bodů třídy terén se pak interpoluje DMR (např. DMR 5G v ČR).' },
+          { t: 'm', q: 'Spojte pojem s popisem', p: [['TLS', 'Pozemní skener na stativu'], ['ALS', 'Skenování z letadla'], ['Registrace', 'Spojení skenovacích stanovisek'], ['Intenzita', 'Síla odraženého signálu']] },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'u15', title: 'Družicová geodézie', color: '#0d9488', level: 'VŠ',
+    desc: 'Referenční rámce, GNSS signály a pozorování, zdroje chyb, metody měření, čas a oběžné dráhy.',
+    lessons: [
+      {
+        id: 'u15l1', title: 'Referenční systémy a rámce', icon: '🌐', gens: ['ellipsoidalHeight', 'normalHeight'],
+        items: [
+          { t: 'c', q: 'Jaký je rozdíl mezi referenčním systémem a referenčním rámcem?', a: 'Rámec je realizace systému souřadnicemi bodů', w: ['Systém je přesnější realizace rámce', 'Rámec používá jen výšky, systém polohu', 'Jde o dva názvy téže věci'], e: 'Např. ITRS je systém (definice), ITRF2020 je jeho realizace sítí stanic se souřadnicemi a rychlostmi.' },
+          { t: 'c', q: 'ETRS89 je spojen s…', a: 'stabilní částí euroasijské desky', w: ['středem Slunce', 'severoamerickou deskou', 'středním pólem Měsíce'], e: 'V ITRF se Evropa pohybuje asi o 2–3 cm za rok; v ETRS89 jsou souřadnice v Evropě téměř neměnné.' },
+          { t: 'c', q: 'Proč se u souřadnic v ITRF uvádí epocha?', a: 'Body se pohybují s tektonickými deskami', w: ['Elipsoid se každý rok mění', 'Kvůli přestupným sekundám', 'Epocha určuje použitou družici'], e: 'Souřadnice v globálním rámci platí k určitému okamžiku; mezi epochami se převádějí pomocí rychlostí.' },
+          { t: 'c', q: 'Kolik parametrů má prostorová Helmertova (podobnostní) transformace?', a: '7', w: ['3', '6', '9'], e: '3 posuny, 3 rotace a 1 měřítko.' },
+          { t: 'tf', q: 'S-JTSK je realizován na Besselově elipsoidu, kdežto ETRS89 na GRS80.', a: true, e: 'Proto je nutná transformace mezi elipsoidy a navíc zobrazení do roviny (Křovák).' },
+          { t: 'c', q: 'Doporučenou realizací ETRS89 v ČR (např. pro CZEPOS) je…', a: 'ETRF2000', w: ['ITRF2020', 'WGS84 (G873)', 'S-42/83'], e: 'EUREF doporučuje ETRF2000; ČR ji používá pro ETRS89 v epoše 2000,0.' },
+          { t: 'c', q: 'Elipsoidická výška h a normální výška H souvisejí vztahem…', a: 'h = H + ζ (výška kvazigeoidu)', w: ['h = H − ζ', 'h = H · ζ', 'h = H + ΔX'], e: 'GNSS dává h; pro Bpv je nutný model kvazigeoidu (v ČR např. CR2005).' },
+          { t: 'm', q: 'Spojte systém s popisem', p: [['WGS84', 'Systém GPS'], ['ITRS', 'Mezinárodní terestrický systém'], ['S-JTSK', 'Křovákovo zobrazení'], ['ETRS89', 'Evropský systém']] },
+        ],
+      },
+      {
+        id: 'u15l2', title: 'Signály a pozorování', icon: '📡',
+        items: [
+          { t: 'c', q: 'Frekvence nosné vlny GPS L1 je…', a: '1575,42 MHz', w: ['1227,60 MHz', '1176,45 MHz', '1602,00 MHz'], e: 'L1 = 154 · 10,23 MHz. L2 = 1227,60 MHz, L5 = 1176,45 MHz.' },
+          { t: 'm', q: 'Spojte nosnou vlnu GPS s frekvencí', p: [['L1', '1575,42 MHz'], ['L2', '1227,60 MHz'], ['L5', '1176,45 MHz']] },
+          { t: 'n', q: 'Vypočtěte vlnovou délku L1 (f = 1575,42 MHz, c = 299 792 458 m/s) v centimetrech.', a: 19.03, tol: 0.02, dec: 2, unit: 'cm', e: 'λ = c / f = 299 792 458 / 1 575 420 000 ≈ 0,1903 m = 19,03 cm.' },
+          { t: 'c', q: 'Pseudovzdálenost se nazývá „pseudo“, protože…', a: 'obsahuje chybu hodin přijímače', w: ['je měřena jen přibližně na metry', 'je měřena k virtuální stanici', 'nezahrnuje rychlost světla'], e: 'Proto je potřeba nejméně 4 družic: neznámé X, Y, Z a oprava hodin.' },
+          { t: 'c', q: 'Ambiguita fázového měření je…', a: 'neznámý celý počet cyklů mezi družicí a přijímačem', w: ['náhodný šum kódového měření', 'rozdíl mezi časem GPS a UTC', 'neznámý posun fázového centra'], e: 'Přijímač měří jen zlomek cyklu a změny od zámku; celé číslo N je nutné vyřešit (fix).' },
+          { t: 'c', q: 'Cycle slip je…', a: 'skok v celém počtu cyklů po ztrátě zámku signálu', w: ['postupný drift hodin družice', 'odraz signálu od budovy', 'změna konstelace během dne'], e: 'Vzniká např. zakrytím signálu; detekuje se mj. pomocí trojitých diferencí.' },
+          { t: 'tf', q: 'Fázová měření jsou řádově přesnější než kódová.', a: true, e: 'Šum fáze je v milimetrech, šum kódu v decimetrech až metrech.' },
+          { t: 'c', q: 'Nejméně kolik družic je potřeba pro určení 3D polohy a opravy hodin jedním přijímačem?', a: '4', w: ['2', '3', '6'], e: 'Čtyři neznámé: X, Y, Z a chyba hodin přijímače.' },
+        ],
+      },
+      {
+        id: 'u15l3', title: 'Zdroje chyb', icon: '⚠️',
+        items: [
+          { t: 'c', q: 'Ionosféra je pro signály GNSS prostředím…', a: 'disperzním – zpoždění závisí na frekvenci', w: ['nedisperzním – stejné pro všechny frekvence', 'zcela průhledným bez vlivu', 'odrážejícím všechny signály'], e: 'Vliv 1. řádu je úměrný 1/f², proto jej lze vyloučit dvoufrekvenčním měřením.' },
+          { t: 'c', q: 'Ionosférou je kódové měření zpožděno a fázové…', a: 'urychleno o stejnou hodnotu', w: ['zpožděno dvojnásobně', 'nijak ovlivněno', 'zpožděno o polovinu'], e: 'Tzv. ionosférická divergence: grupové zpoždění kódu, fázové předběhnutí nosné.' },
+          { t: 'c', q: 'Iono-free lineární kombinace (L3) vylučuje…', a: 'ionosférický vliv 1. řádu', w: ['troposférické zpoždění', 'chybu hodin družice', 'vícecestné šíření'], e: 'Nevýhodou je zesílení šumu a ztráta celočíselnosti ambiguit.' },
+          { t: 'tf', q: 'Troposféra je pro signály GNSS disperzní, a proto ji vyloučí dvoufrekvenční měření.', a: false, e: 'Troposféra je nedisperzní; modeluje se (suchá a mokrá složka) nebo odhaduje jako parametr.' },
+          { t: 'c', q: 'Která složka troposférického zpoždění se modeluje nejhůře?', a: 'Mokrá (vodní pára)', w: ['Suchá (hydrostatická)', 'Ionosférická', 'Relativistická'], e: 'Suchá složka je velká, ale dobře modelovatelná z tlaku; vodní pára je proměnlivá.' },
+          { t: 'c', q: 'Vícecestné šíření (multipath) omezíme nejlépe…', a: 'volbou stanoviska a anténou s choke ringem', w: ['použitím delší observace v noci', 'přepnutím na jednu frekvenci', 'zkrácením masky elevace na 0°'], e: 'Odrazy od budov a vodních ploch se nevyruší diferencováním, protože jsou místní.' },
+          { t: 'c', q: 'PCO a PCV popisují…', a: 'polohu a proměnlivost fázového centra antény', w: ['chyby palubních hodin družice', 'přesnost vysílaných efemerid', 'zpoždění signálu v troposféře'], e: 'Korigují se kalibracemi antén (formát ANTEX); důležité zvlášť pro výšky.' },
+          { t: 'c', q: 'Co vyjadřuje hodnota PDOP?', a: 'Vliv geometrie družic na přesnost polohy', w: ['Sílu signálu družic', 'Počet vyřešených ambiguit', 'Rychlost pohybu přijímače'], e: 'Čím menší PDOP, tím lepší rozložení družic; přesnost ≈ PDOP · přesnost měření.' },
+        ],
+      },
+      {
+        id: 'u15l4', title: 'Metody měření', icon: '🛰️', gens: ['baseline3d', 'ppmError'],
+        items: [
+          { t: 'c', q: 'Jednoduchá diference mezi dvěma přijímači na stejnou družici vylučuje…', a: 'chybu hodin družice', w: ['chybu hodin přijímače', 'ambiguitu', 'šum měření'], e: 'Oba přijímače vidí stejnou chybu hodin družice; při krátkých základnách se zmenší i vliv atmosféry.' },
+          { t: 'c', q: 'Dvojitá diference (2 přijímače, 2 družice) navíc vylučuje…', a: 'chybu hodin přijímačů', w: ['ambiguitu', 'multipath', 'fázové centrum antény'], e: 'Je to standardní pozorování pro relativní fázová řešení; ambiguity zůstávají celočíselné.' },
+          { t: 'c', q: 'Trojitá diference (mezi epochami) vylučuje…', a: 'ambiguitu', w: ['troposféru', 'multipath', 'chybu efemerid'], e: 'Ambiguita je bez cycle slipu v čase konstantní, rozdílem epoch zmizí – vhodné k detekci skoků.' },
+          { t: 'c', q: 'CZEPOS je síť permanentních stanic provozovaná…', a: 'ČÚZK', w: ['ČHMÚ', 'Armádou ČR', 'Evropskou kosmickou agenturou'], e: 'Poskytuje korekce pro síťové RTK i data pro postprocessing.' },
+          { t: 'c', q: 'Virtuální referenční stanice (VRS) je…', a: 'korekce vypočtené pro místo blízko roveru', w: ['fyzická stanice na střeše ČÚZK', 'druhý rover na stejném bodě', 'družice zapůjčená pro síť'], e: 'Síť modeluje chyby z více stanic a vytvoří data „stanice“ poblíž uživatele.' },
+          { t: 'tf', q: 'PPP určuje přesnou polohu jediným přijímačem s využitím přesných drah a hodin družic.', a: true, e: 'Nevýhodou je delší konvergence (desítky minut), výsledky jsou v globálním rámci.' },
+          { t: 'c', q: 'Stav „float“ u RTK znamená, že…', a: 'ambiguity nejsou vyřešeny jako celá čísla', w: ['přijímač ztratil napájení', 'korekce přicházejí bez zpoždění', 'je dosaženo nejvyšší přesnosti'], e: 'Přesnost float je decimetrová; centimetry dává až fixed řešení.' },
+          { t: 'o', q: 'Seřaďte kroky měření metodou síťového RTK', s: ['Připojení roveru k síti a příjem korekcí', 'Vyčkání na fixed řešení', 'Měření bodu po zvolenou dobu', 'Kontrolní přeměření po nové inicializaci', 'Transformace do S-JTSK a Bpv'], e: 'Fix je podmínkou přesnosti; nezávislé přeměření odhalí chybně vyřešené ambiguity.' },
+        ],
+      },
+      {
+        id: 'u15l5', title: 'Čas a oběžné dráhy', icon: '⏱️',
+        items: [
+          { t: 'c', q: 'O kolik se v současnosti liší čas GPS od UTC?', a: 'GPS je napřed o 18 s', w: ['GPS je pozadu o 18 s', 'GPS je napřed o 37 s', 'Neliší se vůbec'], e: 'GPS čas nemá přestupné sekundy (od 6. 1. 1980); od roku 2017 platí GPS − UTC = 18 s.' },
+          { t: 'tf', q: 'Do času GPS se vkládají přestupné sekundy stejně jako do UTC.', a: false, e: 'GPS čas je spojitý; přestupné sekundy se vkládají jen do UTC.' },
+          { t: 'c', q: 'Výška oběžné dráhy družic GPS nad Zemí je přibližně…', a: '20 200 km', w: ['23 222 km', '19 100 km', '35 786 km'], e: '23 222 km má Galileo, 19 100 km GLONASS, 35 786 km je geostacionární dráha.' },
+          { t: 'm', q: 'Spojte systém s výškou oběžné dráhy (MEO)', p: [['GPS', '≈ 20 200 km'], ['GLONASS', '≈ 19 100 km'], ['Galileo', '≈ 23 222 km']] },
+          { t: 'c', q: 'Oběžná doba družice GPS je přibližně…', a: 'polovina hvězdného dne (≈ 11 h 58 min)', w: ['jeden sluneční den', 'přesně 12 h slunečního času', 'asi 90 minut'], e: 'Proto se stejná konstelace opakuje každý den asi o 4 minuty dříve.' },
+          { t: 'c', q: 'Který Keplerův element udává sklon roviny dráhy k rovníku?', a: 'Inklinace i', w: ['Excentricita e', 'Argument perigea ω', 'Velká poloosa a'], e: 'Družice GPS mají inklinaci asi 55°, GLONASS asi 64,8°.' },
+          { t: 'c', q: 'Nejpřesnější dráhy družic poskytuje IGS jako…', a: 'finální efemeridy s odstupem cca 2 týdnů', w: ['vysílané efemeridy v navigační zprávě', 'almanach v přijímači', 'predikci na příští měsíc'], e: 'Finální přesné efemeridy (SP3) mají přesnost v cm; vysílané jsou řádově v metrech.' },
+          { t: 'c', q: 'Který systém kombinuje družice na drahách MEO, IGSO a GEO?', a: 'BeiDou', w: ['GPS', 'Galileo', 'GLONASS'], e: 'Čínský BeiDou má kromě středních drah i geostacionární a šikmé geosynchronní družice.' },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'u16', title: 'Geodetické sítě a deformace', color: '#4d7c0f', level: 'VŠ',
+    desc: 'Návrh a optimalizace sítí, vytyčení staveb, měření posunů, inženýrské aplikace a monitoring.',
+    lessons: [
+      {
+        id: 'u16l1', title: 'Návrh a optimalizace sítě', icon: '🕸️', gens: ['unitWeightError'],
+        items: [
+          { t: 'c', q: 'Volná síť je síť, jejíž…', a: 'datum není určeno pevnými body', w: ['body nejsou stabilizovány', 'měření nejsou vyrovnána', 'body leží mimo S-JTSK'], e: 'Poloha, orientace (a případně měřítko) se volí podmínkou, např. minimální normy – S-transformace.' },
+          { t: 'c', q: 'Jaký je defekt sítě měřené délkami a směry v rovině?', a: '3', w: ['1', '4', '7'], e: 'Chybí 2 posuny a rotace; měřítko je dáno délkami. Jen se směry by byl defekt 4.' },
+          { t: 'c', q: 'Defekt výškové (nivelační) sítě je…', a: '1', w: ['0', '2', '3'], e: 'Nivelace určí jen převýšení – chybí volba výškového počátku.' },
+          { t: 'tf', q: 'Ve vázané síti se chyby daných bodů mohou přenést do vyrovnaných souřadnic a deformovat síť.', a: true, e: 'Proto se u přesných sítí volí raději vyrovnání volné sítě a transformace na dané body.' },
+          { t: 'c', q: 'Vnitřní spolehlivost sítě vyjadřuje…', a: 'schopnost odhalit hrubou chybu v měření', w: ['přesnost souřadnic bodů', 'počet stanovisek sítě', 'stabilitu stabilizace bodů'], e: 'Popisují ji čísla nadbytečnosti r_i (0 až 1); jejich součet je n − k.' },
+          { t: 'c', q: 'Chybová elipsa bodu znázorňuje…', a: 'přesnost polohy v různých směrech', w: ['tvar geoidu v okolí bodu', 'rozsah vytyčovací tolerance', 'oblast viditelnosti z bodu'], e: 'Poloosy a orientace plynou z kovarianční matice souřadnic bodu.' },
+          { t: 'm', q: 'Spojte stupeň optimalizace sítě s předmětem', p: [['Nultý', 'Volba datumu'], ['První', 'Konfigurace sítě'], ['Druhý', 'Váhy (přesnost) měření'], ['Třetí', 'Zhuštění stávající sítě']] },
+          { t: 'c', q: 'Proč se do sítě měří nadbytečná měření?', a: 'Pro kontrolu a odhad přesnosti', w: ['Jen pro zrychlení výpočtu', 'Kvůli zkrácení doby měření', 'Kvůli snížení počtu bodů'], e: 'Bez nadbytečnosti (n − k = 0) nelze odhalit chybu ani spočítat m₀.' },
+        ],
+      },
+      {
+        id: 'u16l2', title: 'Vytyčovací sítě a vytyčení', icon: '📍', gens: ['polarY', 'polarX', 'stakeout'],
+        items: [
+          { t: 'c', q: 'Která norma řeší přesnost vytyčování staveb?', a: 'ČSN 73 0420', w: ['ČSN 01 3411', 'ČSN 73 0405', 'ČSN EN 1990'], e: 'ČSN 73 0420-1 a -2: základní požadavky a vytyčovací odchylky. Měření posunů řeší ČSN 73 0405.' },
+          { t: 'c', q: 'Vytyčovací výkres obsahuje…', a: 'prvky a souřadnice potřebné k vytyčení', w: ['jen barevnou vizualizaci stavby', 'rozpočet stavby', 'seznam vlastníků pozemků'], e: 'Vychází z projektové dokumentace a určuje hlavní i podrobné body a jejich polohu.' },
+          { t: 'c', q: 'Prostorová polohová síť stavby (vytyčovací síť) slouží k…', a: 'vytyčení a kontrole stavby v celém průběhu', w: ['evidenci vlastnictví pozemků', 'zjišťování hranic katastru', 'tvorbě státní mapy'], e: 'Musí být stabilní, dostatečně přesná a mimo dosah stavebních prací.' },
+          { t: 'c', q: 'Mezní vytyčovací odchylka je…', a: 'největší dovolená odchylka vytyčení', w: ['střední chyba vytyčovací sítě', 'průměrná odchylka všech bodů', 'rozdíl dvou sousedních bodů'], e: 'Odvozuje se ze směrodatné odchylky násobením součinitelem (koeficientem spolehlivosti).' },
+          { t: 'o', q: 'Seřaďte etapy vytyčení stavby', s: ['Vybudování vytyčovací sítě', 'Vytyčení hlavních bodů', 'Vytyčení podrobných bodů', 'Kontrolní měření', 'Protokol o vytyčení'], e: 'Postup od celku k detailu; kontrolu je třeba provést nezávisle.' },
+          { t: 'tf', q: 'Kontrolu vytyčení je vhodné provést z jiného stanoviska nebo jinou metodou než vytyčení.', a: true, e: 'Nezávislá kontrola odhalí i chybu v souřadnicích stanoviska či orientaci.' },
+          { t: 'c', q: 'Polární vytyčení bodu vyžaduje ze stanoviska…', a: 'vytyčovací úhel a vodorovnou délku', w: ['dvě převýšení', 'dvě délky z různých bodů', 'jen směrník na bod'], e: 'Úhel se odměří od orientačního směru a délka se odměří podél záměry.' },
+        ],
+      },
+      {
+        id: 'u16l3', title: 'Měření posunů', icon: '📏', gens: ['errorPropagation'],
+        items: [
+          { t: 'c', q: 'Vztažné body při měření posunů jsou body…', a: 'stabilní mimo oblast deformací', w: ['osazené přímo na sledované stavbě', 'určené jen jednou GNSS', 'se známou výškou v Bpv'], e: 'Tvoří základ, vůči němuž se změny pozorovaných bodů určují.' },
+          { t: 'c', q: 'Pozorované body jsou…', a: 'body na sledovaném objektu', w: ['body státní trigonometrické sítě', 'body mimo vliv stavby', 'body pro orientaci přístroje'], e: 'Jejich změny polohy a výšky mezi etapami jsou hledané posuny.' },
+          { t: 'c', q: 'Jak se určí posun bodu mezi etapami?', a: 'Rozdílem souřadnic z obou etap', w: ['Z jediné etapy měření', 'Z přesnosti přístroje', 'Z projektové dokumentace'], e: 'Posun = souřadnice v etapě i − souřadnice v základní (nulté) etapě.' },
+          { t: 'n', q: 'Výška bodu je v každé etapě určena se směrodatnou odchylkou 1,0 mm. Jaká je směrodatná odchylka jejich rozdílu (svislého posunu)?', a: 1.41, tol: 0.01, dec: 2, unit: 'mm', e: 'σ_d = √(1,0² + 1,0²) = √2 · 1,0 ≈ 1,41 mm.' },
+          { t: 'tf', q: 'Změří-li se posun větší než nula, je vždy statisticky významný.', a: false, e: 'Posun je významný, až když převýší kritickou hodnotu danou jeho přesností (např. t · σ_d).' },
+          { t: 'c', q: 'Test kongruence ověřuje, zda…', a: 'se tvar sítě mezi etapami nezměnil', w: ['byly body správně očíslovány', 'jsou přístroje kalibrovány', 'sedí souřadnice v S-JTSK'], e: 'Globální test porovná etapy; při zamítnutí se lokalizují body, které se pohnuly.' },
+          { t: 'o', q: 'Seřaďte kroky měření posunů', s: ['Projekt a stabilizace bodů', 'Základní (nultá) etapa', 'Další etapová měření', 'Vyrovnání a test významnosti', 'Interpretace a zpráva'], e: 'Nultá etapa je výchozí stav; posuny se vždy vztahují k ní.' },
+        ],
+      },
+      {
+        id: 'u16l4', title: 'Inženýrské aplikace', icon: '🏗️', gens: ['bearing', 'distance'],
+        items: [
+          { t: 'c', q: 'Průrazová chyba v tunelu je…', a: 'odchylka setkání dvou protilehlých ražeb', w: ['chyba ve výšce portálu', 'odchylka délky celého tunelu', 'rozdíl výšek na dvou koncích'], e: 'Nejkritičtější je její příčná složka, kterou ovlivňuje hlavně orientace pořadu.' },
+          { t: 'c', q: 'Gyroteodolit v tunelu slouží k…', a: 'určení azimutu nezávisle na vnějších bodech', w: ['měření převýšení bez latě', 'určení délky bez hranolu', 'kontrole teploty vzduchu'], e: 'Změří astronomický azimut; na směrník se převede konvergencí poledníků (a tížnicovou odchylkou).' },
+          { t: 'tf', q: 'V dlouhých tunelových pořadech omezuje přesnost i boční refrakce u stěn.', a: true, e: 'Teplotní gradient u ostění ohýbá záměry; pomáhá vést záměry dál od stěn a gyroskopická orientace.' },
+          { t: 'c', q: 'Při statické zatěžovací zkoušce mostu se měří průhyby…', a: 'před zatížením, při zatížení a po odlehčení', w: ['jen při maximálním zatížení', 'jen po ukončení zkoušky', 'jen po prvním roce provozu'], e: 'Rozdíly dávají pružnou i trvalou (plastickou) složku deformace.' },
+          { t: 'c', q: 'Které parametry se kontrolují u jeřábové dráhy?', a: 'Rozchod, výškové rozdíly a přímost kolejnic', w: ['Barva a tloušťka nátěru', 'Hmotnost a nosnost jeřábu', 'Jen délka dráhy'], e: 'Nesplnění tolerancí vede k opotřebení a nebezpečnému provozu jeřábu.' },
+          { t: 'c', q: 'Který přístroj se typicky používá v průmyslové metrologii (strojírenství)?', a: 'Laserový tracker', w: ['Kódová nivelační lať', 'Ruční GNSS přijímač', 'Pásmo s hranolem'], e: 'Tracker sleduje reflektor a určuje 3D polohu se setinami milimetru na krátké vzdálenosti.' },
+          { t: 'm', q: 'Spojte aplikaci s typickým úkolem', p: [['Tunel', 'Průrazová chyba'], ['Most', 'Průhyb při zatížení'], ['Jeřábová dráha', 'Rozchod kolejnic'], ['Strojírenství', 'Rovinnost a souosost']] },
+        ],
+      },
+      {
+        id: 'u16l5', title: 'Monitoring', icon: '📊', gens: ['station'],
+        items: [
+          { t: 'c', q: 'Automatická totální stanice pro monitoring…', a: 'cyklicky sama cílí a měří na hranoly', w: ['měří jen jednou denně ručně', 'nepotřebuje žádné referenční body', 'měří jen převýšení nivelací'], e: 'Využívá automatické cílení (ATR); data se odesílají online k vyhodnocení.' },
+          { t: 'c', q: 'InSAR měří posun…', a: 've směru záměry radaru (LOS)', w: ['ve všech třech osách najednou', 'jen ve vodorovném směru', 'jen směrem k severu'], e: 'Jde o průmět 3D posunu do směru satelit–bod; kombinace drah umožní rozklad.' },
+          { t: 'c', q: 'Metoda PS-InSAR využívá…', a: 'stabilní odražeče (persistent scatterers)', w: ['pozemní vlícovací body GNSS', 'lidarová mračna z letadla', 'nivelační pořady'], e: 'Budovy, skály či kovové konstrukce dávají dlouhodobě stabilní odraz vhodný pro časové řady.' },
+          { t: 'c', q: 'Náklonoměr měří…', a: 'změnu sklonu konstrukce', w: ['vzdálenost dvou bodů', 'hladinu podzemní vody', 'teplotu betonu'], e: 'Používá se např. u opěrných zdí, věží a pilířů mostů.' },
+          { t: 'c', q: 'Extenzometr slouží k měření…', a: 'změny vzdálenosti (roztažení) mezi dvěma body', w: ['zenitového úhlu', 'natočení kolem svislice', 'rychlosti větru'], e: 'Např. rozevírání trhlin nebo posun ve svahu či vrtu.' },
+          { t: 'tf', q: 'Monitorovací systém má mít stanovené varovné a mezní (alarmové) hodnoty.', a: true, e: 'Při jejich překročení systém upozorní odpovědné osoby, aby mohly zasáhnout.' },
+          { t: 'tf', q: 'GNSS monitoring je vhodný i uvnitř tunelu.', a: false, e: 'V tunelu signál GNSS chybí; používají se totální stanice, skenery a kontaktní senzory.' },
+          { t: 'm', q: 'Spojte technologii s tím, co sleduje', p: [['InSAR', 'Poklesy rozsáhlého území'], ['Náklonoměr', 'Sklon konstrukce'], ['Extenzometr', 'Rozevírání trhliny'], ['GNSS stanice', 'Posun bodu ve 3D']] },
+        ],
+      },
+    ],
+  },
+];

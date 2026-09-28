@@ -1,9 +1,11 @@
 // Offline cache: aplikace funguje i bez signálu (v terénu).
-const CACHE = 'geolingo-v2';
+const CACHE = 'geolingo-v3';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
-  'js/app.js', 'js/engine.js', 'js/store.js', 'js/generators.js',
-  'js/content/u01-03.js', 'js/content/u04-06.js', 'js/content/u07-10.js',
+  'js/app.js', 'js/engine.js', 'js/store.js', 'js/generators.js', 'js/field.js',
+  'js/content/u01-03.js', 'js/content/u04-06.js', 'js/content/u07-10.js', 'js/content/u11-13.js', 'js/content/u14-16.js',
+  'fonts/lexend-latin-wght-normal.woff2', 'fonts/lexend-latin-ext-wght-normal.woff2',
+  'fonts/nunito-latin-wght-normal.woff2', 'fonts/nunito-latin-ext-wght-normal.woff2',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 

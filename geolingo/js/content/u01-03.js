@@ -9,7 +9,7 @@
 
 export default [
   {
-    id: 'u1', title: 'Základy geodézie', color: '#58cc02',
+    id: 'u1', title: 'Základy geodézie', color: '#16a37f',
     desc: 'Co je geodézie, úhlové jednotky, měřítko map, tvar Země a bodová pole.',
     lessons: [
       {
@@ -78,7 +78,7 @@ export default [
   },
 
   {
-    id: 'u2', title: 'Souřadnicové a výškové systémy', color: '#1cb0f6',
+    id: 'u2', title: 'Souřadnicové a výškové systémy', color: '#2b8fd6',
     desc: 'S-JTSK a Křovákovo zobrazení, WGS84, ETRS89, výšky Bpv, transformace a směrníky.',
     lessons: [
       {
@@ -144,7 +144,7 @@ export default [
   },
 
   {
-    id: 'u3', title: 'Přístroje', color: '#ff9600',
+    id: 'u3', title: 'Přístroje', color: '#e08a1e',
     desc: 'Totální stanice, osové podmínky, nivelační přístroj, GNSS přijímač a měřické pomůcky.',
     lessons: [
       {
@@ -172,7 +172,7 @@ export default [
         ],
       },
       {
-        id: 'u3l3', title: 'Nivelační přístroj a lať', icon: '📏',
+        id: 'u3l3', title: 'Nivelační přístroj a lať', icon: '📏', gens: ['bubble'],
         items: [
           { t: 'c', q: 'Hlavní podmínka nivelačního přístroje: záměrná přímka musí být…', a: 'vodorovná', w: ['svislá', 'kolmá k terénu', 'rovnoběžná se stativem'], e: 'Nivelace čte na lati při vodorovné záměře.' },
           { t: 'c', q: 'Automatický nivelační přístroj udržuje vodorovnou záměru pomocí…', a: 'kompenzátoru', w: ['trubicové libely se šroubem', 'GNSS', 'laseru'], e: 'Kompenzátor je kyvadlo s optikou.' },

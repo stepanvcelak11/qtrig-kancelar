@@ -2,7 +2,7 @@
 
 export default [
   {
-    id: 'u7', title: 'GNSS a moderní metody', color: '#00cd9c',
+    id: 'u7', title: 'GNSS a moderní metody', color: '#0891b2',
     desc: 'Princip GNSS, zdroje chyb a DOP, RTK a sítě, laserové skenování, drony a GIS.',
     lessons: [
       {
@@ -61,7 +61,7 @@ export default [
   },
 
   {
-    id: 'u8', title: 'Chyby měření a vyrovnání', color: '#ff86d0',
+    id: 'u8', title: 'Chyby měření a vyrovnání', color: '#d6457a',
     desc: 'Druhy chyb, střední chyba a průměr, zákon hromadění, metoda nejmenších čtverců, kódy kvality.',
     lessons: [
       {
@@ -118,7 +118,7 @@ export default [
   },
 
   {
-    id: 'u9', title: 'Katastr nemovitostí', color: '#ffc800',
+    id: 'u9', title: 'Katastr nemovitostí', color: '#c99a06',
     desc: 'Co je katastr, jeho obsah, geometrický plán, vytyčení hranic a právní předpisy.',
     lessons: [
       {
@@ -153,7 +153,7 @@ export default [
         ],
       },
       {
-        id: 'u9l4', title: 'Vytyčení hranic', icon: '🚩',
+        id: 'u9l4', title: 'Vytyčení hranic', icon: '🚩', gens: ['stakeout'],
         items: [
           { t: 'c', q: 'Vytyčení hranice pozemku znamená…', a: 'vyznačení lomových bodů hranice v terénu', w: ['nakreslení nové mapy', 'změnu vlastníka', 'výpočet výměry'], e: 'Podle údajů katastru.' },
           { t: 'c', q: 'Lomové body hranic se označují např.…', a: 'kovovým znakem nebo mezníkem', w: ['barvou na trávě', 'papírovým kolíkem', 'jen v mapě'], e: 'Trvalé označení v terénu.' },
@@ -176,11 +176,11 @@ export default [
   },
 
   {
-    id: 'u10', title: 'Mapování a inženýrská geodézie', color: '#8b5cf6',
+    id: 'u10', title: 'Mapování a inženýrská geodézie', color: '#6d5bd0',
     desc: 'Tachymetrie, vrstevnice, vytyčování staveb, měření posunů a trasy s oblouky.',
     lessons: [
       {
-        id: 'u10l1', title: 'Tachymetrie', icon: '🗺️', gens: ['hdFromSd'],
+        id: 'u10l1', title: 'Tachymetrie', icon: '🗺️', gens: ['hdFromSd', 'station'],
         items: [
           { t: 'c', q: 'Tachymetrie určuje současně…', a: 'polohu i výšku bodů', w: ['jen výšky', 'jen vlastníky', 'jen úhly'], e: 'Z jednoho postavení se změří směr, délka a zenitový úhel.' },
           { t: 'c', q: 'Polohopis mapy zobrazuje…', a: 'předměty měření v půdorysu', w: ['tvar terénu', 'vlastníky', 'počasí'], e: 'Budovy, komunikace, hranice…' },
@@ -200,7 +200,7 @@ export default [
         ],
       },
       {
-        id: 'u10l3', title: 'Vytyčování staveb', icon: '🏗️', gens: ['distance'],
+        id: 'u10l3', title: 'Vytyčování staveb', icon: '🏗️', gens: ['distance', 'stakeout'],
         items: [
           { t: 'c', q: 'Vytyčovací síť slouží k…', a: 'přesnému vytyčení staveb', w: ['katastrálnímu řízení', 'tvorbě ortofota', 'nivelaci pořadů'], e: 'Hlavně u velkých staveb.' },
           { t: 'c', q: 'Vytyčení polární metodou vyžaduje vypočítat…', a: 'vytyčovací úhel (směr) a délku', w: ['jen výšku', 'jen souřadnici X', 'výměru'], e: 'Ze souřadnic stanoviska a vytyčovaného bodu.' },

@@ -1,0 +1,221 @@
+// Kapitoly 11–13 (VŠ): Vyšší geodézie, Fyzikální geodézie a výšky, Vyrovnávací počet.
+// Formát otázek viz js/content/u01-03.js.
+
+export default [
+  {
+    id: 'u11', title: 'Vyšší geodézie', color: '#0e7490', level: 'VŠ',
+    desc: 'Elipsoid, poloměry křivosti, geodetické a pravoúhlé souřadnice, úlohy na elipsoidu a kartografická zobrazení v ČR.',
+    lessons: [
+      {
+        id: 'u11l1', title: 'Elipsoid a jeho parametry', icon: '🥚',
+        items: [
+          { t: 'c', q: 'Zploštění elipsoidu f je definováno jako…', a: 'f = (a − b) / a', w: ['f = (a − b) / b', 'f = (a² − b²) / a²', 'f = b / a'], e: 'Zploštění je rozdíl poloos dělený hlavní poloosou; (a² − b²) / a² je první excentricita na druhou.' },
+          { t: 'c', q: 'Hlavní poloosa elipsoidu GRS80 je…', a: '6 378 137 m', w: ['6 377 397,155 m', '6 356 752 m', '6 371 000 m'], e: 'GRS80 i WGS84 mají a = 6 378 137 m; 6 377 397,155 m je Bessel, 6 356 752 m vedlejší poloosa GRS80.' },
+          { t: 'c', q: 'Převrácené zploštění 1/f Besselova elipsoidu je přibližně…', a: '299,152 812 8', w: ['298,257 222 101', '298,257 223 563', '298,3'], e: '298,257 222 101 patří GRS80, 298,257 223 563 WGS84.' },
+          { t: 'c', q: 'Jak spolu souvisí první excentricita e² a zploštění f?', a: 'e² = 2f − f²', w: ['e² = f²', 'e² = 2f + f²', 'e² = 1 − f'], e: 'Z e² = (a² − b²)/a² a b = a(1 − f) plyne e² = 2f − f² ≈ 0,006 69 pro GRS80.' },
+          { t: 'tf', q: 'Elipsoidy GRS80 a WGS84 se liší jen nepatrně ve zploštění (vedlejší poloosa se liší o desetiny milimetru).', a: true, e: 'Mají stejné a, liší se 1/f: 298,257 222 101 vs. 298,257 223 563, což dává rozdíl b asi 0,1 mm.' },
+          { t: 'c', q: 'Který elipsoid je geocentrický (střed v těžišti Země)?', a: 'GRS80', w: ['Besselův', 'Krasovského v S-42', 'Hayfordův v ED50'], e: 'GRS80/WGS84 jsou globální geocentrické elipsoidy; ostatní byly lokálně uloženy pro určité území.' },
+          { t: 'm', q: 'Spojte elipsoid s jeho použitím', p: [['Besselův', 'S-JTSK'], ['GRS80', 'ETRS89'], ['WGS84', 'GPS'], ['Krasovského', 'S-42']] },
+          { t: 'tf', q: 'Besselův elipsoid je větší než GRS80.', a: false, e: 'Besselova hlavní poloosa (6 377 397,155 m) je asi o 740 m kratší než u GRS80.' },
+        ],
+      },
+      {
+        id: 'u11l2', title: 'Poloměry křivosti', icon: '⭕', gens: ['radiusM', 'radiusN'],
+        items: [
+          { t: 'c', q: 'Poloměr křivosti meridiánu M se počítá jako…', a: 'M = a(1 − e²) / W³', w: ['M = a / W', 'M = a(1 − e²) / W', 'M = a / W³'], e: 'W = √(1 − e² sin² φ); a / W je poloměr N příčného řezu.' },
+          { t: 'c', q: 'Poloměr křivosti příčného normálového řezu N je…', a: 'N = a / W', w: ['N = a W', 'N = a(1 − e²) / W³', 'N = b / W'], e: 'N je vzdálenost bodu na elipsoidu od průsečíku normály s osou rotace.' },
+          { t: 'c', q: 'Gaussův (střední) poloměr křivosti je…', a: 'R = √(M · N)', w: ['R = (M + N) / 2', 'R = M · N', 'R = √(M² + N²)'], e: 'Geometrický průměr M a N – používá se pro náhradní kouli v okolí bodu.' },
+          { t: 'tf', q: 'Pro každou šířku φ platí M ≤ N.', a: true, e: 'N / M = W² / (1 − e²) ≥ 1; rovnost nastává jen na pólu.' },
+          { t: 'c', q: 'Na pólu je poloměr křivosti M = N rovný…', a: 'a² / b', w: ['a', 'b', 'b² / a'], e: 'Na pólu je elipsoid „nejplošší“, poloměr křivosti je největší: c = a² / b.' },
+          { t: 'c', q: 'Na rovníku je poloměr N rovný…', a: 'hlavní poloose a', w: ['vedlejší poloose b', 'hodnotě a² / b', 'hodnotě b² / a'], e: 'Pro φ = 0 je W = 1, tedy N = a; zatímco M = b² / a je tam nejmenší.' },
+          { t: 'm', q: 'Spojte veličinu s významem', p: [['M', 'Křivost meridiánu'], ['N', 'Křivost příčného řezu'], ['√(MN)', 'Gaussův poloměr'], ['W', 'Pomocná funkce šířky']] },
+          { t: 'tf', q: 'Poloměr M s rostoucí zeměpisnou šířkou klesá.', a: false, e: 'M roste od b²/a na rovníku k a²/b na pólu – elipsoid se k pólům zplošťuje.' },
+        ],
+      },
+      {
+        id: 'u11l3', title: 'Geodetické souřadnice a ECEF', icon: '🧭', gens: ['baseline3d'],
+        items: [
+          { t: 'c', q: 'Geodetická šířka φ je úhel mezi rovinou rovníku a…', a: 'normálou k elipsoidu', w: ['tížnicí', 'spojnicí se středem elipsoidu', 'rovinou meridiánu'], e: 'Úhel se spojnicí se středem je geocentrická šířka, s tížnicí astronomická šířka.' },
+          { t: 'c', q: 'Souřadnice X v systému ECEF se z (φ, λ, h) vypočte jako…', a: 'X = (N + h) cos φ cos λ', w: ['X = (N + h) cos φ sin λ', 'X = (M + h) cos φ cos λ', 'X = (N + h) sin φ'], e: 'Y = (N + h) cos φ sin λ, Z = (N(1 − e²) + h) sin φ.' },
+          { t: 'c', q: 'Souřadnice Z v ECEF je…', a: 'Z = (N(1 − e²) + h) sin φ', w: ['Z = (N + h) sin φ', 'Z = (N + h) cos φ', 'Z = N(1 − e²) cos φ'], e: 'Normála protíná osu Z pod středem, proto se N násobí (1 − e²).' },
+          { t: 'tf', q: 'Převod X, Y, Z → φ, λ, h vyžaduje pro šířku iteraci nebo přibližný uzavřený vzorec (např. Bowring).', a: true, e: 'λ = atan2(Y, X) je přímé, ale φ a h jsou provázány přes N(φ).' },
+          { t: 'c', q: 'Osa X systému ECEF směřuje do průsečíku rovníku s…', a: 'nultým (greenwichským) poledníkem', w: ['poledníkem 90° v. d.', 'severním pólem', 'jarním bodem'], e: 'Osa Z míří k pólu, Y doplňuje pravotočivý systém (90° v. d.). Jarní bod je u nebeských systémů.' },
+          { t: 'c', q: 'Elipsoidická výška h se měří…', a: 'po normále k elipsoidu', w: ['po tížnici od geoidu', 'svisle od kvazigeoidu', 'od středu Země'], e: 'h je čistě geometrická veličina, kterou přímo dává GNSS.' },
+          { t: 'o', q: 'Seřaďte kroky převodu φ, λ, h (Bessel) na X, Y, Z v ETRS89', s: ['Výpočet W a N na Besselově elipsoidu', 'Výpočet X, Y, Z na Besselově elipsoidu', 'Prostorová podobnostní (Helmertova) transformace', 'X, Y, Z v ETRS89 (GRS80)'], e: 'Mezi datumy se transformuje v pravoúhlých souřadnicích; teprve pak lze převést na φ, λ, h GRS80.' },
+          { t: 'tf', q: 'Zeměpisná délka λ je stejná na elipsoidu i na náhradní kouli, jen šířka se mění.', a: false, e: 'Obecně ne – např. u Gaussova konformního zobrazení elipsoidu na kouli se mění šířka i délka.' },
+        ],
+      },
+      {
+        id: 'u11l4', title: 'Geodetické úlohy', icon: '📏', gens: ['sphericalExcess', 'curvRefraction'],
+        items: [
+          { t: 'c', q: 'Geodetika na elipsoidu je…', a: 'nejkratší spojnice dvou bodů na ploše', w: ['normálový řez mezi dvěma body', 'rovnoběžka procházející bodem', 'přímka v rovině zobrazení'], e: 'Normálové řezy vzájemné dvou bodů se obecně liší; geodetika leží mezi nimi.' },
+          { t: 'c', q: 'První (přímá) geodetická úloha: ze souřadnic bodu 1, délky s a azimutu α₁ určit…', a: 'souřadnice bodu 2 a azimut α₂', w: ['délku s a azimuty α₁, α₂', 'jen sférický exces', 'poloměry křivosti v obou bodech'], e: 'Druhá (obrácená) úloha naopak ze souřadnic dvou bodů určuje s, α₁ a α₂.' },
+          { t: 'c', q: 'Sférický exces trojúhelníku o ploše P na kouli o poloměru R je…', a: 'ε = P / R² (v radiánech)', w: ['ε = P / R', 'ε = P · R²', 'ε = R² / P'], e: 'Součet úhlů sférického trojúhelníku = 180° + ε; v úhlových vteřinách ε″ = ρ″ P / R².' },
+          { t: 'c', q: 'Sférický exces 1″ odpovídá trojúhelníku o ploše přibližně…', a: '200 km²', w: ['2 km²', '20 km²', '2 000 km²'], e: 'P = R² / ρ″ ≈ (6 380 km)² / 206 265 ≈ 197 km².' },
+          { t: 'c', q: 'Legendreova věta říká, že malý sférický trojúhelník lze řešit jako rovinný se stejnými stranami, když každý úhel…', a: 'zmenšíme o ε / 3', w: ['zvětšíme o ε / 3', 'zmenšíme o ε', 'zmenšíme o ε / 2'], e: 'Rozdělení excesu rovným dílem na tři úhly platí pro trojúhelníky malé vůči poloměru koule.' },
+          { t: 'tf', q: 'Soldnerovy souřadnice jsou pravoúhlé souřadnice na kouli/elipsoidu, kde x se měří po osovém meridiánu a y po kolmé geodetice.', a: true, e: 'Soldnerova myšlenka je základem tzv. Cassiniho-Soldnerova zobrazení (např. starší katastrální soustavy).' },
+          { t: 'm', q: 'Spojte pojem s popisem', p: [['1. geodetická úloha', 'Z bodu, délky a azimutu → druhý bod'], ['2. geodetická úloha', 'Ze dvou bodů → délka a azimuty'], ['Sférický exces', 'Přebytek součtu úhlů nad 180°'], ['Geodetika', 'Nejkratší křivka na ploše']] },
+          { t: 'tf', q: 'Pro trojúhelník se stranami kolem 1 km je sférický exces zanedbatelný při běžném měření.', a: true, e: 'Plocha ≈ 0,4 km² dává ε ≈ 0,002″, hluboko pod přesností měření úhlů.' },
+        ],
+      },
+      {
+        id: 'u11l5', title: 'Kartografická zobrazení v ČR', icon: '🗺️',
+        items: [
+          { t: 'c', q: 'Křovákovo zobrazení je…', a: 'dvojité konformní kuželové', w: ['jednoduché ekvidistantní válcové', 'příčné válcové Mercatorovo', 'azimutální stejnoploché'], e: 'Elipsoid → koule (konformně) → kužel v obecné poloze (konformně) → rovina.' },
+          { t: 'o', q: 'Seřaďte kroky Křovákova zobrazení', s: ['Besselův elipsoid', 'Gaussova koule', 'Šikmý kužel', 'Rovina S-JTSK'], e: 'Nejprve Gaussovo konformní zobrazení na kouli, pak konformní zobrazení na kužel v obecné poloze a jeho rozvinutí.' },
+          { t: 'c', q: 'Jaký je měřítkový koeficient na základní (kartografické) rovnoběžce Křovákova zobrazení?', a: '0,9999', w: ['1,0000', '0,9996', '1,0001'], e: 'Zmenšením měřítka vznikly dvě nezkreslené rovnoběžky a zkreslení se rozložilo do záporných i kladných hodnot.' },
+          { t: 'c', q: 'Délkové zkreslení na základní rovnoběžce Křovákova zobrazení je…', a: '−10 cm/km', w: ['0 cm/km', '+10 cm/km', '−40 cm/km'], e: 'm = 0,9999 → 1 km se zobrazí o 10 cm kratší.' },
+          { t: 'tf', q: 'V S-JTSK míří kladná osa X k jihu a kladná osa Y k západu; body v ČR mají Y < X.', a: true, e: 'Proto jsou souřadnice v ČR kladné a dříve se uváděly bez znaménka; v GIS se používá varianta East North se zápornými hodnotami.' },
+          { t: 'c', q: 'Jaký měřítkový koeficient má zobrazení UTM na osovém poledníku?', a: '0,9996', w: ['1,0000', '0,9999', '0,9990'], e: 'UTM je příčné válcové konformní zobrazení v 6° pásech; Gaussovo-Krügerovo v S-42 má na osovém poledníku 1.' },
+          { t: 'm', q: 'Spojte zobrazení s charakteristikou', p: [['Křovák', 'Konformní kuželové, S-JTSK'], ['UTM', 'Příčné válcové, m₀ = 0,9996'], ['Gauss-Krüger', 'Příčné válcové, m₀ = 1'], ['S-42', 'Krasovského elipsoid']] },
+          { t: 'c', q: 'Ve kterých pásech UTM leží území ČR?', a: '33 a 34', w: ['32 a 33', '34 a 35', '31 a 32'], e: 'Pás 33 má osový poledník 15° v. d., pás 34 poledník 21° v. d.' },
+          { t: 'tf', q: 'Konformní zobrazení nezkresluje délky.', a: false, e: 'Konformní zobrazení zachovává úhly (tvar v nekonečně malém), délky a plochy se zkreslují.' },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'u12', title: 'Fyzikální geodézie a výšky', color: '#7c3aed', level: 'VŠ',
+    desc: 'Tíhové pole Země, geoid a kvazigeoid, výškové systémy, gravimetrie a tížnicové odchylky.',
+    lessons: [
+      {
+        id: 'u12l1', title: 'Tíhové pole Země', icon: '🌀',
+        items: [
+          { t: 'c', q: 'Tíhové zrychlení je výslednicí…', a: 'gravitace a odstředivého zrychlení', w: ['gravitace a Coriolisova zrychlení', 'jen gravitace Země', 'gravitace Měsíce a Slunce'], e: 'Tíže = přitažlivost hmot Země + odstředivá složka z rotace. Slapové vlivy se opravují zvlášť.' },
+          { t: 'c', q: 'Hladinová (ekvipotenciální) plocha je plocha, na které je konstantní…', a: 'tíhový potenciál W', w: ['tíhové zrychlení g', 'elipsoidická výška', 'hustota hmot'], e: 'Tíže g se na hladinové ploše mění (na pólech je větší než na rovníku).' },
+          { t: 'tf', q: 'Hladinové plochy jsou navzájem rovnoběžné.', a: false, e: 'Vzdálenost sousedních ploch je Δ W / g; protože g se mění, plochy se sbíhají k pólům.' },
+          { t: 'c', q: 'Normální tíže na rovníku (GRS80) je přibližně…', a: '9,780 m/s²', w: ['9,832 m/s²', '9,806 m/s²', '9,810 m/s²'], e: 'Na pólu je ≈ 9,832 m/s²; 9,806 65 m/s² je konvenční standardní tíže.' },
+          { t: 'c', q: 'Tížnice je…', a: 'křivka kolmá ke všem hladinovým plochám', w: ['normála k elipsoidu', 'přímka do středu Země', 'spojnice bodu s geoidem po normále'], e: 'Tížnice je mírně zakřivená, protože hladinové plochy nejsou rovnoběžné.' },
+          { t: 'c', q: 'Normální tíhové pole je buzeno…', a: 'hladinovým elipsoidem', w: ['skutečným geoidem', 'Besselovým elipsoidem', 'homogenní koulí'], e: 'Elipsoid (např. GRS80) je v normálním poli hladinovou plochou; rozdíly W − U tvoří poruchový potenciál T.' },
+          { t: 'm', q: 'Spojte symbol s veličinou', p: [['W', 'Tíhový potenciál'], ['U', 'Normální potenciál'], ['T', 'Poruchový potenciál'], ['γ', 'Normální tíže']] },
+          { t: 'tf', q: 'Normální vertikální gradient tíže je asi −0,3086 mGal na metr výšky.', a: true, e: 'S rostoucí výškou tíže klesá asi o 0,3 mGal/m – na tom stojí redukce z volného vzduchu.' },
+        ],
+      },
+      {
+        id: 'u12l2', title: 'Geoid a kvazigeoid', icon: '🌊', gens: ['ellipsoidalHeight'],
+        items: [
+          { t: 'c', q: 'Výška geoidu nad elipsoidem se nazývá…', a: 'undulace geoidu N', w: ['výšková anomálie ζ', 'tížnicová odchylka', 'geopotenciální kóta'], e: 'Výšková anomálie ζ je výška kvazigeoidu nad elipsoidem.' },
+          { t: 'c', q: 'Vztah elipsoidické a normální výšky je…', a: 'h = Hⁿ + ζ', w: ['h = Hⁿ − ζ', 'Hⁿ = h + ζ', 'h = Hⁿ · ζ'], e: 'Obdobně pro ortometrické výšky: h = H + N.' },
+          { t: 'c', q: 'Kvazigeoid v ČR leží nad elipsoidem GRS80 přibližně…', a: '42–48 m', w: ['0–5 m', '−30 až −20 m', '80–100 m'], e: 'Proto je elipsoidická výška z GNSS v ČR asi o 45 m větší než nadmořská výška.' },
+          { t: 'c', q: 'Model kvazigeoidu ČR, používaný k převodu výšek GNSS na Bpv, je označován…', a: 'CR2005', w: ['EGM2008', 'EVRF2007', 'ETRF2000'], e: 'EGM2008 je globální model, EVRF2007 výškový rámec, ETRF2000 polohový rámec.' },
+          { t: 'tf', q: 'Kvazigeoid není hladinová plocha tíhového pole.', a: true, e: 'Kvazigeoid je pomocná plocha pro normální výšky; na moři splývá s geoidem, na pevnině se od geoidu liší v ČR řádově o centimetry až decimetry.' },
+          { t: 'c', q: 'Výhodou kvazigeoidu oproti geoidu je, že…', a: 'nevyžaduje hypotézu o hustotě hmot', w: ['je to přesná hladinová plocha', 'splývá s elipsoidem', 'nemění se v čase ani v prostoru'], e: 'Teorie Moloděnského pracuje jen s tíhou měřenou na povrchu.' },
+          { t: 'm', q: 'Spojte plochu s výškou', p: [['Elipsoid', 'Elipsoidická h'], ['Geoid', 'Ortometrická H'], ['Kvazigeoid', 'Normální Hⁿ'], ['Hladinová plocha 45°', 'Dynamická']] },
+          { t: 'n', q: 'GNSS dává h = 512,34 m, výšková anomálie je ζ = 44,86 m. Jaká je normální výška?', a: 467.48, tol: 0.006, dec: 2, unit: 'm', e: 'Hⁿ = h − ζ = 512,34 − 44,86 = 467,48 m.' },
+        ],
+      },
+      {
+        id: 'u12l3', title: 'Výškové systémy', icon: '📶', gens: ['normalHeight', 'ellipsoidalHeight'],
+        items: [
+          { t: 'c', q: 'Jaký druh výšek používá systém Bpv?', a: 'normální (Moloděnského)', w: ['ortometrické', 'dynamické', 'elipsoidické'], e: 'Bpv = baltský po vyrovnání, výchozí bod je nula vodočtu v Kronštadtu.' },
+          { t: 'c', q: 'Geopotenciální kóta C je…', a: 'rozdíl potenciálu W₀ − W', w: ['výška nad elipsoidem', 'součet převýšení bez oprav', 'tíže násobená časem'], e: 'C nezávisí na dráze nivelace; výšky vzniknou dělením C vhodnou tíží.' },
+          { t: 'm', q: 'Spojte výšku s tíží, kterou se dělí C', p: [['Ortometrická', 'Střední skutečná tíže na tížnici'], ['Normální', 'Střední normální tíže'], ['Dynamická', 'Normální tíže na 45°']] },
+          { t: 'c', q: 'Který výškový systém je vztažen k mareografu v Kronštadtu?', a: 'Balt (Bpv)', w: ['Jadran', 'EVRS', 'NAP'], e: 'Jadranský systém vychází z Terstu, EVRS z amsterdamského NAP.' },
+          { t: 'c', q: 'Evropský výškový referenční systém EVRS používá…', a: 'normální výšky, datum NAP', w: ['ortometrické výšky, datum Terst', 'elipsoidické výšky GRS80', 'dynamické výšky, datum Kronštadt'], e: 'Realizací EVRS je např. rámec EVRF2007.' },
+          { t: 'tf', q: 'Body na téže hladinové ploše mají stejnou dynamickou výšku.', a: true, e: 'Dynamická výška je C / γ₄₅ s konstantním jmenovatelem – vhodné např. pro hydrotechniku.' },
+          { t: 'tf', q: 'Ortometrické výšky bodů na téže hladinové ploše jsou stejné.', a: false, e: 'Hladinové plochy nejsou rovnoběžné s geoidem, proto se H podél nich mění.' },
+          { t: 'c', q: 'Proč se součet naměřených převýšení v uzavřeném nivelačním pořadu nerovná nule ani bez chyb měření?', a: 'Hladinové plochy nejsou rovnoběžné', w: ['Kvůli refrakci', 'Kvůli sbíhavosti poledníků', 'Kvůli zploštění elipsoidu'], e: 'Proto se převýšení opravují o normální (ortometrickou) korekci.' },
+        ],
+      },
+      {
+        id: 'u12l4', title: 'Gravimetrie', icon: '⚖️',
+        items: [
+          { t: 'c', q: '1 mGal odpovídá…', a: '10⁻⁵ m/s²', w: ['10⁻³ m/s²', '10⁻² m/s²', '10⁻⁸ m/s²'], e: '1 Gal = 1 cm/s² = 10⁻² m/s²; 1 μGal = 10⁻⁸ m/s².' },
+          { t: 'c', q: 'Absolutní balistický gravimetr měří tíži…', a: 'volným pádem tělesa ve vakuu', w: ['protažením pružiny', 'změnou frekvence kyvadla v kapalině', 'z drah družic'], e: 'Poloha padajícího odražeče se sleduje laserovým interferometrem a časuje atomovými hodinami.' },
+          { t: 'c', q: 'Relativní pružinový gravimetr určuje…', a: 'rozdíly tíže mezi body', w: ['absolutní hodnotu g', 'tížnicovou odchylku', 'potenciál W'], e: 'Musí se připojit na body se známou tíží a opravit o chod (drift) a slapy.' },
+          { t: 'tf', q: 'Chod (drift) relativního gravimetru se určuje opakovaným měřením na výchozím bodě.', a: true, e: 'Měří se v uzavřených pořadech; změna údaje v čase se rozdělí mezi mezilehlá měření.' },
+          { t: 'c', q: 'Tíhová anomálie z volného vzduchu (Fayeova) je…', a: 'g + 0,3086·H − γ', w: ['g − 0,3086·H − γ', 'g − γ bez redukce', 'g + 0,1119·H − γ'], e: 'Tíže se redukuje normálním gradientem na hladinu (mGal, H v m) a odečte se normální tíže.' },
+          { t: 'c', q: 'Bouguerova anomálie navíc oproti anomálii z volného vzduchu odstraňuje vliv…', a: 'hmot mezi bodem a hladinou', w: ['rotace Země', 'atmosféry', 'slapů'], e: 'Bouguerova deska o hustotě 2 670 kg/m³ dává ≈ 0,1119 mGal na metr.' },
+          { t: 'm', q: 'Spojte přístroj s typem měření', p: [['Balistický gravimetr', 'Absolutní'], ['Pružinový gravimetr', 'Relativní v terénu'], ['Supravodivý gravimetr', 'Relativní stacionární'], ['Družicová mise GRACE', 'Změny globálního pole']] },
+          { t: 'tf', q: 'Slapy Měsíce a Slunce mění tíži jen v řádu μGal, takže je lze při relativní gravimetrii zanedbat.', a: false, e: 'Slapový vliv dosahuje řádově desetin mGal, proto se vždy opravuje.' },
+        ],
+      },
+      {
+        id: 'u12l5', title: 'Tížnicová odchylka a astronomické souřadnice', icon: '⭐',
+        items: [
+          { t: 'c', q: 'Astronomická šířka Φ je určena směrem…', a: 'tížnice', w: ['normály k elipsoidu', 'spojnice se středem Země', 'osy dalekohledu k Polárce'], e: 'Astronomické souřadnice Φ, Λ se získávají z pozorování hvězd a vztahují se k tížnici.' },
+          { t: 'c', q: 'Meridiánová složka tížnicové odchylky je…', a: 'ξ = Φ − φ', w: ['ξ = (Λ − λ) cos φ', 'ξ = φ − Φ + λ', 'ξ = (Λ − λ) sin φ'], e: 'Složka v prvním vertikálu je η = (Λ − λ) cos φ.' },
+          { t: 'c', q: 'Laplaceova rovnice spojuje astronomický azimut A a geodetický azimut α vztahem…', a: 'A − α = (Λ − λ) sin φ', w: ['A − α = (Φ − φ) sin φ', 'A − α = (Λ − λ) cos φ', 'A = α + ξ'], e: 'Na Laplaceových bodech se tak kontroluje orientace sítě (pro strmé záměry přibývají další členy).' },
+          { t: 'c', q: 'Tížnicové odchylky v ČR dosahují typicky…', a: 'jednotek úhlových vteřin', w: ['jednotek stupňů', 'desítek minut', 'tisícin vteřiny'], e: 'V horách mohou být i větší, v rovinách bývají kolem několika vteřin.' },
+          { t: 'tf', q: 'Astrogeodetická nivelace určuje rozdíly výšek geoidu integrací tížnicových odchylek podél profilu.', a: true, e: 'dN ≈ −ε ds, kde ε je složka tížnicové odchylky ve směru profilu.' },
+          { t: 'tf', q: 'Tížnicová odchylka ovlivňuje úhly měřené totální stanicí, protože ta se horizontuje podle tížnice.', a: true, e: 'Vliv je významný zejména u strmých záměr; u běžných prací se zanedbává.' },
+          { t: 'o', q: 'Seřaďte kroky astrogeodetického určení tížnicové odchylky', s: ['Pozorování hvězd zenitovou kamerou', 'Výpočet astronomických Φ, Λ', 'Určení φ, λ bodu z GNSS', 'Výpočet ξ = Φ − φ a η = (Λ − λ) cos φ'], e: 'Porovnají se astronomické souřadnice (tížnice) s geodetickými (normála).' },
+          { t: 'c', q: 'Tížnicová odchylka na geoidu odpovídá…', a: 'sklonu geoidu vůči elipsoidu', w: ['výšce geoidu nad elipsoidem', 'rozdílu tíže a normální tíže', 'sférickému excesu'], e: 'Proto lze z odchylek počítat průběh geoidu (astrogeodetická nivelace).' },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'u13', title: 'Vyrovnávací počet', color: '#be123c', level: 'VŠ',
+    desc: 'Chyby měření, zákon hromadění chyb, metoda nejmenších čtverců a hodnocení přesnosti a spolehlivosti.',
+    lessons: [
+      {
+        id: 'u13l1', title: 'Chyby a jejich rozdělení', icon: '🎯', gens: ['meanValue', 'meanError'],
+        items: [
+          { t: 'm', q: 'Spojte druh chyby s příkladem', p: [['Hrubá', 'Přehlédnutí o celý metr na lati'], ['Systematická', 'Nesprávná délka pásma'], ['Náhodná', 'Rozptyl čtení při opakování']] },
+          { t: 'c', q: 'Jak se odstraňují systematické chyby?', a: 'Kalibrací, opravami a metodou měření', w: ['Opakováním měření a průměrem', 'Vyrovnáním metodou MNČ', 'Nelze je odstranit'], e: 'Průměr potlačuje jen náhodné chyby; systematická se opakováním nezmění.' },
+          { t: 'c', q: 'V intervalu ±σ kolem střední hodnoty leží u normálního rozdělení přibližně…', a: '68 % hodnot', w: ['50 % hodnot', '95 % hodnot', '99,7 % hodnot'], e: 'Pravidlo 68 – 95 – 99,7 % pro ±1σ, ±2σ, ±3σ.' },
+          { t: 'c', q: 'V intervalu ±3σ leží přibližně…', a: '99,7 % hodnot', w: ['95,4 % hodnot', '68,3 % hodnot', '90 % hodnot'], e: 'Proto se chyba větší než 3σ považuje za podezřelou z hrubé chyby.' },
+          { t: 'c', q: 'Korelační koeficient dvou veličin je…', a: 'ρ = σ_xy / (σ_x σ_y)', w: ['ρ = σ_x σ_y / σ_xy', 'ρ = σ_xy · σ_x σ_y', 'ρ = σ_x² / σ_y²'], e: 'Kovariance normovaná směrodatnými odchylkami; leží v intervalu ⟨−1; 1⟩.' },
+          { t: 'tf', q: 'Nulová kovariance dvou veličin znamená, že jsou nekorelované.', a: true, e: 'Nekorelovanost neznamená obecně nezávislost; u normálního rozdělení však ano.' },
+          { t: 'tf', q: 'Aritmetický průměr n měření stejné přesnosti má směrodatnou odchylku σ · √n.', a: false, e: 'Průměr je přesnější: σ_x̄ = σ / √n. Součet n měření má σ · √n.' },
+          { t: 'c', q: 'Na diagonále kovarianční matice jsou…', a: 'rozptyly σ²', w: ['kovariance', 'korelační koeficienty', 'váhy'], e: 'Mimo diagonálu leží kovariance σ_ij; matice je symetrická.' },
+        ],
+      },
+      {
+        id: 'u13l2', title: 'Zákon hromadění chyb', icon: '➕', gens: ['errorPropagation'],
+        items: [
+          { t: 'c', q: 'Pro f = a₁x₁ + a₂x₂ s nekorelovanými x₁, x₂ platí…', a: 'σ_f² = a₁²σ₁² + a₂²σ₂²', w: ['σ_f = a₁σ₁ + a₂σ₂', 'σ_f² = a₁σ₁² + a₂σ₂²', 'σ_f = a₁²σ₁ + a₂²σ₂'], e: 'Sčítají se rozptyly, koeficienty vstupují ve druhé mocnině.' },
+          { t: 'c', q: 'Kovarianční matice vektoru funkcí f(x) se vypočte jako…', a: 'Σ_f = J Σ_x Jᵀ', w: ['Σ_f = Jᵀ Σ_x J', 'Σ_f = J Σ_x', 'Σ_f = Σ_x J Jᵀ'], e: 'J je Jacobiho matice parciálních derivací ∂f_i/∂x_j (řádky = funkce).' },
+          { t: 'c', q: 'U nelineární funkce se zákon hromadění chyb použije po…', a: 'linearizaci Taylorovým rozvojem', w: ['zlogaritmování výsledku', 'zanedbání všech derivací', 'vyrovnání MNČ'], e: 'Ponechají se členy prvního řádu – parciální derivace v přibližných hodnotách.' },
+          { t: 'tf', q: 'Rozdíl dvou nekorelovaných měření má menší směrodatnou odchylku než jejich součet.', a: false, e: 'Obojí má σ = √(σ₁² + σ₂²); znaménko koeficientu se umocněním ztratí.' },
+          { t: 'c', q: 'Převýšení z n sestav s chybou σ₀ na sestavu má směrodatnou odchylku…', a: 'σ₀ √n', w: ['σ₀ n', 'σ₀ / √n', 'σ₀ n²'], e: 'Součet n nekorelovaných převýšení: rozptyly se sčítají, σ² = n σ₀².' },
+          { t: 'n', q: 'Délka d = 150,00 m, σ_d = 5 mm, směrník σ_σ = 2 mgon. Jaká je příčná chyba d · σ_σ (v rad) v mm?', a: 4.71, tol: 0.02, dec: 2, unit: 'mm', e: '2 mgon = 2 · π / 200 000 rad ≈ 3,14·10⁻⁵ rad; 150 000 mm · 3,14·10⁻⁵ ≈ 4,71 mm.' },
+          { t: 'o', q: 'Seřaďte postup odhadu přesnosti funkce f(x)', s: ['Sestavit funkci f(x)', 'Linearizovat – parciální derivace', 'Sestavit matici J a kovarianční matici Σ_x', 'Vypočítat Σ_f = J Σ_x Jᵀ'], e: 'Při korelovaných vstupech je nutné použít plnou Σ_x včetně kovariancí.' },
+          { t: 'tf', q: 'Zanedbání kladné korelace vstupů u součtu dvou veličin vede k podhodnocení výsledné chyby.', a: true, e: 'σ_f² = σ₁² + σ₂² + 2σ₁₂; při σ₁₂ > 0 je skutečný rozptyl větší.' },
+        ],
+      },
+      {
+        id: 'u13l3', title: 'MNČ – vyrovnání zprostředkující', icon: '🧮',
+        items: [
+          { t: 'c', q: 'Metoda nejmenších čtverců minimalizuje…', a: 'vᵀPv', w: ['součet oprav Σv', 'největší opravu', 'Σ|v|'], e: 'Vážený součet čtverců oprav; minimalizace Σ|v| vede k robustní L1 metodě.' },
+          { t: 'c', q: 'Matice normálních rovnic je…', a: 'N = AᵀPA', w: ['N = APAᵀ', 'N = AᵀA⁻¹', 'N = PAᵀ'], e: 'A je matice plánu (derivace měření podle neznámých), P matice vah.' },
+          { t: 'c', q: 'Vektor vyrovnaných neznámých (přírůstků) je…', a: 'x = N⁻¹AᵀPl', w: ['x = NAᵀPl', 'x = N⁻¹Al', 'x = AᵀPl / n'], e: 'Z normálních rovnic N x = AᵀPl.' },
+          { t: 'c', q: 'Počet nadbytečných měření (stupňů volnosti) je…', a: 'n − k', w: ['n + k', 'k − n', 'n · k'], e: 'n počet měření, k počet neznámých. Při n = k nelze vyrovnávat ani kontrolovat.' },
+          { t: 'tf', q: 'U nelineárních vztahů se vyrovnání řeší iteračně z přibližných hodnot neznámých.', a: true, e: 'Linearizace kolem x⁰, výpočet dx, oprava x⁰ a opakování až do konvergence.' },
+          { t: 'c', q: 'Kovarianční matice vyrovnaných neznámých je…', a: 'Σ_x = m₀² N⁻¹', w: ['Σ_x = m₀² N', 'Σ_x = N⁻¹ / m₀²', 'Σ_x = m₀² P⁻¹'], e: 'Q_xx = N⁻¹ je matice váhových koeficientů neznámých.' },
+          { t: 'o', q: 'Seřaďte kroky vyrovnání zprostředkujícího', s: ['Přibližné hodnoty neznámých', 'Sestavení A, l a P', 'Normální rovnice N = AᵀPA', 'Řešení x = N⁻¹AᵀPl', 'Opravy v a m₀'], e: 'Opravy v = A x − l slouží ke kontrole a výpočtu aposteriorní m₀.' },
+          { t: 'tf', q: 'Volná síť bez daných bodů má singulární matici N.', a: true, e: 'Chybí definice datumu (defekt); řeší se pseudoinverzí nebo podmínkami na datum.' },
+        ],
+      },
+      {
+        id: 'u13l4', title: 'Váhy a podmínkové vyrovnání', icon: '⚖️', gens: ['weightedMean'],
+        items: [
+          { t: 'c', q: 'Váha měření se definuje jako…', a: 'p = c / m²', w: ['p = c · m²', 'p = m / c', 'p = c / m'], e: 'Váha je nepřímo úměrná rozptylu; c je libovolná kladná konstanta.' },
+          { t: 'c', q: 'Konstanta c ve vzorci pro váhu je rovna…', a: 'kvadrátu jednotkové střední chyby', w: ['počtu měření', 'součtu vah', 'vždy jedné'], e: 'Měření s vahou 1 má střední chybu m₀ = √c; volba c výsledek vyrovnání nemění.' },
+          { t: 'c', q: 'Váha nivelačního pořadu se obvykle volí…', a: 'nepřímo úměrně jeho délce', w: ['úměrně jeho délce', 'úměrně počtu přestav na druhou', 'stejná pro všechny pořady'], e: 'm² roste lineárně s délkou L, tedy p = c / L.' },
+          { t: 'c', q: 'Kolik podmínkových rovnic má trojúhelník s měřenými všemi třemi úhly?', a: '1', w: ['2', '3', '0'], e: 'Počet podmínek = n − k = 3 − 2; podmínka: součet úhlů = 200 gon (+ ε).' },
+          { t: 'c', q: 'Počet nezávislých podmínkových rovnic je roven…', a: 'počtu nadbytečných měření', w: ['počtu měření', 'počtu neznámých', 'počtu daných bodů'], e: 'r = n − k; každá nadbytečná veličina dává jednu podmínku.' },
+          { t: 'tf', q: 'V podmínkovém vyrovnání se neurčují přímo neznámé, ale opravy měření pomocí korelát.', a: true, e: 'Koreláty jsou Lagrangeovy multiplikátory podmínek; vyrovnaná měření pak splňují všechny podmínky.' },
+          { t: 'tf', q: 'Změní-li se konstanta c u všech vah stejně, změní se vyrovnané hodnoty.', a: false, e: 'Vynásobení všech vah stejným číslem nemění minimum vᵀPv, tedy ani výsledek.' },
+          { t: 'm', q: 'Spojte síť s počtem podmínek', p: [['Trojúhelník, 3 úhly', '1 (součet úhlů)'], ['Uzavřený nivelační polygon', '1 (součet převýšení)'], ['Oboustranně připojený a orientovaný polygonový pořad', '3 (úhlová a 2 souřadnicové)'], ['Jednoduchý průměr ze 4 měření', '3 (n − 1)']] },
+        ],
+      },
+      {
+        id: 'u13l5', title: 'Hodnocení výsledků', icon: '📊', gens: ['unitWeightError'],
+        items: [
+          { t: 'c', q: 'Aposteriorní jednotková střední chyba je…', a: 'm₀ = √(vᵀPv / (n − k))', w: ['m₀ = √(vᵀPv / n)', 'm₀ = vᵀPv / (n − k)', 'm₀ = √(vᵀv / k)'], e: 'Dělí se počtem nadbytečných měření, ne počtem měření.' },
+          { t: 'c', q: 'Shoda aposteriorní m₀ s apriorní σ₀ se testuje rozdělením…', a: 'χ² s n − k stupni volnosti', w: ['t s k stupni volnosti', 'normovaným normálním', 'F s (n, k) stupni volnosti'], e: 'Testová veličina (n − k) m₀² / σ₀² ~ χ²(n − k).' },
+          { t: 'c', q: 'Baardova metoda data snooping testuje…', a: 'normované opravy jednotlivých měření', w: ['součet všech oprav', 'jen největší měřenou délku', 'shodu vah s délkami'], e: 'w_i = v_i / σ_vi se porovná s kritickou hodnotou (Baarda: 3,29 pro α = 0,001).' },
+          { t: 'c', q: 'Poloosy chybové elipsy jsou odmocniny z…', a: 'vlastních čísel kovarianční matice bodu', w: ['diagonálních prvků matice N', 'součtu σ_x a σ_y', 'determinantu matice P'], e: 'a² = λ₁, b² = λ₂; orientace z tg 2θ = 2σ_xy / (σ_x² − σ_y²).' },
+          { t: 'tf', q: 'Součet čtverců poloos standardní chybové elipsy je roven σ_x² + σ_y² (Helmertova polohová chyba na druhou).', a: true, e: 'Stopa matice se při rotaci nemění: a² + b² = σ_x² + σ_y² = σ_p².' },
+          { t: 'tf', q: 'Standardní chybová elipsa (poloosy 1σ) obsahuje skutečnou polohu s pravděpodobností 68 %.', a: false, e: 'Ve 2D je to jen asi 39 %; pro 95 % je třeba elipsu zvětšit asi 2,45×.' },
+          { t: 'c', q: 'Vnitřní spolehlivost sítě popisuje…', a: 'nejmenší ještě zjistitelnou hrubou chybu', w: ['vliv refrakce na výšky', 'přesnost daných bodů', 'počet neznámých'], e: 'Vnější spolehlivost pak udává vliv nezjištěné hrubé chyby na neznámé.' },
+          { t: 'm', q: 'Spojte pojem s popisem', p: [['m₀', 'Jednotková střední chyba'], ['n − k', 'Nadbytečnost'], ['Q_xx = N⁻¹', 'Matice váhových koeficientů'], ['r_i', 'Číslo nadbytečnosti měření']] },
+        ],
+      },
+    ],
+  },
+];

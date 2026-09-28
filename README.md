@@ -1,9 +1,11 @@
 # Geolingo + GeoAR Pro
 
 > **Geolingo** (složka [`geolingo/`](geolingo/)) – aplikace ve stylu Duolinga na výuku geodézie pro studenty SŠ a VŠ.
-> 10 kapitol / 50 lekcí (základy, souřadnicové systémy, přístroje, měření úhlů a délek, výpočty v rovině, nivelace,
-> GNSS, chyby měření, katastr, mapování a inženýrská geodézie), generované výpočtové příklady s novými čísly,
-> odečítání nivelační latě, XP, série dní, životy, denní cíl a úspěchy. Průvodcem je maskot Toti.
+> 16 kapitol / 80 lekcí – 10 pro SŠ (základy, souřadnicové systémy, přístroje, měření úhlů a délek, výpočty, nivelace,
+> GNSS, chyby, katastr, mapování) a 6 vysokoškolských (vyšší a fyzikální geodézie, vyrovnávací počet, fotogrammetrie,
+> družicová geodézie, sítě a deformace). Generované výpočty s novými čísly, terénní úlohy (výběr stanoviska,
+> nivelace ze středu, vytyčení, urovnání libely, nivelační zápisník),
+> odečítání latě, XP, série dní, baterie přístroje místo životů, hodnosti, denní cíl a úspěchy. Průvodcem je maskot Toti.
 > Běží na https://stepanvcelak11.github.io/qtrig-kancelar/ (přidejte na plochu), offline díky service workeru.
 > Lokálně: `cd geolingo && python3 -m http.server`, testy `node geolingo/tests/content.test.mjs`.
 >

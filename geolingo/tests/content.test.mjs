@@ -2,12 +2,13 @@
 import assert from 'node:assert/strict';
 import { UNITS, LESSONS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
 import { GEN, generate, fmt, bearingGon, polygonArea } from '../js/generators.js';
+import { FIELD, checkField, turnScrew, blocked } from '../js/field.js';
 
 let checks = 0;
 const ok = (cond, msg) => { assert.ok(cond, msg); checks++; };
 
 // --- Osnova ---
-ok(UNITS.length === 10, 'má být 10 kapitol');
+ok(UNITS.length >= 10, 'aspoň 10 kapitol');
 const ids = new Set();
 for (const u of UNITS) {
   ok(u.id && u.title && /^#[0-9a-f]{6}$/i.test(u.color), `kapitola ${u.id}: id/název/barva`);
@@ -17,7 +18,7 @@ for (const l of LESSONS) {
   ok(!ids.has(l.id), `duplicitní id lekce ${l.id}`); ids.add(l.id);
   ok(l.title && l.icon, `${l.id}: název a ikona`);
   ok(l.items.length >= (l.gens?.length ? 3 : 5), `${l.id}: málo otázek (${l.items.length})`);
-  for (const g of l.gens ?? []) ok(typeof GEN[g] === 'function', `${l.id}: neznámý generátor ${g}`);
+  for (const g of l.gens ?? []) ok(typeof (GEN[g] ?? FIELD[g]) === 'function', `${l.id}: neznámý generátor ${g}`);
   l.items.forEach((it, i) => {
     const where = `${l.id}[${i}]`;
     switch (it.t) {
@@ -48,7 +49,9 @@ for (const l of LESSONS) {
 for (const l of LESSONS) {
   for (let k = 0; k < 5; k++) {
     const run = buildLesson(l);
-    ok(run.length === Math.min(8, l.items.length + (l.gens?.length ? 8 : 0)), `${l.id}: délka lekce ${run.length}`);
+    const nField = (l.gens ?? []).filter((g) => FIELD[g]).length, nCalc = (l.gens ?? []).length - nField;
+    ok(run.length === (nCalc ? 8 : Math.min(8, l.items.length + nField)), `${l.id}: délka lekce ${run.length}`);
+    ok(run.filter((e) => FIELD[e.t]).length === nField, `${l.id}: terénní úlohy právě jednou`);
     for (const ex of run) {
       if (ex.t === 'c') ok(ex.options.includes(ex.a) && ex.options.length === ex.w.length + 1, `${l.id}: možnosti`);
       if (ex.t === 'o') ok(ex.bank.some((s, i) => s !== ex.s[i]), `${l.id}: řazení nezačíná seřazené`);
@@ -109,5 +112,36 @@ for (const name of Object.keys(GEN)) {
     }
   }
 }
+
+// --- Terénní praxe: každá vygenerovaná situace musí být řešitelná ---
+const t0 = Date.now();
+for (let k = 0; k < 150; k++) {
+  for (const name of ['station', 'levelSetup']) {
+    const ex = generate(name);
+    ok(!blocked(ex.scene, ex.sol) && checkField(ex, ex.sol).ok, `${name}: uložené řešení nevyhovuje`);
+    ok(!checkField(ex, { x: 0.2, y: 0.2 }).ok, `${name}: okraj mapy nesmí vyhovovat`);
+  }
+  const st = generate('stakeout');
+  ok(checkField(st, st.P).ok && !checkField(st, st.S).ok, 'vytyčení: hodnocení');
+  // Nezávislý přepočet: úhel od O k P na S musí být ω, délka d.
+  const az = (a, b) => { let s = Math.atan2(b.x - a.x, -(b.y - a.y)) * 200 / Math.PI; return (s + 400) % 400; };
+  ok(Math.abs(((az(st.S, st.P) - az(st.S, st.O) + 400) % 400) - st.omega) < 1e-6, 'vytyčení: úhel');
+  ok(Math.abs(Math.hypot(st.P.x - st.S.x, st.P.y - st.S.y) - st.d) < 1e-9, 'vytyčení: délka');
+  // Libela: hladový postup musí bublinu dostat do kroužku.
+  const bu = generate('bubble');
+  let b = bu.b0;
+  for (let i = 0; i < 40 && !checkField(bu, b).ok; i++) {
+    let best = null;
+    for (let s = 0; s < 3; s++) for (const d of [1, -1]) { const n = turnScrew(b, s, d, bu.step); if (!best || Math.hypot(n.x, n.y) < Math.hypot(best.x, best.y)) best = n; }
+    b = best;
+  }
+  ok(checkField(bu, b).ok, 'libela: nelze urovnat');
+  ok(!checkField(bu, bu.b0).ok, 'libela: nesmí začínat urovnaná');
+  const fb = generate('fieldbook');
+  ok(checkField(fb, fb.a.map((v) => fmt(v, 3).replace('−', '-'))).ok, 'zápisník: správné hodnoty');
+  ok(Math.abs(fb.rows.reduce((s, r) => s + r.z - r.p, fb.HZ) - fb.a.at(-1)) < 0.0006, 'zápisník: H_K');
+  ok(!checkField(fb, fb.a.map(() => '')).ok, 'zápisník: prázdné');
+}
+console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 
 console.log(`Geolingo: ${checks} kontrol OK (${LESSONS.length} lekcí, ${LESSONS.reduce((s, l) => s + l.items.length, 0)} otázek, ${Object.keys(GEN).length} generátorů)`);

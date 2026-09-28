@@ -2,11 +2,11 @@
 
 export default [
   {
-    id: 'u4', title: 'Měření úhlů a délek', color: '#ce82ff',
+    id: 'u4', title: 'Měření úhlů a délek', color: '#8b5cf6',
     desc: 'Centrace a horizontace, vodorovné a zenitové úhly, elektronické měření délek, trigonometrické výšky.',
     lessons: [
       {
-        id: 'u4l1', title: 'Postavení přístroje', icon: '🎯',
+        id: 'u4l1', title: 'Postavení přístroje', icon: '🎯', gens: ['bubble'],
         items: [
           { t: 'o', q: 'Seřaďte postup postavení přístroje nad bodem', s: ['Rozevřít stativ zhruba nad bodem', 'Nasadit přístroj a hrubě zacentrovat nohou stativu', 'Urovnat krabicovou libelu délkou noh stativu', 'Zhorizontovat stavěcími šrouby', 'Dostředit posunem přístroje po hlavě stativu', 'Zkontrolovat horizontaci'], e: 'Centrace a horizontace se navzájem ovlivňují, proto se na konci kontroluje.' },
           { t: 'c', q: 'Při horizontaci dvěma stavěcími šrouby se bublina pohybuje ve směru…', a: 'levého palce', w: ['pravého palce', 'vždy od sebe', 'náhodně'], e: 'Pravidlo levého palce – šrouby se točí proti sobě.' },
@@ -63,7 +63,7 @@ export default [
   },
 
   {
-    id: 'u5', title: 'Výpočty v rovině', icon: '🧮', color: '#ff4b4b',
+    id: 'u5', title: 'Výpočty v rovině', icon: '🧮', color: '#e5484d',
     desc: 'Směrník a délka, polární metoda, protínání, polygonový pořad a výpočet výměr.',
     lessons: [
       {
@@ -76,7 +76,7 @@ export default [
         ],
       },
       {
-        id: 'u5l2', title: 'Polární metoda', icon: '📍', gens: ['polarY', 'polarX'],
+        id: 'u5l2', title: 'Polární metoda', icon: '📍', gens: ['polarY', 'polarX', 'stakeout'],
         items: [
           { t: 'c', q: 'Polární metoda určuje bod pomocí…', a: 'směru a délky ze stanoviska', w: ['dvou úhlů', 'dvou délek', 'jen souřadnice X'], e: 'Nejčastější metoda podrobného měření.' },
           { t: 'c', q: 'Y_P = Y_A + …', a: 'd · sin σ', w: ['d · cos σ', 'd · tg σ', 'd / sin σ'], e: 'ΔY = d · sin σ, ΔX = d · cos σ.' },
@@ -121,11 +121,11 @@ export default [
   },
 
   {
-    id: 'u6', title: 'Nivelace', color: '#2b70c9',
+    id: 'u6', title: 'Nivelace', color: '#1f6f8b',
     desc: 'Geometrická nivelace ze středu, nivelační pořad, mezní odchylky, čtení latě a plošná nivelace.',
     lessons: [
       {
-        id: 'u6l1', title: 'Nivelace ze středu', icon: '⚖️', gens: ['levelDiff', 'levelHeight'],
+        id: 'u6l1', title: 'Nivelace ze středu', icon: '⚖️', gens: ['levelDiff', 'levelHeight', 'levelSetup'],
         items: [
           { t: 'c', q: 'Při nivelaci ze středu stojí přístroj…', a: 'uprostřed mezi latěmi', w: ['nad bodem', 'na konci pořadu', 'kdekoli stranou'], e: 'Záměry vzad a vpřed mají stejnou délku.' },
           { t: 'c', q: 'Převýšení: Δh = …', a: 'čtení vzad − čtení vpřed', w: ['vpřed − vzad', 'vzad + vpřed', 'průměr čtení'], e: 'Vzad = na bod se známou výškou.' },
@@ -135,7 +135,7 @@ export default [
         ],
       },
       {
-        id: 'u6l2', title: 'Nivelační pořad', icon: '🪜', gens: ['levelClosure'],
+        id: 'u6l2', title: 'Nivelační pořad', icon: '🪜', gens: ['levelClosure', 'fieldbook'],
         items: [
           { t: 'c', q: 'Přestavový bod je bod, na kterém…', a: 'se lať čte vpřed a po přestavení přístroje vzad', w: ['stojí přístroj', 'pořad začíná', 'je nivelační značka'], e: 'Spojuje dvě sestavy.' },
           { t: 'c', q: 'Výškový uzávěr pořadu: u = …', a: 'Σ Δh − (H_K − H_Z)', w: ['H_K + H_Z', 'Σ Δh', 'Σ vzad + Σ vpřed'], e: 'Rozdíl naměřeného a daného převýšení.' },

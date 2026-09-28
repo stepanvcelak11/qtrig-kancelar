@@ -3,9 +3,12 @@
 import U1 from './content/u01-03.js';
 import U2 from './content/u04-06.js';
 import U3 from './content/u07-10.js';
+import U4 from './content/u11-13.js';
+import U5 from './content/u14-16.js';
 import { generate, GEN } from './generators.js';
+import { checkField, FIELD_TYPES } from './field.js';
 
-export const UNITS = [...U1, ...U2, ...U3];
+export const UNITS = [...U1, ...U2, ...U3, ...U4, ...U5];
 export const LESSONS = UNITS.flatMap((u, ui) => u.lessons.map((l, li) => ({ ...l, unit: u, unitIndex: ui, lessonIndex: li })));
 export const lessonById = (id) => LESSONS.find((l) => l.id === id);
 
@@ -37,13 +40,22 @@ export function prepare(item, ref = null) {
 /** Sestaví běh lekce: statické otázky + generované výpočty. */
 export function buildLesson(lesson, length = LESSON_LENGTH) {
   const gens = lesson.gens ?? [];
-  const nGen = gens.length ? Math.min(length - 3, Math.max(2, Math.round(length * (gens.length >= 3 ? 0.5 : 0.35)))) : 0;
-  const statics = shuffle(lesson.items.map((it, i) => ({ it, i }))).slice(0, length - nGen);
+  // Terénní úlohy jsou v lekci každá jednou, výpočty doplní zbytek.
+  const field = gens.filter((g) => FIELD_TYPES.includes(g));
+  const calc = gens.filter((g) => !FIELD_TYPES.includes(g));
+  const nCalc = calc.length ? Math.min(length - 3, Math.max(2, Math.round(length * (calc.length >= 3 ? 0.5 : 0.35)))) : 0;
+  const statics = shuffle(lesson.items.map((it, i) => ({ it, i }))).slice(0, length - nCalc - field.length);
   const list = statics.map(({ it, i }) => prepare(it, { lesson: lesson.id, idx: i }));
-  for (let k = 0; gens.length && list.length < length; k++) {
-    list.push(prepare(generate(gens[k % gens.length])));
-  }
+  for (const g of field) list.push(prepare(generate(g)));
+  const order = shuffle(calc);
+  for (let k = 0; calc.length && list.length < length; k++) list.push(prepare(generate(order[k % order.length])));
   return shuffle(list);
+}
+
+/** Terénní praxe: praktické úlohy (výběr stanoviska, vytyčení, libela…). */
+export function buildFieldPractice(length = 6, only = null) {
+  const names = only ?? FIELD_TYPES;
+  return Array.from({ length }, (_, i) => prepare(generate(names[i % names.length])));
 }
 
 /** Procvičování: náhodné výpočty ze všech generátorů. */
@@ -95,7 +107,7 @@ export function grade(ex, answer) {
       const v = parseNumber(answer);
       return Number.isFinite(v) && Math.abs(v - ex.a) <= ex.tol;
     }
-    default: return false;
+    default: return FIELD_TYPES.includes(ex.t) ? checkField(ex, answer).ok : false;
   }
 }
 

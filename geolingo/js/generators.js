@@ -2,6 +2,8 @@
 // Každý vrací { t: 'n', q, a, tol, dec, unit, e } (číselná odpověď s tolerancí)
 // nebo { t: 'rod', a, tol, dec, e } pro odečet na lati (kreslí ho UI).
 
+import { FIELD } from './field.js';
+
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(rnd(a, b + 1));
 const round = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
@@ -177,6 +179,79 @@ export const GEN = {
     return { q: `Kružnicový oblouk: R = ${R} m, středový úhel ${fmt(al, 4)} gon. Jaká je délka oblouku?`, a, tol: 0.011, dec: 2, unit: 'm',
       e: `o = R · α(rad) = ${R} · ${fmt(al * GON, 6)} = ${fmt(a, 2)} m.` };
   },
+  // --- Vysokoškolské výpočty ---
+  weightedMean() {
+    const base = round(rnd(50, 400), 3), n = rint(3, 4);
+    const vals = Array.from({ length: n }, () => round(base + rint(-9, 9) / 1000, 3));
+    const w = Array.from({ length: n }, () => rint(1, 4));
+    const a = vals.reduce((s, x, i) => s + x * w[i], 0) / w.reduce((s, x) => s + x, 0);
+    return { q: `Délka změřena s různou přesností:\n${vals.map((x, i) => `${fmt(x, 3)} m (váha p = ${w[i]})`).join('\n')}\nVypočtěte vážený průměr.`, a, tol: 0.0006, dec: 3, unit: 'm',
+      e: `x̄ = Σ(p·x) / Σp = ${fmt(a, 4)} m.` };
+  },
+  unitWeightError() {
+    const vv = round(rnd(4, 120), 1), n = rint(8, 30), k = rint(2, Math.min(6, n - 2));
+    const a = Math.sqrt(vv / (n - k));
+    return { q: `Po vyrovnání MNČ je [vv] = ${fmt(vv, 1)} mm², počet měření n = ${n}, počet neznámých k = ${k}. Jaká je aposteriorní jednotková střední chyba m₀?`, a, tol: 0.011, dec: 2, unit: 'mm',
+      e: `m₀ = √([vv] / (n − k)) = √(${fmt(vv, 1)} / ${n - k}) = ${fmt(a, 2)} mm.` };
+  },
+  curvRefraction() {
+    const d = rint(200, 3000), k = 0.13, R = 6381000;
+    const a = (1 - k) * d * d / (2 * R) * 1000;
+    return { q: `Jaká je oprava ze zakřivení Země a refrakce pro vodorovnou délku ${fmt(d, 0)} m? (k = 0,13; R = 6 381 km)`, a, tol: 0.6, dec: 0, unit: 'mm',
+      e: `Δ = (1 − k) · d² / (2R) = 0,87 · ${fmt(d, 0)}² / 12 762 000 m = ${fmt(a, 0)} mm.` };
+  },
+  ellipsoidalHeight() {
+    const H = round(rnd(150, 900), 3), N = round(rnd(43, 47), 3), h = H + N;
+    return { q: `Normální výška bodu H = ${fmt(H, 3)} m, výšková anomálie (kvazigeoid nad elipsoidem) ζ = ${fmt(N, 3)} m. Jaká je elipsoidická výška h?`, a: h, tol: 0.0006, dec: 3, unit: 'm',
+      e: `h = H + ζ = ${fmt(H, 3)} + ${fmt(N, 3)} = ${fmt(h, 3)} m.` };
+  },
+  normalHeight() {
+    const h = round(rnd(200, 950), 3), N = round(rnd(43, 47), 3), H = h - N;
+    return { q: `GNSS určilo elipsoidickou výšku h = ${fmt(h, 3)} m. Výšková anomálie ζ = ${fmt(N, 3)} m. Jaká je normální výška H (Bpv)?`, a: H, tol: 0.0006, dec: 3, unit: 'm',
+      e: `H = h − ζ = ${fmt(h, 3)} − ${fmt(N, 3)} = ${fmt(H, 3)} m.` };
+  },
+  photoScale() {
+    const c = pick([35, 50, 100, 120, 150]), h = rint(80, 3000);
+    const a = h / (c / 1000);
+    return { q: `Kamera s konstantou c = ${c} mm snímkuje z výšky ${fmt(h, 0)} m nad terénem. Jaké je měřítkové číslo snímku m_s?`, a, tol: 1.1, dec: 0, unit: '',
+      e: `m_s = h / c = ${fmt(h, 0)} m / ${fmt(c / 1000, 3)} m = ${fmt(a, 0)}.` };
+  },
+  gsd() {
+    const px = pick([2.4, 3.3, 3.9, 4.4, 6]), c = pick([8.8, 10.3, 12.3, 24, 35]), h = rint(40, 200);
+    const a = px / 1000 * h / c * 100;
+    return { q: `Dron: velikost pixelu ${fmt(px, 1)} µm, ohnisková vzdálenost ${fmt(c, 1)} mm, výška letu ${h} m. Jaké je GSD (velikost pixelu na zemi)?`, a, tol: 0.011, dec: 2, unit: 'cm',
+      e: `GSD = pixel · h / c = ${fmt(px, 1)} µm · ${h} m / ${fmt(c, 1)} mm = ${fmt(a, 2)} cm.` };
+  },
+  photoBase() {
+    const side = pick([23, 18, 12]), m = pick([5000, 8000, 10000, 15000]), p = pick([60, 65, 70, 80]);
+    const a = side / 100 * m * (1 - p / 100);
+    return { q: `Formát snímku ${side} cm, měřítko 1 : ${fmt(m, 0)}, podélný překryt ${p} %. Jaká je základna B mezi středy snímků?`, a, tol: 0.6, dec: 0, unit: 'm',
+      e: `B = s · m · (1 − p) = ${fmt(side / 100, 2)} m · ${fmt(m, 0)} · ${fmt(1 - p / 100, 2)} = ${fmt(a, 0)} m.` };
+  },
+  sphericalExcess() {
+    const P = rint(50, 2500), R = 6380;
+    const a = P / (R * R) * 206264.806;
+    return { q: `Sférický trojúhelník má plochu ${fmt(P, 0)} km². Jaký je sférický exces ε? (R = 6 380 km)`, a, tol: 0.011, dec: 2, unit: '″',
+      e: `ε = P / R² · ρ″ = ${fmt(P, 0)} / 6 380² · 206 265″ = ${fmt(a, 2)}″.` };
+  },
+  radiusM() {
+    const phi = round(rnd(35, 65), 2), A = 6378137, e2 = 0.00669438;
+    const sn = Math.sin(phi * Math.PI / 180), a = A * (1 - e2) / Math.pow(1 - e2 * sn * sn, 1.5) / 1000;
+    return { q: `Elipsoid GRS80 (a = 6 378 137 m, e² = 0,006 694 38). Vypočtěte meridiánový poloměr křivosti M pro φ = ${fmt(phi, 2)}°.`, a, tol: 0.011, dec: 2, unit: 'km',
+      e: `M = a(1 − e²) / (1 − e² sin²φ)^(3/2) = ${fmt(a, 2)} km.` };
+  },
+  radiusN() {
+    const phi = round(rnd(35, 65), 2), A = 6378137, e2 = 0.00669438;
+    const sn = Math.sin(phi * Math.PI / 180), a = A / Math.sqrt(1 - e2 * sn * sn) / 1000;
+    return { q: `Elipsoid GRS80 (a = 6 378 137 m, e² = 0,006 694 38). Vypočtěte příčný poloměr křivosti N pro φ = ${fmt(phi, 2)}°.`, a, tol: 0.011, dec: 2, unit: 'km',
+      e: `N = a / √(1 − e² sin²φ) = ${fmt(a, 2)} km.` };
+  },
+  baseline3d() {
+    const d = [rnd(-9000, 9000), rnd(-9000, 9000), rnd(-9000, 9000)].map((x) => round(x, 3));
+    const a = Math.hypot(...d);
+    return { q: `GNSS vektor v ECEF: ΔX = ${fmt(d[0], 3)} m, ΔY = ${fmt(d[1], 3)} m, ΔZ = ${fmt(d[2], 3)} m. Jaká je délka základny?`, a, tol: 0.0011, dec: 3, unit: 'm',
+      e: `s = √(ΔX² + ΔY² + ΔZ²) = ${fmt(a, 3)} m.` };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',
@@ -217,7 +292,7 @@ function area(n) {
 
 /** Vytvoří cvičení z generátoru. */
 export function generate(name) {
-  const g = GEN[name];
+  const g = GEN[name] ?? FIELD[name];
   if (!g) throw new Error(`Neznámý generátor ${name}`);
   const ex = g();
   return { t: 'n', ...ex, gen: name };
