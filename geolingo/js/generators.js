@@ -326,6 +326,11 @@ export const GEN = {
     return { q: `V DMT je převýšení ${fmt(dh, 2)} m na vodorovné vzdálenosti ${fmt(d, 1)} m. Jaký je sklon svahu ve stupních?`, a, tol: 0.011, dec: 2, unit: '°',
       e: `α = arctg(Δh / d) = arctg(${fmt(dh / d, 4)}) = ${fmt(a, 2)}°.` };
   },
+  hzCircle() {
+    const a = round(rnd(0.5, 399.5), 3);
+    return { t: 'circle', a, tol: 0.0015, dec: 3, unit: 'gon',
+      e: `Čtení = číslo ryšky kruhu (${Math.floor(a)} gon) + poloha ryšky na stupnici: ${fmt(a - Math.floor(a), 3)} gon. Stupnice má 100 dílků po 0,01 gon, tisíciny se odhadují.` };
+  },
   rod() {
     const a = round(rnd(0.35, 2.85), 3);
     return { t: 'rod', a, tol: 0.003, dec: 3, unit: 'm',

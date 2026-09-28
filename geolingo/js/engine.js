@@ -11,6 +11,13 @@ import B3 from './content/vut-bc3.js';
 import I1 from './content/vut-ing1.js';
 import I2 from './content/vut-ing2.js';
 import I3 from './content/vut-ing3.js';
+import T1 from './content/tips-1.js';
+import T2 from './content/tips-2.js';
+import T3 from './content/tips-3.js';
+import T4 from './content/tips-4.js';
+
+/** Taháky ke kapitolám podle id kapitoly. */
+export const TIPS = { ...T1, ...T2, ...T3, ...T4 };
 import { generate, GEN } from './generators.js';
 import { checkField, FIELD_TYPES } from './field.js';
 
@@ -85,7 +92,7 @@ export function buildFieldPractice(length = 6, only = null) {
 
 /** Procvičování: náhodné výpočty ze všech generátorů. */
 export function buildCalcPractice(length = 10, only = null) {
-  const names = only ?? Object.keys(GEN).filter((n) => n !== 'rod');
+  const names = only ?? Object.keys(GEN).filter((n) => n !== 'rod' && n !== 'hzCircle');
   return Array.from({ length }, () => prepare(generate(names[Math.floor(Math.random() * names.length)])));
 }
 
@@ -128,7 +135,7 @@ export function grade(ex, answer) {
     case 'tf': return answer === ex.a;
     case 'o': return Array.isArray(answer) && answer.length === ex.s.length && answer.every((s, i) => s === ex.s[i]);
     case 'm': return answer === true;
-    case 'n': case 'rod': {
+    case 'n': case 'rod': case 'circle': {
       const v = parseNumber(answer);
       return Number.isFinite(v) && Math.abs(v - ex.a) <= ex.tol;
     }
@@ -142,7 +149,7 @@ export function correctText(ex, fmt) {
     case 'c': return ex.a;
     case 'tf': return ex.a ? 'Pravda' : 'Nepravda';
     case 'o': return ex.s.map((s, i) => `${i + 1}. ${s}`).join('\n');
-    case 'n': case 'rod': return `${fmt(ex.a, ex.dec)} ${ex.unit ?? ''}`.trim();
+    case 'n': case 'rod': case 'circle': return `${fmt(ex.a, ex.dec)} ${ex.unit ?? ''}`.trim();
     default: return '';
   }
 }

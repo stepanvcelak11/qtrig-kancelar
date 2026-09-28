@@ -179,6 +179,50 @@ main.path { flex: 1; padding: 14px 14px 120px; }
 .node.exam.passed { background: linear-gradient(135deg, #16a37f, #0f4c5c); box-shadow: 0 6px 0 #0b3a46; }
 .node-wrap.examwrap { margin-left: -75px; }
 
+/* Tahák */
+.tips-btn { position: relative; z-index: 1; margin: -2px 0 10px; border: 0; border-radius: 99px; padding: 5px 12px; background: rgba(255, 255, 255, .92); color: var(--c); font: 700 13px var(--head); }
+.linkbtn { border: 0; background: none; color: var(--blue); font: 600 14px var(--head); padding: 0 0 12px; }
+.tips-sheet { max-height: 88vh; display: flex; flex-direction: column; padding-top: 14px; }
+.tips-head { position: relative; padding-right: 36px; }
+.tips-head small { font: 600 12px var(--head); text-transform: uppercase; letter-spacing: .1em; color: var(--c); }
+.tips-head .x { position: absolute; right: 0; top: 0; }
+.tips-body { overflow: auto; margin-top: 8px; padding-bottom: 6px; }
+.tips-body h4 { margin: 16px 0 8px; font: 600 12px var(--head); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.tips-intro { margin: 0; font-size: 15.5px; }
+.formulas { display: grid; gap: 8px; }
+.formula { background: var(--bg); border-radius: 12px; padding: 8px 12px; box-shadow: inset 4px 0 0 var(--c); }
+.formula small { display: block; color: var(--muted); font-size: 12.5px; }
+.formula code { font: 600 16px/1.4 'Lexend', sans-serif; color: var(--text); white-space: pre-wrap; }
+.tips-points { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; }
+.tips-points li::marker { color: var(--c); }
+.terms { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14.5px; }
+.terms dt { font-weight: 800; }
+.terms dd { margin: 0; color: var(--muted); }
+.toti-tip { display: flex; gap: 10px; align-items: center; margin-top: 16px; background: color-mix(in srgb, var(--gold) 16%, var(--card)); border-radius: 16px; padding: 10px 12px; }
+.toti-tip .toti { width: 46px; height: 56px; flex: none; }
+.toti-tip p { margin: 0; font-size: 14.5px; }
+
+/* Konec lekce: povýšení a série */
+.promo { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #0f4c5c, #16a37f);
+  box-shadow: var(--shadow); animation: pop .6s cubic-bezier(.2, 1.6, .4, 1) .4s both; }
+.promo span { font-size: 32px; } .promo small { display: block; font: 600 11.5px var(--head); text-transform: uppercase; letter-spacing: .1em; opacity: .85; }
+.promo b { font: 700 18px var(--head); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+.streak-up { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.streak-up .flame svg { width: 38px; height: 38px; animation: flame 1s ease-in-out infinite alternate; transform-origin: 50% 90%; }
+@keyframes flame { to { transform: scale(1.18) rotate(-4deg); } }
+
+/* Deník v terénu (kalendář aktivity) */
+.heat { background: var(--card); border-radius: 16px; padding: 12px; box-shadow: inset 0 0 0 2px var(--line); }
+.heat-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 3px; }
+.heat i, .heat-legend i { display: block; aspect-ratio: 1; border-radius: 3px; background: var(--soft); }
+.heat .hf { background: transparent; }
+.heat .h1 { background: color-mix(in srgb, var(--green) 30%, var(--soft)); } .heat .h2 { background: color-mix(in srgb, var(--green) 55%, var(--soft)); }
+.heat .h3 { background: color-mix(in srgb, var(--green) 80%, var(--soft)); } .heat .h4 { background: var(--green-d); }
+.heat-legend { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--muted); gap: 8px; }
+.heat-legend .scale { display: flex; align-items: center; gap: 3px; }
+.heat-legend .scale i { width: 10px; }
+
 /* Klad listů */
 .index-btn { position: fixed; right: max(14px, calc(50% - 266px)); bottom: calc(var(--sb) + 84px); z-index: 6; display: flex; align-items: center; gap: 6px;
   border: 0; border-radius: 99px; padding: 10px 14px; background: var(--petrol); color: #fff; box-shadow: var(--shadow); font: 600 14px var(--head); }
@@ -214,7 +258,7 @@ nav.tabs button.on { color: var(--green); background: color-mix(in srgb, var(--g
 .tags span { font: 600 12.5px var(--head); padding: 4px 10px; border-radius: 99px; background: var(--soft); color: var(--muted); }
 
 /* Lekce */
-.lesson { flex: 1; display: flex; flex-direction: column; min-height: 100dvh; }
+.lesson { flex: 1; display: flex; flex-direction: column; min-height: 100dvh; background: color-mix(in srgb, var(--bg) 78%, transparent); box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 78%, transparent); clip-path: inset(0 -100vmax); }
 .lesson-top { display: flex; align-items: center; gap: 12px; padding: calc(var(--st) + 12px) 16px 6px; }
 .x { background: none; border: 0; font-size: 24px; color: var(--muted); padding: 0 4px; }
 .bar { position: relative; flex: 1; height: 14px; background: var(--soft); border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--line);
@@ -303,6 +347,20 @@ svg.map .northar path { fill: #17333b; }
 .lg-t { background: #e5484d; border-radius: 50% !important; } .lg-b { background: #d8cfc0; outline: 1px solid #8d8173; } .lg-tr { background: #5f9e48; border-radius: 50% !important; }
 .lg-r { background: repeating-linear-gradient(#fff 0 3px, #e5484d 3px 6px); outline: 1px solid #333; }
 
+canvas.scope { width: 100%; max-width: 440px; align-self: center; border-radius: 22px; box-shadow: var(--shadow); }
+svg.dial { width: 100%; max-width: 290px; align-self: center; touch-action: none; cursor: grab; }
+.dial .face { fill: var(--card); stroke: var(--line); stroke-width: 2; }
+.dial .rim { fill: none; stroke: var(--petrol); stroke-width: .8; opacity: .5; }
+.dial .axis { stroke: var(--petrol); stroke-width: .6; stroke-dasharray: 3 3; opacity: .45; }
+.dial line { stroke: var(--text); stroke-width: .8; opacity: .55; } .dial line.big { stroke-width: 1.8; opacity: .9; }
+.dial text { font: 700 10px var(--head); fill: var(--text); text-anchor: middle; }
+.dial text.quad { font-size: 15px; fill: var(--muted); opacity: .45; }
+.dial text.ax { font-size: 9px; fill: var(--petrol); }
+.dial .needle path { fill: var(--blue); } .dial .needle circle { fill: var(--petrol); }
+.dial .needle.good path { fill: var(--green); } .dial .needle.bad path { fill: var(--red); }
+.dial .needle.ok path { fill: var(--green); opacity: .85; }
+.dial-read { text-align: center; font: 500 16px var(--head); color: var(--muted); }
+.dial-read b { color: var(--text); font-size: 20px; }
 svg.vial { width: 100%; max-width: 300px; align-self: center; }
 .vial .plate { fill: #3d4452; stroke: #2a3039; stroke-width: 2; stroke-linejoin: round; }
 .vial .screwg circle { fill: #6f7480; stroke: #2a3039; stroke-width: 1.5; }

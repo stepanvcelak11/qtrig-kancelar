@@ -17,7 +17,7 @@ export default [
         ],
       },
       {
-        id: 'u4l2', title: 'Vodorovné úhly', icon: '↔️', gens: ['angleDiff'],
+        id: 'u4l2', title: 'Vodorovné úhly', icon: '↔️', gens: ['angleDiff', 'hzCircle'],
         items: [
           { t: 'c', q: 'Vodorovný úhel je…', a: 'průmět úhlu do vodorovné roviny', w: ['úhel od svislice', 'sklon terénu', 'rozdíl výšek'], e: 'Nezávisí na sklonu záměr.' },
           { t: 'c', q: 'Měření ve skupinách znamená měřit osnovu směrů…', a: 'v obou polohách dalekohledu', w: ['jen v I. poloze', 'jen na jeden cíl', 'bez orientace'], e: 'Jedna skupina = I. a II. poloha.' },
@@ -67,7 +67,7 @@ export default [
     desc: 'Směrník a délka, polární metoda, protínání, polygonový pořad a výpočet výměr.',
     lessons: [
       {
-        id: 'u5l1', title: 'Směrník a délka', icon: '📐', gens: ['bearing', 'distance'],
+        id: 'u5l1', title: 'Směrník a délka', icon: '📐', gens: ['bearing', 'distance', 'azimuth'],
         items: [
           { t: 'c', q: 'Délka ze souřadnic: d = …', a: '√(ΔY² + ΔX²)', w: ['ΔY + ΔX', 'ΔY · ΔX', '√(ΔY + ΔX)'], e: 'Pythagorova věta.' },
           { t: 'c', q: 'tg σ = …', a: 'ΔY / ΔX', w: ['ΔX / ΔY', 'ΔY · ΔX', 'ΔX − ΔY'], e: 'Kvadrant se určí podle znamének ΔY a ΔX.' },

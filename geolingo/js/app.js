@@ -1,6 +1,6 @@
 // Geolingo – uživatelské rozhraní: mapa lekcí, cvičení, terénní praxe, profil.
 
-import { UNITS, LESSONS, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
+import { UNITS, LESSONS, TIPS, lessonById, buildLesson, buildUnitTest, buildCalcPractice, buildFieldPractice, buildMistakes, buildMix, grade, correctText, prepare, shuffle } from './engine.js';
 import { fmt, generate } from './generators.js';
 import { W, H, checkField, solutionCells, turnScrew, SCREWS, FIELD_TYPES } from './field.js';
 import * as store from './store.js';
@@ -207,7 +207,7 @@ function renderPath() {
     return `${divider}<section class="unit" id="unit-${ui}" style="--c:${u.color}">
       <div class="sheet-head">
         <div class="sheet-meta"><span class="sheet-no">List ${String(ui + 1).padStart(2, '0')}</span><span class="lvl ${isUni(lvl) ? 'vs' : ''}">${lvl}</span>${u.course ? `<span class="sheet-course">${u.course !== '—' ? u.course + ' · ' : ''}${u.sem ?? ''}</span>` : ''}</div>
-        <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>
+        <h2>${esc(u.title)}</h2><p>${esc(u.desc)}</p>${TIPS[u.id] ? `<button class="tips-btn" data-tips="${u.id}">📒 Tahák</button>` : ''}
         <div class="sheet-prog"><i style="width:${(doneN / u.lessons.length) * 100}%"></i></div><small>${doneN} / ${u.lessons.length} lekcí</small>
         <svg class="contours" viewBox="0 0 120 80" aria-hidden="true"><path d="M10 70c20-30 40-10 60-35s35-20 45-30M0 78c25-25 45-5 68-28s32-18 52-26M25 80c15-15 30-5 45-20s30-12 50-18"/></svg>
         <svg class="north" viewBox="0 0 20 30" aria-hidden="true"><path d="M10 2 16 22 10 18 4 22Z"/><text x="10" y="30">S</text></svg>
@@ -219,6 +219,7 @@ function renderPath() {
     <button class="index-btn" id="index" aria-label="Klad mapových listů">${ICON.map}<span>Listy</span></button>` + tabs();
   app.querySelectorAll('[data-lesson]').forEach((b) => b.addEventListener('click', () => lessonSheet(b.dataset.lesson)));
   $('#index').addEventListener('click', indexSheet);
+  app.querySelectorAll('[data-tips]').forEach((b) => b.addEventListener('click', () => tipsSheet(b.dataset.tips)));
   app.querySelectorAll('[data-exam]').forEach((b) => b.addEventListener('click', () => {
     const u = UNITS[+b.dataset.exam];
     if (!u.lessons.every((l) => isDone(l.id)) && !store.S().unlockAll) return toast('Zkouška se odemkne po dokončení všech lekcí listu');
@@ -248,6 +249,25 @@ function indexSheet() {
   });
 }
 
+/** Tahák ke kapitole: úvod, vzorce, klíčové body, pojmy a tip od Totiho. */
+function tipsSheet(unitId) {
+  const u = UNITS.find((x) => x.id === unitId), t = TIPS[unitId];
+  if (!t) return;
+  const bg = document.createElement('div');
+  bg.className = 'sheet-bg';
+  bg.innerHTML = `<div class="sheet tips-sheet" style="--c:${u.color}">
+    <div class="tips-head"><small>Tahák${u.course && u.course !== '—' ? ' · ' + u.course : ''}</small><h3>${esc(u.title)}</h3><button class="x" id="tclose" aria-label="Zavřít">✕</button></div>
+    <div class="tips-body">
+      ${t.intro ? `<p class="tips-intro">${esc(t.intro)}</p>` : ''}
+      ${t.formulas?.length ? `<h4>Vzorce</h4><div class="formulas">${t.formulas.map(([n, f]) => `<div class="formula"><small>${esc(n)}</small><code>${esc(f)}</code></div>`).join('')}</div>` : ''}
+      ${t.points?.length ? `<h4>Co si zapamatovat</h4><ul class="tips-points">${t.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+      ${t.terms?.length ? `<h4>Pojmy</h4><dl class="terms">${t.terms.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl>` : ''}
+      ${t.tip ? `<div class="toti-tip">${mascot()}<p><b>Toti radí:</b> ${esc(t.tip)}</p></div>` : ''}
+    </div></div>`;
+  document.body.append(bg);
+  bg.addEventListener('click', (e) => { if (e.target === bg || e.target.closest('#tclose')) bg.remove(); });
+}
+
 function lessonSheet(id) {
   const l = lessonById(id);
   const index = LESSONS.indexOf(l);
@@ -259,6 +279,7 @@ function lessonSheet(id) {
   bg.innerHTML = `<div class="sheet" style="--c:${l.unit.color}">
     <div class="sheet-top"><span class="ic">${l.icon}</span><div><small>${esc(l.unit.title)} · ${levelOf(l)}</small><h3>${esc(l.title)}</h3></div></div>
     <div class="tags">${tags.map((t) => `<span>${t}</span>`).join('')}</div>
+    ${TIPS[l.unit.id] ? `<button class="linkbtn" id="tipsLink">📒 Tahák ke kapitole</button>` : ''}
     ${times ? `<p class="hint">Dokončeno ${times}× ${store.S().perfect[id] ? '· bez chyby 💯' : ''}</p>` : ''}
     ${unlocked ? `<button class="btn primary wide" id="go">${times ? 'Opakovat lekci · +10 XP' : 'Začít lekci · +10 XP'}</button>`
       : '<button class="btn wide" disabled>🔒 Nejdřív dokonči předchozí lekci</button>'}
@@ -266,6 +287,7 @@ function lessonSheet(id) {
   document.body.append(bg);
   bg.addEventListener('click', (e) => { if (e.target === bg) bg.remove(); });
   $('#go', bg)?.addEventListener('click', () => { bg.remove(); scrollMemory = window.scrollY; startLesson(id); });
+  $('#tipsLink', bg)?.addEventListener('click', () => { bg.remove(); tipsSheet(l.unit.id); });
 }
 
 // ---------------------------------------------------------------------------------------
@@ -292,7 +314,7 @@ function begin(items, meta) {
 
 const KIND = {
   c: 'Vyber správnou odpověď', tf: 'Pravda, nebo ne?', m: 'Spoj dvojice', o: 'Seřaď kroky', n: 'Vypočítej', rod: 'Odečti lať',
-  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník',
+  station: 'Terén · výběr stanoviska', levelSetup: 'Terén · nivelace ze středu', stakeout: 'Terén · vytyčení', bubble: 'Terén · urovnání libely', fieldbook: 'Terén · zápisník', azimuth: 'Směrník · kvadranty', circle: 'Odečti vodorovný kruh',
 };
 
 function renderExercise() {
@@ -329,6 +351,16 @@ function exerciseBody(ex) {
       return `<div class="calc-card"><p class="prompt">${esc(ex.q)}</p></div>
         <div class="numrow"><input class="num" id="num" inputmode="decimal" autocomplete="off" placeholder="Výsledek"><span class="unit-label">${esc(ex.unit ?? '')}</span></div>
         <div class="hint">Zaokrouhli na ${ex.dec} ${ex.dec === 1 ? 'desetinné místo' : ex.dec >= 2 && ex.dec <= 4 ? 'desetinná místa' : 'desetinných míst'}${ex.dec === 0 ? ' (celé číslo)' : ''}. Čárka i tečka jsou v pořádku.</div>`;
+    case 'circle':
+      return `<p class="prompt">Jaké je čtení vodorovného kruhu ve stupnicovém mikroskopu?</p>
+        <canvas class="scope" id="circleCanvas" width="640" height="300"></canvas>
+        <div class="numrow"><input class="num" id="num" inputmode="decimal" autocomplete="off" placeholder="např. 123,457"><span class="unit-label">gon</span></div>
+        <div class="hint">Číslo ryšky = celé gony, stupnice 0–10 = desetiny gonu (100 dílků po 0,01 gon), tisíciny odhadni.</div>`;
+    case 'azimuth':
+      return `<p class="prompt">Natoč ručičku do směru σ bodu B z bodu A.</p>
+        <div class="given"><span>ΔY = <b>${fmt(ex.dy, 2)} m</b></span><span>ΔX = <b>${fmt(ex.dx, 2)} m</b></span></div>
+        ${dialSvg()}<div class="dial-read" id="dialRead">Táhni ručičkou nebo klepni na kružítko</div>
+        <div class="hint">Směrník se měří od +X (sever, nahoře) po směru hodinových ručiček, 400 gon dokola. Tolerance ±${ex.tolG} gon.</div>`;
     case 'rod':
       return `<p class="prompt">Jaké je čtení na lati na vodorovném vlákně nitkového kříže?</p>
         <canvas class="rod" id="rodCanvas" width="600" height="600"></canvas>
@@ -434,6 +466,61 @@ function setBubble(b) {
   el.classList.toggle('in', r <= run.items[run.i].okR);
 }
 
+// --- Kružítko pro směrník ----------------------------------------------------------------
+
+function dialSvg() {
+  const ticks = [];
+  for (let g = 0; g < 400; g += 10) {
+    const a = g * Math.PI / 200, big = g % 50 === 0, r1 = big ? 78 : 84;
+    ticks.push(`<line x1="${(Math.sin(a) * r1).toFixed(1)}" y1="${(-Math.cos(a) * r1).toFixed(1)}" x2="${(Math.sin(a) * 92).toFixed(1)}" y2="${(-Math.cos(a) * 92).toFixed(1)}" class="${big ? 'big' : ''}"/>`);
+    if (g % 100 === 0) ticks.push(`<text x="${(Math.sin(a) * 66).toFixed(1)}" y="${(-Math.cos(a) * 66 + 4).toFixed(1)}">${g}</text>`);
+  }
+  const quads = [['I', 45, -45], ['II', 45, 45], ['III', -45, 45], ['IV', -45, -45]].map(([t, x, y]) => `<text x="${x}" y="${y + 5}" class="quad">${t}</text>`).join('');
+  return `<svg class="dial" id="dial" viewBox="-110 -110 220 220">
+    <circle r="100" class="face"/><circle r="92" class="rim"/>
+    <line x1="0" y1="-100" x2="0" y2="100" class="axis"/><line x1="-100" y1="0" x2="100" y2="0" class="axis"/>
+    <text x="0" y="-102" class="ax">+X</text><text x="104" y="4" class="ax">+Y</text>
+    ${ticks.join('')}${quads}
+    <g id="needleOk" class="needle ok hidden"><path d="M0 -84 5 -10 0 -16 -5 -10Z"/></g>
+    <g id="needle" class="needle" transform="rotate(0)"><path d="M0 -84 6 -8 0 -14 -6 -8Z"/><circle r="6"/></g>
+  </svg>`;
+}
+
+// --- Stupnicový mikroskop (vodorovný kruh) ------------------------------------------------
+
+function drawCircle(cv, reading) {
+  const g = cv.getContext('2d'), Wc = cv.width, Hc = cv.height;
+  g.fillStyle = '#1b2227'; g.fillRect(0, 0, Wc, Hc);
+  const grad = g.createLinearGradient(0, 40, 0, Hc - 40);
+  grad.addColorStop(0, '#f6ecc9'); grad.addColorStop(1, '#e8d9a6');
+  g.fillStyle = grad; g.beginPath(); g.roundRect(30, 40, Wc - 60, Hc - 80, 18); g.fill();
+  g.fillStyle = '#5a4a1c'; g.font = '700 26px Lexend, sans-serif'; g.fillText('Hz', 48, 80);
+  const x0 = 110, x1 = Wc - 90, yScale = 170;
+  // Stupnice 0–10 (100 dílků po 0,01 gon).
+  g.strokeStyle = '#2b2410'; g.fillStyle = '#2b2410';
+  for (let k = 0; k <= 100; k++) {
+    const x = x0 + (x1 - x0) * k / 100, h = k % 10 === 0 ? 30 : k % 5 === 0 ? 22 : 14;
+    g.lineWidth = k % 10 === 0 ? 2.2 : 1.4;
+    g.beginPath(); g.moveTo(x, yScale); g.lineTo(x, yScale + h); g.stroke();
+    if (k % 10 === 0) { g.font = '600 20px Lexend, sans-serif'; g.textAlign = 'center'; g.fillText(String(k / 10), x, yScale + 54); }
+  }
+  // Ryšky vodorovného kruhu: po 1 gon, délka intervalu = délka stupnice.
+  const base = Math.floor(reading), frac = reading - base;
+  for (const d of [-1, 0, 1]) {
+    const x = x0 + (frac - d) * (x1 - x0);
+    if (x < 40 || x > Wc - 40) continue;
+    g.lineWidth = 3.2; g.strokeStyle = '#111';
+    g.beginPath(); g.moveTo(x, 96); g.lineTo(x, yScale + 10); g.stroke();
+    g.font = '700 28px Lexend, sans-serif'; g.textAlign = 'center'; g.fillStyle = '#111';
+    g.fillText(String((base + d + 400) % 400), x, 90);
+  }
+  g.textAlign = 'left';
+  // Vinětace a lehké rozostření okrajů jako v okuláru.
+  const v = g.createRadialGradient(Wc / 2, Hc / 2, Hc * 0.3, Wc / 2, Hc / 2, Wc * 0.62);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.5)');
+  g.fillStyle = v; g.fillRect(0, 0, Wc, Hc);
+}
+
 // --- Zapojení cvičení --------------------------------------------------------------------
 
 function wireExercise(ex) {
@@ -449,11 +536,12 @@ function wireExercise(ex) {
     }));
   }
 
-  if (ex.t === 'n' || ex.t === 'rod') {
+  if (ex.t === 'n' || ex.t === 'rod' || ex.t === 'circle') {
     const input = $('#num');
     input.addEventListener('input', () => setAnswer(input.value.trim()));
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !checkBtn.disabled) check(); });
     if (ex.t === 'rod') drawRod($('#rodCanvas'), ex.a);
+    if (ex.t === 'circle') drawCircle($('#circleCanvas'), ex.a);
     setTimeout(() => input.focus({ preventScroll: true }), 50);
   }
 
@@ -493,6 +581,22 @@ function wireExercise(ex) {
       }
       sel = null;
     }));
+  }
+
+  if (ex.t === 'azimuth') {
+    const svg = $('#dial');
+    let dragging = false;
+    const setFrom = (e) => {
+      const p = svgPoint(svg, e);
+      let g = Math.atan2(p.x, -p.y) * 200 / Math.PI; if (g < 0) g += 400;
+      g = Math.round(g);
+      $('#needle').setAttribute('transform', `rotate(${g * 0.9})`);
+      $('#dialRead').innerHTML = `σ = <b>${g} gon</b>`;
+      setAnswer(g);
+    };
+    svg.addEventListener('pointerdown', (e) => { if (run.locked) return; dragging = true; svg.setPointerCapture(e.pointerId); setFrom(e); beep('tick'); });
+    svg.addEventListener('pointermove', (e) => { if (dragging && !run.locked) setFrom(e); });
+    svg.addEventListener('pointerup', () => { dragging = false; });
   }
 
   if (ex.t === 'station' || ex.t === 'levelSetup' || ex.t === 'stakeout') {
@@ -545,6 +649,10 @@ function check() {
         c.classList.add(detail.cells[i] ? 'good' : 'bad');
         if (!detail.cells[i]) c.value = fmt(ex.a[i], 3);
       });
+    } else if (ex.t === 'azimuth') {
+      $('#needleOk').setAttribute('transform', `rotate(${ex.a * 0.9})`);
+      $('#needleOk').classList.remove('hidden');
+      $('#needle').classList.add(detail.ok ? 'good' : 'bad');
     } else drawFieldResult(ex, detail);
     app.querySelectorAll('[data-screw]').forEach((b) => { b.disabled = true; });
     return finishExercise(detail.ok, ex, detail.reason);
@@ -607,7 +715,8 @@ function finishRun() {
   const acc = total ? Math.round((r.correct / total) * 100) : 100;
   const mins = Math.max(1, Math.round((Date.now() - r.started) / 60000));
   const s = store.S();
-  const rk = store.rank(s.xp);
+  const rk = store.rank(s.xp), rkBefore = store.rank(s.xp - result.xp);
+  const promoted = rk.index > rkBefore.index;
   app.innerHTML = `<div class="done-screen">
     <div class="stamp">${r.mistakes === 0 ? 'Bez chyby' : 'Zaměřeno'}</div>
     ${mascot('wow', 'big')}
@@ -618,7 +727,8 @@ function finishRun() {
       <div class="card" style="--c:#2b8fd6"><b>Čas</b><span>${mins} min</span></div>
     </div>
     <div class="done-notes">
-    ${result.streakUp ? `<p>🔥 <b>${s.streak} ${s.streak === 1 ? 'den' : s.streak < 5 ? 'dny' : 'dní'} v terénu v řadě!</b></p>` : ''}
+    ${promoted ? `<div class="promo"><span>🎖️</span><div><small>Povýšení!</small><b>${rk.title}</b></div></div>` : ''}
+    ${result.streakUp ? `<div class="streak-up"><span class="flame">${ICON.flame}</span><b>${s.streak} ${s.streak === 1 ? 'den' : s.streak < 5 ? 'dny' : 'dní'} v terénu v řadě!</b></div>` : ''}
     ${s.xpToday >= s.dailyGoal ? '<p>🎯 Denní cíl splněn!</p>' : `<p>Denní cíl: ${s.xpToday} / ${s.dailyGoal} XP</p>`}
     <p>Hodnost: <b>${rk.title}</b>${rk.next ? ` · do další ${rk.next.xp - s.xp} XP` : ''}</p>
     ${result.newAchievements.map((a) => `<p class="newach">${a.icon} Nový úspěch: <b>${esc(a.title)}</b></p>`).join('')}
@@ -740,6 +850,8 @@ function renderPractice() {
       ${fieldCard('f-stakeout', 'Vytyčení polárně', 'Úhel a délka → kde je bod?', '<svg viewBox="0 0 60 40"><path d="M14 30 44 10" class="a3"/><path d="M14 30 50 28" class="a6"/><circle cx="44" cy="10" r="3" class="a2"/><path d="M14 30l-3 6M14 30l3 6" class="a4"/></svg>')}
       ${fieldCard('f-bubble', 'Urovnání libely', 'Stavěcí šrouby a bublina', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="14" class="a7"/><circle cx="30" cy="20" r="5" class="a6"/><circle cx="35" cy="16" r="3.5" class="a8"/></svg>')}
       ${fieldCard('f-fieldbook', 'Nivelační zápisník', 'Dopočítej převýšení a výšku', '<svg viewBox="0 0 60 40"><rect x="12" y="5" width="36" height="30" rx="2" class="a9"/><path d="M16 13h28M16 19h28M16 25h28M28 7v26" class="a6"/></svg>')}
+      ${fieldCard('f-azimuth', 'Směrník a kvadranty', 'Natoč ručičku podle ΔY a ΔX', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><path d="M30 20 40 9" class="a3"/><path d="M30 4v32M14 20h32" class="a6"/></svg>')}
+      ${fieldCard('f-circle', 'Čtení kruhu', 'Stupnicový mikroskop teodolitu', '<svg viewBox="0 0 60 40"><rect x="6" y="8" width="48" height="24" rx="5" class="a9"/><path d="M12 24h36M18 20v4M24 21v3M30 20v4M36 21v3M42 20v4" class="a6"/><path d="M27 11v13" class="a3"/></svg>')}
       ${fieldCard('f-rod', 'Čtení latě', 'Trénink oka na milimetry', '<svg viewBox="0 0 60 40"><circle cx="30" cy="20" r="16" class="a7"/><rect x="25" y="4" width="10" height="32" class="a9"/><path d="M14 20h32M30 4v32" class="a6"/></svg>')}
     </div>
     <button class="btn blue wide" data-p="f-all">Terénní směs · 6 úloh</button>
@@ -759,6 +871,7 @@ function renderPractice() {
     else if (p === 'mix') startPractice(buildMix(doneIds), 'Mix');
     else if (p === 'calc') startPractice(buildCalcPractice(10), 'Výpočty');
     else if (p === 'f-rod') startPractice(buildCalcPractice(6, ['rod']), 'Lať');
+    else if (p === 'f-circle') startPractice(buildCalcPractice(6, ['hzCircle']), 'Vodorovný kruh');
     else if (p === 'f-all') startPractice(shuffle([...buildFieldPractice(5), prepare(generate('rod'))]), 'Terén');
     else if (p.startsWith('f-')) startPractice(buildFieldPractice(4, [p.slice(2)]), b.querySelector('b').textContent);
     else startPractice(buildCalcPractice(10, CALC_SETS[p]), b.querySelector('b').textContent);
@@ -792,6 +905,7 @@ function renderProfile() {
       <div class="statbox"><span class="emo">🦺</span><b>${s.stats.field}</b><small>terénních úloh</small></div>
       <div class="statbox"><span class="emo">🧮</span><b>${s.stats.calc}</b><small>správných výpočtů</small></div>
     </div>
+    <h3 class="sec">Deník v terénu</h3>${heatmap(s.history ?? {})}
     <div class="row goalrow">${ring}<div class="grow"><b>Denní cíl</b><div class="hint">Dnes ${s.xpToday} z ${s.dailyGoal} XP</div></div></div>
     <div class="goal">${[10, 20, 30, 50].map((g) => `<button class="btn ${s.dailyGoal === g ? 'blue' : ''}" data-goal="${g}">${g} XP</button>`).join('')}</div>
     <h3 class="sec">Úspěchy</h3>
@@ -808,6 +922,24 @@ function renderProfile() {
   $('#snd').addEventListener('change', (e) => { s.sound = e.target.checked; store.save(); });
   $('#unl').addEventListener('change', (e) => { s.unlockAll = e.target.checked; store.save(); });
   $('#reset').addEventListener('click', () => { if (confirm('Opravdu smazat veškerý pokrok?')) { store.reset(); toast('Pokrok smazán'); renderProfile(); } });
+}
+
+/** Kalendář aktivity: posledních 16 týdnů, sytost podle získaných XP. */
+function heatmap(hist) {
+  const day = (d) => d.toLocaleDateString('sv-SE');
+  const now = new Date(); now.setHours(12, 0, 0, 0);
+  const start = new Date(now); start.setDate(start.getDate() - ((now.getDay() + 6) % 7) - 7 * 15);
+  const cells = [];
+  let total = 0, active = 0;
+  for (let i = 0; i < 16 * 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const xp = hist[day(d)] ?? 0, future = d > now;
+    if (xp) { total += xp; active++; }
+    const lv = future ? 'f' : xp === 0 ? 0 : xp < 15 ? 1 : xp < 30 ? 2 : xp < 50 ? 3 : 4;
+    cells.push(`<i class="h${lv}" title="${d.toLocaleDateString('cs-CZ')}: ${xp} XP"></i>`);
+  }
+  return `<div class="heat"><div class="heat-grid">${cells.join('')}</div>
+    <div class="heat-legend"><span>${active} dní v terénu · ${total} XP za 16 týdnů</span><span class="scale">méně <i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> více</span></div></div>`;
 }
 
 // ---------------------------------------------------------------------------------------

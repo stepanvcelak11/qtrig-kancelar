@@ -1,6 +1,6 @@
 // Kontrola osnovy a generátorů: node geolingo/tests/content.test.mjs
 import assert from 'node:assert/strict';
-import { UNITS, LESSONS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
+import { UNITS, LESSONS, TIPS, buildLesson, buildCalcPractice, buildMix, buildMistakes, grade, parseNumber, correctText } from '../js/engine.js';
 import { GEN, generate, fmt, bearingGon, polygonArea } from '../js/generators.js';
 import { FIELD, checkField, turnScrew, blocked } from '../js/field.js';
 
@@ -104,7 +104,7 @@ for (const name of Object.keys(GEN)) {
   for (let k = 0; k < 300; k++) {
     const ex = generate(name);
     ok(Number.isFinite(ex.a) && ex.tol > 0 && Number.isInteger(ex.dec), `${name}: konečná odpověď`);
-    ok(ex.t === 'rod' || (typeof ex.q === 'string' && ex.q.length > 10), `${name}: zadání`);
+    ok(ex.t === 'rod' || ex.t === 'circle' || (typeof ex.q === 'string' && ex.q.length > 10), `${name}: zadání`);
     ok(typeof ex.e === 'string', `${name}: vysvětlení`);
     // Odpověď zaokrouhlená na zobrazené desetiny musí projít hodnocením.
     ok(grade(ex, fmt(ex.a, ex.dec).replace('−', '-')), `${name}: zaokrouhlená odpověď neprojde (${ex.a})`);
@@ -135,6 +135,17 @@ for (const u of UNITS.filter((x) => x.level && x.level !== 'SŠ')) {
   ok(/^\d\. ročník · (ZS|LS)$/.test(u.sem ?? ''), `${u.id}: semestr ${u.sem}`);
 }
 
+// --- Taháky: patří k existující kapitole a mají správnou strukturu ---
+for (const [id, t] of Object.entries(TIPS)) {
+  ok(UNITS.some((u) => u.id === id), `tahák ${id}: neexistující kapitola`);
+  ok(typeof t.intro === 'string' && t.intro.length > 10, `tahák ${id}: úvod`);
+  ok(Array.isArray(t.points) && t.points.length >= 3 && t.points.every((x) => typeof x === 'string'), `tahák ${id}: body`);
+  ok((t.formulas ?? []).every((f) => Array.isArray(f) && f.length === 2 && f.every((x) => typeof x === 'string')), `tahák ${id}: vzorce`);
+  ok((t.terms ?? []).every((f) => Array.isArray(f) && f.length === 2 && f.every((x) => typeof x === 'string')), `tahák ${id}: pojmy`);
+  ok(!/\*\*|```|<\/?[a-z]+>/.test(JSON.stringify(t)), `tahák ${id}: bez HTML/Markdownu`);
+}
+console.log(`Taháky: ${Object.keys(TIPS).length} / ${UNITS.length} kapitol`);
+
 // --- Terénní praxe: každá vygenerovaná situace musí být řešitelná ---
 const t0 = Date.now();
 for (let k = 0; k < 150; k++) {
@@ -163,6 +174,12 @@ for (let k = 0; k < 150; k++) {
   ok(checkField(fb, fb.a.map((v) => fmt(v, 3).replace('−', '-'))).ok, 'zápisník: správné hodnoty');
   ok(Math.abs(fb.rows.reduce((s, r) => s + r.z - r.p, fb.HZ) - fb.a.at(-1)) < 0.0006, 'zápisník: H_K');
   ok(!checkField(fb, fb.a.map(() => '')).ok, 'zápisník: prázdné');
+}
+for (let k = 0; k < 300; k++) {
+  const az = generate('azimuth');
+  const quad = { I: [0, 100], II: [100, 200], III: [200, 300], IV: [300, 400] }[az.quadrant];
+  ok(az.a >= quad[0] && az.a < quad[1], `směrník: kvadrant ${az.quadrant} ≠ ${az.a}`);
+  ok(checkField(az, az.a + 4).ok && !checkField(az, az.a + 10).ok && checkField(az, (az.a + 398) % 400).ok, 'směrník: tolerance a přechod přes 0');
 }
 console.log(`Terénní úlohy: 150× vše řešitelné (${Date.now() - t0} ms)`);
 

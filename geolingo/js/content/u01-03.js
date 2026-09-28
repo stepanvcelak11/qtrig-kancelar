@@ -130,7 +130,7 @@ export default [
         ],
       },
       {
-        id: 'u2l5', title: 'Směrníky a kvadranty', icon: '🧭', gens: ['bearing'],
+        id: 'u2l5', title: 'Směrníky a kvadranty', icon: '🧭', gens: ['bearing', 'azimuth'],
         items: [
           { t: 'c', q: 'Směrník je úhel měřený od…', a: 'kladné osy X po směru hodinových ručiček', w: ['osy Y proti směru hodin', 'severu proti směru hodin', 'vodorovné roviny nahoru'], e: 'Směrník σ = úhel od rovnoběžky s +X ke spojnici, ve směru hodin.' },
           { t: 'c', q: 'ΔY > 0 a ΔX > 0 → směrník leží v rozsahu…', a: '0–100 gon', w: ['100–200 gon', '200–300 gon', '300–400 gon'], e: 'I. kvadrant.' },
@@ -148,7 +148,7 @@ export default [
     desc: 'Totální stanice, osové podmínky, nivelační přístroj, GNSS přijímač a měřické pomůcky.',
     lessons: [
       {
-        id: 'u3l1', title: 'Totální stanice', icon: '🔭',
+        id: 'u3l1', title: 'Totální stanice', icon: '🔭', gens: ['hzCircle'],
         items: [
           { t: 'm', q: 'Spojte označení osy s jejím názvem', p: [['V', 'Svislá (točná) osa'], ['H', 'Klopná osa'], ['Z', 'Záměrná přímka'], ['L', 'Osa alhidádové libely']] },
           { t: 'c', q: 'Otočná horní část přístroje, která nese dalekohled, se nazývá…', a: 'alhidáda', w: ['limbus', 'trojnožka', 'podložka'], e: 'Alhidáda se otáčí kolem svislé osy.' },

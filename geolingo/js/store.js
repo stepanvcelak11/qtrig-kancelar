@@ -16,7 +16,7 @@ const defaults = () => ({
   xp: 0, streak: 0, lastDay: null, xpToday: 0, xpDay: today(), dailyGoal: 20,
   hearts: MAX_HEARTS, heartsAt: Date.now(),
   done: {}, perfect: {}, mistakes: [], stats: { answered: 0, correct: 0, calc: 0, rod: 0, field: 0, lessons: 0 },
-  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {},
+  achievements: [], unlockAll: false, sound: true, track: 'ss', unitTests: {}, history: {},
 });
 
 let state;
@@ -87,6 +87,7 @@ export function completeLesson(lessonId, { mistakes, practice = false, unitTest 
   if (unitTest) state.unitTests = { ...state.unitTests, [unitTest]: true };
   state.xp += xp;
   state.xpToday += xp;
+  state.history = { ...state.history, [today()]: (state.history?.[today()] ?? 0) + xp };
   let streakUp = false;
   if (state.lastDay !== today()) {
     state.streak = state.lastDay === yesterday() ? state.streak + 1 : 1;

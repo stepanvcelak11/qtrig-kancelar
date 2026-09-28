@@ -211,7 +211,24 @@ function fieldbook() {
     e: 'Na každém stanovisku Δh = čtení vzad − čtení vpřed. Výška koncového bodu H_K = H_Z + ΣΔh. Kontrola: ΣΔh = Σvzad − Σvpřed.' };
 }
 
-export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook };
+// --- 6) Směrník na kružítku: nastav směr ručičkou podle ΔY a ΔX (kvadranty) --------------
+
+export function checkAzimuth(ex, g) {
+  let d = Math.abs(((g - ex.a) % 400 + 400) % 400);
+  d = Math.min(d, 400 - d);
+  return { ok: d <= ex.tolG, d, reason: d <= ex.tolG ? '' : `Tvůj směr se liší o ${d.toFixed(1).replace('.', ',')} gon.` };
+}
+
+function azimuth() {
+  let dy, dx;
+  do { dy = round(rnd(-300, 300), 2); dx = round(rnd(-300, 300), 2); } while (Math.hypot(dy, dx) < 40 || Math.min(Math.abs(dy), Math.abs(dx)) < 8);
+  let a = Math.atan2(dy, dx) / GON; if (a < 0) a += 400;
+  const q = dy >= 0 ? (dx >= 0 ? 'I' : 'II') : (dx >= 0 ? 'IV' : 'III');
+  return { t: 'azimuth', dy, dx, a, tolG: 5, quadrant: q,
+    e: `ΔY ${dy >= 0 ? '> 0' : '< 0'} a ΔX ${dx >= 0 ? '> 0' : '< 0'} → ${q}. kvadrant. Pomocný úhel φ = arctg|ΔY/ΔX| = ${(Math.atan(Math.abs(dy / dx)) / GON).toFixed(2).replace('.', ',')} gon, směrník σ = ${a.toFixed(2).replace('.', ',')} gon (od +X po směru hodinových ručiček).` };
+}
+
+export const FIELD = { station, levelSetup, stakeout, bubble, fieldbook, azimuth };
 
 /** Jednotné hodnocení praktických úloh. */
 export function checkField(ex, answer) {
@@ -221,6 +238,7 @@ export function checkField(ex, answer) {
     case 'stakeout': return checkStakeout(ex, answer);
     case 'bubble': return checkBubble(ex, answer);
     case 'fieldbook': return checkFieldbook(ex, answer);
+    case 'azimuth': return checkAzimuth(ex, answer);
     default: return { ok: false };
   }
 }
